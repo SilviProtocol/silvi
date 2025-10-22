@@ -131,53 +131,82 @@ async function getSpeciesDistribution(req, res) {
 async function getOccurrenceHeatmap(req, res) {
   try {
     const { minLat, minLng, maxLat, maxLng } = req.query;
-    
+
     if (!minLat || !minLng || !maxLat || !maxLng) {
-      return res.status(400).json({ 
-        error: 'Missing required parameters: minLat, minLng, maxLat, maxLng' 
+      return res.status(400).json({
+        error: 'Missing required parameters: minLat, minLng, maxLat, maxLng'
       });
     }
-    
+
     const query = `
-      SELECT 
+      SELECT
         geohash_l7,
         total_occurrences,
         species_count,
         ST_AsGeoJSON(geometry)::json as geometry,
+        ST_Area(geometry::geography) / 1000000 as area_km2,
         datetime
       FROM geohash_species_tiles
       WHERE ST_Intersects(
         geometry,
         ST_MakeEnvelope($1, $2, $3, $4, 4326)
       )
-      ORDER BY total_occurrences DESC;
+      ORDER BY total_occurrences DESC
+      LIMIT 10000;
     `;
-    
+
     const result = await pool.query(query, [
       parseFloat(minLng),
       parseFloat(minLat),
       parseFloat(maxLng),
       parseFloat(maxLat)
     ]);
-    
+
+    // Calculate density and find min/max for normalization
+    const tilesWithDensity = result.rows.map(row => {
+      const area = parseFloat(row.area_km2) || 1; // Avoid division by zero
+      const density = row.total_occurrences / area; // occurrences per km²
+      return {
+        ...row,
+        density,
+        density_per_km2: Math.round(density * 100) / 100
+      };
+    });
+
+    // Find min/max density for color scale using a loop (to avoid stack overflow with large arrays)
+    let minDensity = Infinity;
+    let maxDensity = -Infinity;
+    for (const tile of tilesWithDensity) {
+      if (tile.density < minDensity) minDensity = tile.density;
+      if (tile.density > maxDensity) maxDensity = tile.density;
+    }
+
     res.json({
       bbox: {
         min: [parseFloat(minLng), parseFloat(minLat)],
         max: [parseFloat(maxLng), parseFloat(maxLat)]
       },
       tile_count: result.rows.length,
-      features: result.rows.map(row => ({
+      density_range: {
+        min: Math.round(minDensity * 100) / 100,
+        max: Math.round(maxDensity * 100) / 100
+      },
+      features: tilesWithDensity.map(row => ({
         type: 'Feature',
         properties: {
           geohash: row.geohash_l7,
           total_occurrences: row.total_occurrences,
           species_count: row.species_count,
-          datetime: row.datetime
+          area_km2: Math.round(parseFloat(row.area_km2) * 100) / 100,
+          density: row.density_per_km2,
+          datetime: row.datetime,
+          // Normalized density for color mapping (0-1 scale)
+          density_normalized: (row.density - minDensity) / (maxDensity - minDensity || 1)
         },
         geometry: row.geometry
       }))
     });
-    
+
   } catch (error) {
     console.error('Error in getOccurrenceHeatmap:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -991,6 +1020,255 @@ async function getEcoregionBoundaries(req, res) {
   }
 }
 
+// In-memory cache for intact forest data
+class IntactForestCache {
+  constructor() {
+    this.cache = new Map();
+    this.maxSize = 100;
+    this.ttl = 5 * 60 * 1000; // 5 minutes
+    this.hits = 0;
+    this.misses = 0;
+    this.slowQueries = [];
+
+    // Cleanup old entries every minute
+    setInterval(() => this.cleanup(), 60000);
+  }
+
+  getCacheKey(minLat, maxLat, minLng, maxLng, zoom) {
+    // Dynamic precision based on zoom level
+    const precision = zoom > 10 ? 3 : zoom > 5 ? 2 : 1;
+    return `${parseFloat(minLat).toFixed(precision)},${parseFloat(maxLat).toFixed(precision)},` +
+           `${parseFloat(minLng).toFixed(precision)},${parseFloat(maxLng).toFixed(precision)},${zoom}`;
+  }
+
+  get(key) {
+    const entry = this.cache.get(key);
+    if (!entry) {
+      this.misses++;
+      return null;
+    }
+
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      this.misses++;
+      return null;
+    }
+
+    this.hits++;
+    return entry.data;
+  }
+
+  set(key, data) {
+    if (this.cache.size >= this.maxSize) {
+      // Remove oldest entry
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  cleanup() {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  recordSlowQuery(duration, params) {
+    this.slowQueries.push({
+      duration,
+      params,
+      timestamp: Date.now()
+    });
+
+    // Keep only last 10 slow queries
+    if (this.slowQueries.length > 10) {
+      this.slowQueries.shift();
+    }
+  }
+
+  getStats() {
+    const total = this.hits + this.misses;
+    return {
+      size: this.cache.size,
+      hits: this.hits,
+      misses: this.misses,
+      hitRate: total > 0 ? (this.hits / total * 100).toFixed(2) + '%' : 'N/A',
+      slowQueries: this.slowQueries
+    };
+  }
+}
+
+// Initialize cache
+const intactForestCache = new IntactForestCache();
+
+// Rate limiting (simple IP-based)
+const rateLimiter = new Map();
+const RATE_LIMIT = 100; // requests per minute (increased for map interactions)
+const RATE_WINDOW = 60000; // 1 minute
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimiter.get(ip);
+
+  if (!record) {
+    rateLimiter.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+
+  if (now > record.resetTime) {
+    rateLimiter.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
+// Helper function to determine which table to use based on zoom level
+function getTableForZoom(zoom) {
+  if (zoom <= 3) return 'intact_forest_z0_z3';
+  if (zoom <= 6) return 'intact_forest_z4_z6';
+  if (zoom <= 9) return 'intact_forest_z7_z9';
+  return 'intact_forest_landscapes_2021';
+}
+
+// Get intact forest boundaries for map display
+async function getIntactForestBoundaries(req, res) {
+  const startTime = Date.now();
+  const clientIp = req.ip || req.connection.remoteAddress;
+
+  try {
+    // Rate limiting
+    if (!checkRateLimit(clientIp)) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        message: 'Maximum 30 requests per minute allowed'
+      });
+    }
+
+    const { bbox, zoom = 3 } = req.query;
+
+    if (!bbox) {
+      return res.status(400).json({
+        error: 'Missing required parameter: bbox',
+        format: 'bbox=minLng,minLat,maxLng,maxLat'
+      });
+    }
+
+    // Parse bbox
+    const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(Number);
+
+    if ([minLng, minLat, maxLng, maxLat].some(isNaN)) {
+      return res.status(400).json({
+        error: 'Invalid bbox format',
+        format: 'bbox=minLng,minLat,maxLng,maxLat (all numeric)'
+      });
+    }
+
+    const zoomLevel = parseInt(zoom);
+
+    // Check cache
+    const cacheKey = intactForestCache.getCacheKey(minLat, maxLat, minLng, maxLng, zoomLevel);
+    const cached = intactForestCache.get(cacheKey);
+
+    if (cached) {
+      res.set('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
+    // Determine table based on zoom level
+    const tableName = getTableForZoom(zoomLevel);
+
+    // Progressive polygon limit based on zoom
+    const polygonLimit = zoomLevel <= 3 ? 500 : zoomLevel <= 6 ? 300 : zoomLevel <= 9 ? 200 : 100;
+
+    // Query with index hint for PostgreSQL
+    const query = `
+      WITH viewport_polygons AS (
+        SELECT /*+ INDEX(${tableName} idx_${tableName}_geom) */
+          ogc_fid,
+          ifl_id,
+          year,
+          ROUND((gfw_area__ / 1000000)::numeric, 2) as area_km2,
+          ST_Intersection(geom, ST_MakeEnvelope($1, $2, $3, $4, 4326)) as clipped_geom
+        FROM ${tableName}
+        WHERE ST_Intersects(geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
+          AND ST_IsValid(geom)
+        ORDER BY gfw_area__ DESC
+        LIMIT $5
+      )
+      SELECT
+        ogc_fid,
+        ifl_id,
+        year,
+        area_km2,
+        ST_AsGeoJSON(clipped_geom)::json as geometry,
+        ST_NPoints(clipped_geom) as vertex_count
+      FROM viewport_polygons
+      WHERE clipped_geom IS NOT NULL
+        AND ST_IsValid(clipped_geom);
+    `;
+
+    const queryStartTime = Date.now();
+    const result = await pool.query(query, [minLng, minLat, maxLng, maxLat, polygonLimit]);
+    const queryDuration = Date.now() - queryStartTime;
+
+    // Record slow queries (>2 seconds)
+    if (queryDuration > 2000) {
+      intactForestCache.recordSlowQuery(queryDuration, { bbox, zoom: zoomLevel, table: tableName });
+    }
+
+    // Build GeoJSON response
+    const response = {
+      type: 'FeatureCollection',
+      features: result.rows.map(row => ({
+        type: 'Feature',
+        properties: {
+          ogc_fid: row.ogc_fid,
+          ifl_id: row.ifl_id,
+          year: row.year,
+          area_km2: parseFloat(row.area_km2),
+          vertex_count: row.vertex_count
+        },
+        geometry: row.geometry
+      })),
+      metadata: {
+        zoom_level: zoomLevel,
+        table_used: tableName,
+        bbox: { minLng, minLat, maxLng, maxLat },
+        polygon_count: result.rows.length,
+        polygon_limit: polygonLimit,
+        query_time_ms: queryDuration
+      }
+    };
+
+    // Cache the result
+    intactForestCache.set(cacheKey, response);
+
+    res.set('X-Cache', 'MISS');
+    res.set('X-Query-Time', `${queryDuration}ms`);
+    res.json(response);
+
+  } catch (error) {
+    console.error('Error in getIntactForestBoundaries:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+}
+
 // Get native species for an ecoregion by name
 // Uses species.ecoregions field and filters by native status
 async function getNativeSpeciesByEcoregionName(req, res) {
@@ -1106,7 +1384,8 @@ return {
   getEcoregionStats,
   exportEcoregion,
   getEcoregionBoundaries,
-  getNativeSpeciesByEcoregionName
+  getNativeSpeciesByEcoregionName,
+  getIntactForestBoundaries
 };
 
 };

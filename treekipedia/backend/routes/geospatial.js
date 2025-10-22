@@ -81,5 +81,9 @@ router.get('/ecoregions/native-species/:ecoregion_name',
   geospatialController.getNativeSpeciesByEcoregionName
 );
 
+// Get intact forest boundaries for map display
+// GET /api/geospatial/intact-forests/boundaries?bbox=-180,-90,180,90&zoom=3
+router.get('/intact-forests/boundaries', geospatialController.getIntactForestBoundaries);
+
 return router;
 };

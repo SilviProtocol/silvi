@@ -92,5 +92,17 @@ blazegraph/blazegraph.jnl
 /scripts/*.svg
 *.geojson
 
-# Database backups
+# Database backups and dumps
 database/backups/
+*.dump
+treekipedia_custom.dump
+restore.log
+
+# Zip files
+*.zip
+ontology\ stuff.zip
+gee-temporal-extraction.zip
+frontend.zip
+
+# Backup/duplicate folders
+silvi-open-master/
