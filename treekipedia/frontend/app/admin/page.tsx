@@ -4,7 +4,10 @@ import { useState, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-// Admin page with password protection
+// Simple client-side password - CHANGE THIS to secure your admin page
+const ADMIN_PASSWORD = 'onetwotree'
+
+// Admin page with simple password protection
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -15,21 +18,19 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState('stats')
   const [loading, setLoading] = useState(false)
 
-  // Simple password authentication
-  const correctPassword = 'treekipedia_admin' // Would be better to store in environment variable
+  // API base URL
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth'
 
-  // Check for stored auth state on mount
+  // Check if user is already logged in (from localStorage)
   useEffect(() => {
-    const isAuth = sessionStorage.getItem('admin_authenticated')
-    if (isAuth === 'true') {
-      setIsAuthenticated(true)
-    }
+    const isLoggedIn = localStorage.getItem('admin_authenticated') === 'true'
+    setIsAuthenticated(isLoggedIn)
   }, [])
 
   const handleLogin = () => {
-    if (password === correctPassword) {
+    if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true)
-      sessionStorage.setItem('admin_authenticated', 'true')
+      localStorage.setItem('admin_authenticated', 'true')
       setPasswordError('')
     } else {
       setPasswordError('Incorrect password')
@@ -38,19 +39,19 @@ export default function AdminPage() {
 
   const handleLogout = () => {
     setIsAuthenticated(false)
-    sessionStorage.removeItem('admin_authenticated')
+    localStorage.removeItem('admin_authenticated')
   }
 
-  // Fetch data from backend API
+  // Fetch data from backend API (no auth required on backend anymore)
   const fetchData = async () => {
     setLoading(true)
     try {
       // Fetch server stats and API call stats in parallel
       const [statsRes, callStatsRes] = await Promise.all([
-        fetch('/admin-api/stats'),
-        fetch('/admin-api/call-stats')
+        fetch(`${API_BASE_URL}/admin-api/stats`),
+        fetch(`${API_BASE_URL}/admin-api/call-stats`)
       ])
-      
+
       // Process server stats
       if (statsRes.ok) {
         const statsData = await statsRes.json()
@@ -58,7 +59,7 @@ export default function AdminPage() {
       } else {
         console.error('Failed to fetch server stats:', statsRes.status)
       }
-      
+
       // Process API call stats
       if (callStatsRes.ok) {
         const callStatsData = await callStatsRes.json()
@@ -67,9 +68,9 @@ export default function AdminPage() {
         console.error('Failed to fetch API call stats:', callStatsRes.status)
       }
 
-      // Only fetch error logs when the errors tab is active to prevent excessive data loading
+      // Only fetch error logs when the errors tab is active
       if (activeTab === 'errors') {
-        const logsRes = await fetch('/admin-api/errors?limit=100')
+        const logsRes = await fetch(`${API_BASE_URL}/admin-api/errors?limit=100`)
         if (logsRes.ok) {
           const logsData = await logsRes.json()
           setErrorLogs(logsData.logs || [])
@@ -134,7 +135,7 @@ export default function AdminPage() {
                 <p className="text-red-500 text-sm mt-1">{passwordError}</p>
               )}
             </div>
-            <Button 
+            <Button
               onClick={handleLogin}
               className="w-full bg-green-600/80 hover:bg-green-600"
             >

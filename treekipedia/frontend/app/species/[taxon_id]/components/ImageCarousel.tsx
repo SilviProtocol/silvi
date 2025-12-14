@@ -51,10 +51,8 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
   // Don't render anything if loading or no images
   if (isLoading) {
     return (
-      <div className="mb-6">
-        <div className="rounded-lg bg-black/30 backdrop-blur-md border border-white/10 p-4 h-64 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-300" />
-        </div>
+      <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-4 h-64 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-300" />
       </div>
     );
   }
@@ -65,8 +63,7 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
   }
 
   return (
-    <div className="mb-6">
-      <div className="rounded-lg bg-black/30 backdrop-blur-md border border-white/10 overflow-hidden">
+    <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 overflow-hidden">
         {/* Main Image Display */}
         <div className="relative h-64 md:h-80 lg:h-96 bg-black/50">
           {/* Loading overlay */}
@@ -94,7 +91,7 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
                 onClick={prevImage}
                 variant="outline"
                 size="sm"
-                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-md border-white/20 text-white hover:bg-black/70 p-2"
+                className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-md border-white/15 text-white hover:bg-black/80 p-2"
               >
                 <ChevronLeft className="w-4 h-4" />
               </Button>
@@ -102,7 +99,7 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
                 onClick={nextImage}
                 variant="outline"
                 size="sm"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/50 backdrop-blur-md border-white/20 text-white hover:bg-black/70 p-2"
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/60 backdrop-blur-md border-white/15 text-white hover:bg-black/80 p-2"
               >
                 <ChevronRight className="w-4 h-4" />
               </Button>
@@ -119,7 +116,7 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
             onClick={() => setShowAttribution(!showAttribution)}
             variant="outline"
             size="sm"
-            className="absolute bottom-2 right-2 bg-black/50 backdrop-blur-md border-white/20 text-white hover:bg-black/70 p-2"
+            className="absolute bottom-2 right-2 bg-black/60 backdrop-blur-md border-white/15 text-white hover:bg-black/80 p-2"
           >
             <Info className="w-4 h-4" />
           </Button>
@@ -173,7 +170,7 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
                   className={`flex-shrink-0 w-16 h-16 rounded border-2 overflow-hidden transition-all ${
                     index === currentIndex
                       ? "border-emerald-400 opacity-100"
-                      : "border-white/20 opacity-70 hover:opacity-100"
+                      : "border-white/15 opacity-70 hover:opacity-100"
                   }`}
                 >
                   <img
@@ -191,7 +188,6 @@ export function ImageCarousel({ taxonId }: ImageCarouselProps) {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

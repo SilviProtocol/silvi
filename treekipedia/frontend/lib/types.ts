@@ -296,7 +296,7 @@ export interface CrossAnalysisData {
   country: string | null;
   countryDetected: boolean;
 
-  // Native status breakdown
+  // Native status breakdown (from WCVP data)
   nativeSpecies: number;
   introducedSpecies: number;
   unknownNativeStatus: number;
@@ -309,6 +309,9 @@ export interface CrossAnalysisData {
   // Commercial breakdown
   commercialSpecies: number;
   nonCommercialSpecies: number;
+
+  // Data source indicator
+  dataSource?: string;
 }
 
 export interface PlotSpeciesResult {

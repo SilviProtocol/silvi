@@ -55,10 +55,10 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
   // Don't render anything if loading
   if (isLoading) {
     return (
-      <div className="p-4 rounded-lg bg-black/30 backdrop-blur-md border border-white/10">
+      <div className="p-4 rounded-xl bg-black/40 backdrop-blur-md border border-white/15">
         <div className="flex items-center justify-center py-4">
           <Loader2 className="w-5 h-5 animate-spin text-emerald-300 mr-2" />
-          <span className="text-white/70">Loading subspecies...</span>
+          <span className="text-white/60">Loading subspecies...</span>
         </div>
       </div>
     );
@@ -82,8 +82,8 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
           ({data.subspecies_count})
         </span>
       </h2>
-      <div className="p-4 rounded-lg bg-black/30 backdrop-blur-md border border-white/10">
-        <p className="text-white/70 text-sm mb-3">
+      <div className="p-4 rounded-xl bg-black/40 backdrop-blur-md border border-white/15">
+        <p className="text-white/60 text-sm mb-3">
           This species has {data.subspecies_count} recognized{" "}
           {data.subspecies_count === 1 ? "subspecies" : "subspecies and varieties"}:
         </p>
@@ -92,11 +92,11 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
             <button
               key={subspecies.taxon_id}
               onClick={() => handleSubspeciesClick(subspecies.taxon_id)}
-              className="w-full p-3 rounded-lg bg-black/40 hover:bg-black/60 border border-white/10 hover:border-emerald-400/50 transition-all group text-left"
+              className="w-full p-3 rounded-xl bg-black/50 hover:bg-black/70 border border-white/15 hover:border-emerald-400/50 transition-all group text-left"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
-                  <div className="font-medium italic text-white group-hover:text-emerald-300 transition-colors">
+                  <div className="font-medium italic text-white/85 group-hover:text-emerald-300 transition-colors">
                     {subspecies.taxon_full}
                   </div>
                   {subspecies.common_name && (

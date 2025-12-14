@@ -4,6 +4,7 @@ const { ethers } = require('ethers');
 const dotenv = require('dotenv');
 const path = require('path');
 const cors = require('cors');
+const session = require('express-session');
 
 // Load environment variables from ../.env
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -13,19 +14,27 @@ const PORT = process.env.PORT || 3000;
 
 // CORS Configuration
 const corsOptions = {
-  origin: [
-    'http://localhost:3000',               // Next.js dev server
-    'http://localhost:8000',               // Alternative port if needed
-    'http://167.172.143.162:3001',         // Current frontend deployment (HTTP)
-    'https://167.172.143.162:3001',        // Current frontend deployment (HTTPS)
-    'http://167.172.143.162',              // Base domain without port (HTTP)
-    'https://167.172.143.162',             // Base domain without port (HTTPS)
-    'https://treekipedia.silvi.earth',     // Production frontend
-    'http://treekipedia.silvi.earth',      // Production frontend (HTTP)
-    'https://frontend.silvi.earth',        // Alternative production frontend
-    'http://frontend.silvi.earth',         // Alternative production frontend (HTTP)
-    /\.vercel\.app$/                       // Vercel preview deployments
-  ],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',               // Next.js dev server
+      'http://localhost:8000',               // Alternative port if needed
+      'http://167.172.143.162:3001',         // Current frontend deployment (HTTP)
+      'https://167.172.143.162:3001',        // Current frontend deployment (HTTPS)
+      'http://167.172.143.162',              // Base domain without port (HTTP)
+      'https://167.172.143.162',             // Base domain without port (HTTPS)
+      'https://treekipedia.silvi.earth',     // Production frontend
+      'http://treekipedia.silvi.earth',      // Production frontend (HTTP)
+      'https://frontend.silvi.earth',        // Alternative production frontend
+      'http://frontend.silvi.earth'          // Alternative production frontend (HTTP)
+    ];
+
+    // Allow if origin is in the list or matches Vercel pattern
+    if (!origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-api-key'],
   credentials: true,
@@ -46,6 +55,21 @@ if (ALLOW_ALL_ORIGINS) {
 
 // Other middleware
 app.use(express.json());
+
+// Session configuration for admin authentication
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'default-secret-change-this',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Import admin auth middleware
+const { requireAdminAuth } = require('./middleware/adminAuth');
 
 // PostgreSQL Connection
 const pool = new Pool({
@@ -132,7 +156,67 @@ app.use('/sponsorships', sponsorshipRoutes);
 const geospatialRoutes = require('./routes/geospatial')(pool);
 app.use('/api/geospatial', geospatialRoutes);
 
-// Admin monitoring endpoints
+// ============================================
+// Admin Authentication Endpoints
+// ============================================
+
+// Admin login endpoint (no auth required)
+app.post('/admin-api/login', (req, res) => {
+  const { password } = req.body;
+
+  // Validate password from environment variable
+  if (password === process.env.ADMIN_PASSWORD) {
+    // Set session flag
+    req.session.isAdminAuthenticated = true;
+
+    return res.json({
+      success: true,
+      message: 'Authentication successful'
+    });
+  } else {
+    return res.status(401).json({
+      success: false,
+      message: 'Invalid password'
+    });
+  }
+});
+
+// Admin logout endpoint
+app.post('/admin-api/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({
+        success: false,
+        message: 'Failed to logout'
+      });
+    }
+
+    res.clearCookie('connect.sid');
+    return res.json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  });
+});
+
+// Check authentication status
+app.get('/admin-api/check-auth', (req, res) => {
+  if (req.session && req.session.isAdminAuthenticated === true) {
+    return res.json({
+      authenticated: true
+    });
+  } else {
+    return res.json({
+      authenticated: false
+    });
+  }
+});
+
+// ============================================
+// Protected Admin Monitoring Endpoints
+// ============================================
+
+// Admin API endpoints (no auth required - protected by client-side password)
 app.get('/admin-api/stats', (req, res) => {
   const stats = {
     serverUptime: process.uptime(),

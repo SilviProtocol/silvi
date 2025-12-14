@@ -26,10 +26,10 @@ export function ConservationStatus({ status, source }: ConservationStatusProps) 
   };
 
   return (
-    <div className={`p-6 rounded-lg border ${getStatusStyling(status)}`}>
+    <div className={`p-4 rounded-xl border ${getStatusStyling(status)}`}>
       <div className="text-center">
-        <p className="font-bold text-lg mb-1">{status}</p>
-        <p className="text-sm text-white/70">
+        <p className="font-bold text-lg mb-1 text-white">{status}</p>
+        <p className="text-sm text-white/60">
           {source === "human" ? (
             "Based on human-verified data"
           ) : source === "ai" ? (

@@ -25,9 +25,16 @@ export default function CrossAnalysisSummary({ crossAnalysis, totalSpecies }: Cr
 
   return (
     <div className="mb-6 rounded-xl bg-black/30 backdrop-blur-md border border-emerald-600/30 p-5">
-      <h3 className="text-xl font-bold text-emerald-300 mb-4">
-        Cross-Analysis Summary
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-xl font-bold text-emerald-300">
+          Cross-Analysis Summary
+        </h3>
+        {crossAnalysis.dataSource && (
+          <span className="text-xs text-white/50 bg-black/30 px-2 py-1 rounded">
+            {crossAnalysis.dataSource}
+          </span>
+        )}
+      </div>
 
       <div className="space-y-4">
         {/* Native Status Section */}

@@ -33,15 +33,11 @@ export default function AnalysisPage() {
   const [isResultsMinimized, setIsResultsMinimized] = useState(false);
   const [isKMLMinimized, setIsKMLMinimized] = useState(false);
 
-  // Heatmap state
-  const [enableHeatmap, setEnableHeatmap] = useState(false);
-
   const handleAnalysisComplete = (results: PlotAnalysisResponse) => {
     setAnalysisResults(results);
     setError(null);
     setShowResultsPanel(true);
     setIsResultsMinimized(false);
-    setEnableHeatmap(true); // Enable heatmap when analysis completes
   };
 
   const handleAnalysisError = (errorMessage: string) => {
@@ -60,7 +56,6 @@ export default function AnalysisPage() {
   const clearResults = () => {
     setAnalysisResults(null);
     setError(null);
-    setEnableHeatmap(false); // Disable heatmap when results are cleared
     setIsHeatmapLoading(false); // Clear heatmap loading state
     setShowResultsPanel(false); // Hide results panel when cleared
     setShowKMLPanel(false); // Hide KML panel when cleared
@@ -108,13 +103,12 @@ export default function AnalysisPage() {
           onLoadingChange={handleLoadingChange}
           onHeatmapLoadingChange={handleHeatmapLoadingChange}
           onClear={clearResults}
-          enableHeatmap={enableHeatmap}
           isAnalysisLoading={isLoading}
           onShowKMLPanel={handleShowKMLPanel}
         />
 
         {/* Floating panels */}
-        <div className="absolute top-4 left-4 z-[1000] space-y-4 max-w-md">
+        <div className="absolute top-4 left-16 z-[1000] space-y-4 max-w-md">
           {/* Species Analysis Panel */}
           {showResultsPanel && (
             <div className="rounded-xl bg-black/80 backdrop-blur-md border border-white/20 shadow-2xl">
