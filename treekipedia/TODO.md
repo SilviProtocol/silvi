@@ -8,23 +8,44 @@ Active tasks and planned work. See CHANGELOG.md for completed features.
 
 ## [IN PROGRESS] - LEAF™ Scoring Engine
 
-**Status**: Planning complete, MVP implementation starting
+**Status**: Algorithm tested, implementation starting
 **Planning Doc**: [docs/todo/LEAF.md](docs/todo/LEAF.md)
 **Reference**: [docs/RECOMMENDATION_SERVICE.md](docs/RECOMMENDATION_SERVICE.md)
 
 **LEAF™** = **Location-based Ecological Aptness Forecast**
 
-### MVP: Occurrence-Based Percentile Scoring
-**Goal**: Point → Ecoregion → Percentile-ranked species recommendations
+### MVP: Union Pool + Native Boost + Introduced Exclusion ✅ IMPLEMENTED
+**Goal**: Point/Polygon/Ecoregion → Native-aware species recommendations
 
-- [ ] Add index on `eco_id` column in geohash_species_tiles table
-- [ ] Implement occurrence aggregation query (by eco_id)
-- [ ] Apply 0.05% minimum threshold (self-calibrating filter)
-- [ ] Calculate affinity score: `occurrence_count × tile_count`
-- [ ] Convert to percentile LEAF score (0-100)
-- [ ] Create endpoint: `GET /api/leaf/score?lat=X&lng=Y`
-- [ ] Tier classification (BEST: 90-100, GOOD: 70-89, ACCEPTABLE: 50-69)
-- [ ] Test on 12 target bioregional campaign ecoregions
+**Endpoint**: `GET/POST /api/geospatial/leaf/score`
+- `?eco_id=331` - Direct ecoregion ID lookup
+- `?eco_name=Appalachian-Blue%20Ridge%20forests` - Ecoregion name lookup
+- `?lat=35.5&lng=-82.5` - Point lookup
+- POST with `{ geometry: {...} }` - Polygon (multi-ecoregion weighted)
+
+**Integration Guide**: [docs/LEAF_INTEGRATION_GUIDE.md](docs/LEAF_INTEGRATION_GUIDE.md)
+
+**Tested on Appalachian-Blue Ridge:**
+- 3,292 species in pool (natives + occurrences)
+- 468 introduced species excluded (Tree of Heaven, Mimosa, etc.)
+- Top results: White Oak, Red Maple, Red Oak, Black Cherry (iconic natives)
+
+**Algorithm:**
+```
+Pool = WCVP natives for region UNION occurrence species
+     MINUS species in wcvp_introduced
+
+Affinity = (occurrence_count × tile_count) × native_multiplier
+  - Native: ×2.0 boost
+  - Unknown: ×1.0 neutral
+  - Introduced: EXCLUDED
+
+LEAF Score = percentile rank (0-100)
+```
+
+**Remaining Tasks:**
+- [ ] Add index on `eco_id` column for query performance
+- [ ] Test on all 12 target bioregional campaign ecoregions
 - [ ] CSV export for campaign distribution
 
 ### v1.1: Biome Matching (after MVP)
@@ -38,12 +59,6 @@ Active tasks and planned work. See CHANGELOG.md for completed features.
 ### v1.3: Family Diversity Quotas (after v1.2)
 - [ ] Post-filter: Cap 15-20 species per family in BEST tier
 - [ ] Report family distribution in API response
-
-### v1.4: WCVP Native Status Filtering (DATA READY)
-- [x] Import WCVP native/introduced data (66,220 species - 97.5% coverage)
-- [ ] Update native species API to use `wcvp_native` instead of `countries_native`
-- [ ] Filter LEAF results to species native to ecoregion's countries
-- [ ] Include native_status in API response
 
 ---
 
@@ -89,6 +104,12 @@ Active tasks and planned work. See CHANGELOG.md for completed features.
 ## [MEDIUM PRIORITY] - Database & Performance
 
 **Status**: Functional, optimization opportunities exist
+
+### Codebase Migration: taxon_full
+- [ ] Migrate frontend from `species_scientific_name` to `taxon_full`
+- [ ] Migrate backend API responses to use `taxon_full`
+- [ ] Update LEAF endpoint to return `taxon_full` (currently uses `scientific_name`)
+- [ ] Deprecate `species_scientific_name`, `taxon_id_new` (redundant fields)
 
 ### Database Optimization
 - [ ] Add indexes on `wcvp_native` and `wcvp_introduced` columns (replaces countries_native)

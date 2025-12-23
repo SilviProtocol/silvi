@@ -1,6 +1,6 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: December 3, 2025
+**Last Updated**: December 17, 2025
 **System Health**: Operational
 
 ---
@@ -11,6 +11,7 @@
 | Metric | Value | Coverage |
 |--------|-------|----------|
 | **Total Species** | 67,927 | 50,797 species + 16,946 subspecies |
+| **Primary Keys** | `taxon_id` + `taxon_full` | `-00` suffix = species, `-01`+ = subspecies |
 | **Fields per Species** | 130 | v10 schema (17 new fields added Nov 2025) |
 | **Images** | 31,796 | 13,609 species (22.1% coverage) |
 | **Researched Species** | 19 | With AI-generated data |
@@ -31,7 +32,8 @@
 |----------------|------------|
 | **Climate Data** | 60-88% |
 | **SBTN Land Cover** | 85% (57,950 species) |
-| **Native Countries** | 26% (17,415 species) |
+| **WCVP Native Status** | 97.5% (66,220 species) |
+| **WCVP Introduced Status** | 8.4% (5,738 species) |
 | **GloBI Interactions** | 24% (herbivores), sparse for others |
 
 ---
@@ -68,6 +70,7 @@
 
 ### Geospatial
 - `POST /api/geospatial/analyze-plot` - Polygon-based species analysis
+- `GET/POST /api/geospatial/leaf/score` - **LEAF™ species recommendations** (NEW)
 - `GET /api/geospatial/ecoregions/:ecoregion_id/species` - Species in ecoregion
 - `GET /api/geospatial/ecoregions/at-point` - Ecoregion at coordinates
 - `POST /api/geospatial/ecoregions/intersect` - Ecoregion intersection
@@ -90,10 +93,11 @@ Full API documentation: See **API.md**
 4. **Species Detail Pages** - Two-column layout with 130 fields (v10 data)
 5. **AI Research Process** - Research generation, IPFS storage, NFT minting
 6. **Geospatial Analysis** - Interactive map with polygon drawing and KML upload
-7. **Native Status Analysis** - Country detection with native/introduced breakdown
-8. **Ecoregion Queries** - 7 endpoints for ecological context
-9. **Public API Access** - API key authentication for external integrations
-10. **Admin Dashboard** - Password-protected server stats
+7. **LEAF™ Scoring** - Location-based species recommendations with native status integration
+8. **WCVP Native Status** - 97.5% species coverage for native/introduced filtering
+9. **Ecoregion Queries** - 7 endpoints for ecological context
+10. **Public API Access** - API key authentication for external integrations
+11. **Admin Dashboard** - Password-protected server stats
 
 ### Known Issues
 - `performResearch is not a function` errors in logs (non-critical)

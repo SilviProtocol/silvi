@@ -85,5 +85,13 @@ router.get('/ecoregions/native-species/:ecoregion_name',
 // GET /api/geospatial/intact-forests/boundaries?bbox=-180,-90,180,90&zoom=3
 router.get('/intact-forests/boundaries', geospatialController.getIntactForestBoundaries);
 
+// LEAF™ Score - Location-based Ecological Aptness Forecast
+// GET /api/geospatial/leaf/score?eco_id=331 (direct ecoregion)
+// GET /api/geospatial/leaf/score?lat=35.5&lng=-82.5 (point lookup)
+// POST /api/geospatial/leaf/score with { geometry: {...} } (polygon)
+// Optional query params: limit=500, min_score=0
+router.get('/leaf/score', geospatialController.getLeafScore);
+router.post('/leaf/score', geospatialController.getLeafScore);
+
 return router;
 };

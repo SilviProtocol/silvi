@@ -14,6 +14,8 @@ export interface TreeSpecies {
   countries_introduced: string;
   countries_invasive: string;
   countries_native: string;
+  wcvp_native: string;
+  wcvp_introduced: string;
   taxonomic_class: string;
   taxonomic_order: string;
   ecoregions: string;

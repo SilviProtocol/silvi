@@ -1438,6 +1438,328 @@ async function getNativeSpeciesByEcoregionName(req, res) {
   }
 }
 
+/**
+ * LEAF™ Score Endpoint
+ * Location-based Ecological Aptness Forecast
+ *
+ * Accepts: eco_id, lat/lng point, or GeoJSON polygon
+ * Returns: Species ranked by LEAF score with native status integration
+ */
+async function getLeafScore(req, res) {
+  try {
+    const { eco_id, eco_name, lat, lng, limit = 500, min_score = 0 } = req.query;
+    const geometry = req.body?.geometry;
+
+    // Validate input - must have one of: eco_id, eco_name, lat/lng, or geometry
+    if (!eco_id && !eco_name && !(lat && lng) && !geometry) {
+      return res.status(400).json({
+        error: 'Must provide one of: eco_id, eco_name, lat/lng coordinates, or GeoJSON geometry in request body'
+      });
+    }
+
+    let ecoregions = [];
+
+    // STEP 1: Resolve input to ecoregion(s) with area weights
+    if (eco_id || eco_name) {
+      // Direct eco_id or eco_name lookup
+      const ecoQuery = eco_id
+        ? 'SELECT eco_id, eco_name, biome_name, realm, ST_Area(geom::geography) / 1000000 as area_km2, 1.0 as weight FROM ecoregions WHERE eco_id = $1'
+        : 'SELECT eco_id, eco_name, biome_name, realm, ST_Area(geom::geography) / 1000000 as area_km2, 1.0 as weight FROM ecoregions WHERE eco_name = $1';
+      const ecoResult = await pool.query(ecoQuery, [eco_id || eco_name]);
+
+      if (ecoResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Ecoregion not found' });
+      }
+      ecoregions = ecoResult.rows;
+
+    } else if (lat && lng) {
+      // Point lookup - find containing ecoregion
+      const pointResult = await pool.query(`
+        SELECT
+          eco_id, eco_name, biome_name, realm,
+          ST_Area(geom::geography) / 1000000 as area_km2,
+          1.0 as weight
+        FROM ecoregions
+        WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+        LIMIT 1
+      `, [parseFloat(lng), parseFloat(lat)]);
+
+      if (pointResult.rows.length === 0) {
+        return res.status(404).json({ error: 'No ecoregion found at this location' });
+      }
+      ecoregions = pointResult.rows;
+
+    } else if (geometry) {
+      // Polygon - find all intersecting ecoregions with area weights
+      const polyResult = await pool.query(`
+        WITH input_geom AS (
+          SELECT ST_SetSRID(ST_GeomFromGeoJSON($1), 4326) as geom
+        ),
+        intersections AS (
+          SELECT
+            e.eco_id, e.eco_name, e.biome_name, e.realm,
+            ST_Area(e.geom::geography) / 1000000 as area_km2,
+            ST_Area(ST_Intersection(e.geom, i.geom)::geography) as intersection_area
+          FROM ecoregions e, input_geom i
+          WHERE ST_Intersects(e.geom, i.geom)
+        ),
+        total_area AS (
+          SELECT SUM(intersection_area) as total FROM intersections
+        )
+        SELECT
+          i.*,
+          CASE WHEN t.total > 0 THEN i.intersection_area / t.total ELSE 1.0 END as weight
+        FROM intersections i, total_area t
+        ORDER BY weight DESC
+      `, [JSON.stringify(geometry)]);
+
+      if (polyResult.rows.length === 0) {
+        return res.status(404).json({ error: 'No ecoregions found in this area' });
+      }
+      ecoregions = polyResult.rows;
+    }
+
+    // STEP 2: Get countries for all ecoregions (for WCVP lookup)
+    const ecoIds = ecoregions.map(e => e.eco_id);
+    const countriesResult = await pool.query(`
+      SELECT DISTINCT
+        CASE
+          WHEN c.name_en = 'United States of America' THEN 'United States'
+          WHEN c.name_en = 'United Kingdom' THEN 'United Kingdom'
+          ELSE c.name_en
+        END as country_name
+      FROM ecoregions e
+      JOIN countries c ON ST_Intersects(e.geom, c.geom)
+      WHERE e.eco_id = ANY($1)
+    `, [ecoIds]);
+
+    const countries = countriesResult.rows.map(r => r.country_name).filter(Boolean);
+
+    // STEP 3: Build WCVP search patterns for native/introduced matching
+    const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
+    const wcvpPatterns = [];
+    for (const country of countries) {
+      const regions = getWcvpRegionsForCountry(country);
+      wcvpPatterns.push(...regions.map(r => r.toLowerCase()));
+    }
+
+    // STEP 4: For each ecoregion, get occurrence data and calculate raw affinities
+    const speciesScores = new Map(); // taxon_id -> { affinities: [{eco_id, weight, affinity}], is_native, ... }
+
+    for (const eco of ecoregions) {
+      // Get occurrence data for this ecoregion
+      const occurrenceQuery = `
+        WITH tile_species AS (
+          SELECT
+            (jsonb_each_text(species_data)).key AS taxon_id,
+            (jsonb_each_text(species_data)).value::int AS occurrences
+          FROM geohash_species_tiles
+          WHERE eco_id = $1
+        )
+        SELECT
+          taxon_id,
+          SUM(occurrences) AS occurrence_count,
+          COUNT(*) AS tile_count
+        FROM tile_species
+        GROUP BY taxon_id
+      `;
+
+      const occResult = await pool.query(occurrenceQuery, [eco.eco_id]);
+
+      for (const row of occResult.rows) {
+        const affinity = parseInt(row.occurrence_count) * parseInt(row.tile_count);
+
+        if (!speciesScores.has(row.taxon_id)) {
+          speciesScores.set(row.taxon_id, {
+            taxon_id: row.taxon_id,
+            affinities: [],
+            total_occurrences: 0,
+            total_tiles: 0,
+            is_native: null, // Will be determined later
+            is_introduced: null
+          });
+        }
+
+        const species = speciesScores.get(row.taxon_id);
+        species.affinities.push({
+          eco_id: eco.eco_id,
+          weight: parseFloat(eco.weight),
+          affinity: affinity,
+          occurrence_count: parseInt(row.occurrence_count),
+          tile_count: parseInt(row.tile_count)
+        });
+        species.total_occurrences += parseInt(row.occurrence_count);
+        species.total_tiles += parseInt(row.tile_count);
+      }
+    }
+
+    // STEP 5: Get WCVP native species (to add to pool even if no occurrences)
+    if (wcvpPatterns.length > 0) {
+      const nativePatterns = wcvpPatterns.map(p => `%${p}%`);
+      const nativeQuery = `
+        SELECT taxon_id, wcvp_native, wcvp_introduced
+        FROM species
+        WHERE wcvp_native IS NOT NULL
+          AND wcvp_native ILIKE ANY($1)
+      `;
+      const nativeResult = await pool.query(nativeQuery, [nativePatterns]);
+
+      for (const row of nativeResult.rows) {
+        if (!speciesScores.has(row.taxon_id)) {
+          // WCVP-only native (no occurrences) - add with baseline
+          speciesScores.set(row.taxon_id, {
+            taxon_id: row.taxon_id,
+            affinities: [{ eco_id: null, weight: 1.0, affinity: 100, occurrence_count: 0, tile_count: 0 }],
+            total_occurrences: 0,
+            total_tiles: 0,
+            is_native: true,
+            is_introduced: false
+          });
+        } else {
+          speciesScores.get(row.taxon_id).is_native = true;
+        }
+      }
+    }
+
+    // STEP 6: Check introduced status and mark for exclusion
+    if (wcvpPatterns.length > 0) {
+      const introducedPatterns = wcvpPatterns.map(p => `%${p}%`);
+      const introducedQuery = `
+        SELECT taxon_id
+        FROM species
+        WHERE wcvp_introduced IS NOT NULL
+          AND wcvp_introduced ILIKE ANY($1)
+      `;
+      const introducedResult = await pool.query(introducedQuery, [introducedPatterns]);
+      const introducedSet = new Set(introducedResult.rows.map(r => r.taxon_id));
+
+      for (const [taxon_id, species] of speciesScores) {
+        if (introducedSet.has(taxon_id)) {
+          species.is_introduced = true;
+        }
+      }
+    }
+
+    // STEP 7: Filter out introduced species and calculate weighted affinities
+    const filteredSpecies = [];
+    for (const [taxon_id, species] of speciesScores) {
+      if (species.is_introduced) continue; // Exclude introduced
+
+      // Calculate weighted affinity across ecoregions
+      let weightedAffinity = 0;
+      let totalWeight = 0;
+      for (const aff of species.affinities) {
+        weightedAffinity += aff.affinity * aff.weight;
+        totalWeight += aff.weight;
+      }
+      const avgAffinity = totalWeight > 0 ? weightedAffinity / totalWeight : 0;
+
+      // Apply native boost
+      const nativeMultiplier = species.is_native ? 2.0 : 1.0;
+      const finalAffinity = avgAffinity * nativeMultiplier;
+
+      filteredSpecies.push({
+        taxon_id,
+        weighted_affinity: finalAffinity,
+        total_occurrences: species.total_occurrences,
+        total_tiles: species.total_tiles,
+        is_native: species.is_native === true,
+        ecoregion_count: species.affinities.filter(a => a.eco_id !== null).length
+      });
+    }
+
+    // STEP 8: Calculate percentile LEAF scores
+    filteredSpecies.sort((a, b) => a.weighted_affinity - b.weighted_affinity);
+    const total = filteredSpecies.length;
+    for (let i = 0; i < total; i++) {
+      filteredSpecies[i].leaf_score = total > 1 ? Math.round((i / (total - 1)) * 1000) / 10 : 100;
+    }
+
+    // STEP 9: Get species details and filter by min_score
+    const qualifyingSpecies = filteredSpecies
+      .filter(s => s.leaf_score >= parseFloat(min_score))
+      .sort((a, b) => b.leaf_score - a.leaf_score)
+      .slice(0, parseInt(limit));
+
+    if (qualifyingSpecies.length === 0) {
+      return res.json({
+        ecoregions: ecoregions.map(e => ({ eco_id: e.eco_id, eco_name: e.eco_name, weight: e.weight })),
+        countries: countries,
+        methodology: {
+          version: '1.0',
+          formula: 'weighted_affinity = (occurrence_count × tile_count) × native_multiplier',
+          native_boost: 2.0,
+          introduced: 'excluded'
+        },
+        statistics: {
+          total_in_pool: speciesScores.size,
+          introduced_excluded: [...speciesScores.values()].filter(s => s.is_introduced).length,
+          qualifying_species: 0
+        },
+        species: []
+      });
+    }
+
+    const taxonIds = qualifyingSpecies.map(s => s.taxon_id);
+    const detailsResult = await pool.query(`
+      SELECT
+        taxon_id, species_scientific_name, common_name, family, genus
+      FROM species
+      WHERE taxon_id = ANY($1)
+    `, [taxonIds]);
+
+    const detailsMap = new Map(detailsResult.rows.map(r => [r.taxon_id, r]));
+
+    // STEP 10: Build response
+    const speciesResponse = qualifyingSpecies.map(s => {
+      const details = detailsMap.get(s.taxon_id) || {};
+      return {
+        taxon_id: s.taxon_id,
+        scientific_name: details.species_scientific_name || null,
+        common_name: details.common_name || null,
+        family: details.family || null,
+        genus: details.genus || null,
+        leaf_score: s.leaf_score,
+        tier: s.leaf_score >= 90 ? 'BEST' : s.leaf_score >= 70 ? 'GOOD' : s.leaf_score >= 50 ? 'ACCEPTABLE' : 'LOW',
+        is_native: s.is_native,
+        occurrence_count: s.total_occurrences,
+        tile_count: s.total_tiles,
+        ecoregion_count: s.ecoregion_count
+      };
+    });
+
+    res.json({
+      ecoregions: ecoregions.map(e => ({
+        eco_id: e.eco_id,
+        eco_name: e.eco_name,
+        biome_name: e.biome_name,
+        realm: e.realm,
+        weight: Math.round(parseFloat(e.weight) * 1000) / 1000
+      })),
+      countries: countries,
+      methodology: {
+        version: '1.0',
+        formula: 'weighted_affinity = (occurrence_count × tile_count) × native_multiplier',
+        native_boost: 2.0,
+        introduced: 'excluded',
+        data_sources: ['GBIF occurrences via geohash tiles', 'WCVP native/introduced status']
+      },
+      statistics: {
+        total_in_pool: speciesScores.size,
+        introduced_excluded: [...speciesScores.values()].filter(s => s.is_introduced).length,
+        native_species: speciesResponse.filter(s => s.is_native).length,
+        unknown_status: speciesResponse.filter(s => !s.is_native).length,
+        qualifying_species: speciesResponse.length
+      },
+      species: speciesResponse
+    });
+
+  } catch (error) {
+    console.error('Error in getLeafScore:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+}
+
 return {
   findSpeciesNearby,
   getSpeciesDistribution,
@@ -1453,7 +1775,8 @@ return {
   exportEcoregion,
   getEcoregionBoundaries,
   getNativeSpeciesByEcoregionName,
-  getIntactForestBoundaries
+  getIntactForestBoundaries,
+  getLeafScore
 };
 
 };

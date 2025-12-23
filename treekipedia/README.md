@@ -22,10 +22,11 @@
 Treekipedia is an open-source platform making tree species data accessible, verifiable, and incentivized. Developed by [Silvi Protocol](https://silvi.earth), it combines AI-driven research with blockchain transparency to support reforestation, ecological restoration, and biodiversity monitoring.
 
 ### Current Stats
-- **67,927 species** with 130 data fields each
+- **67,927 species** with 130 data fields each (50,797 species + 16,946 subspecies)
 - **31,796 images** across 13,609 species
 - **5.3M geohash tiles** with 89M species occurrences
 - **847 WWF ecoregions** for ecological context
+- **Primary keys**: `taxon_id` + `taxon_full` (suffix `-00` = species, `-01`+ = subspecies)
 
 ---
 

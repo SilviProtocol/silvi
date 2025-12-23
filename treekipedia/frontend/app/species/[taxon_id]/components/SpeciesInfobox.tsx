@@ -29,8 +29,8 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
   const landCoverTypes = parseSemicolonList(species.sbtn_landcover);
   const { visible: visibleLandCover, remaining: remainingLandCover } = truncateList(landCoverTypes, 4);
 
-  // Parse countries
-  const countries = parseSemicolonList(species.countries_native);
+  // Parse native regions (using WCVP data)
+  const countries = parseSemicolonList(species.wcvp_native);
   const { visible: visibleCountries, remaining: remainingCountries } = truncateList(countries, 4);
 
   // Check if we have any data to display

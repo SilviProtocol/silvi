@@ -6,6 +6,48 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2025-12-17 - Data Cleanup & LEAF Enhancements
+
+**Database** - Cleaned `taxon_full` field, removing redundant " NA" suffix from 50,970 species-level records
+- `taxon_full` now contains clean names: "Pinus roxburghii" instead of "Pinus roxburghii NA"
+- Subspecies records unchanged: "Aralia elata glabrescens"
+- `taxon_id` + `taxon_full` established as primary anchor fields
+- `taxon_id` suffix encodes type: `-00` = parent species, `-01`+ = subspecies
+- Generated `species_names.csv` export (67,927 records)
+
+**LEAF API** - Added `eco_name` parameter support
+- Endpoint now accepts `eco_name` (exact match) in addition to `eco_id`
+- Example: `?eco_name=Appalachian-Blue%20Ridge%20forests`
+- Files: `backend/controllers/geospatial.js`
+
+**Documentation** - Created LEAF Integration Guide for Silvi Protocol
+- Comprehensive guide for external integration
+- API reference, algorithm explanation, target ecoregions list
+- File: `docs/LEAF_INTEGRATION_GUIDE.md`
+
+---
+
+## 2025-12-15 - LEAF™ Endpoint Implementation
+
+**LEAF™ Score API** - Full implementation of Location-based Ecological Aptness Forecast
+- New endpoint: `GET/POST /api/geospatial/leaf/score`
+- Three input methods: eco_id, lat/lng point, or GeoJSON polygon
+- Multi-ecoregion support: Polygons spanning multiple ecoregions aggregate weighted by area
+- Algorithm: Pool = (WCVP natives) UNION (occurrence species) MINUS (introduced)
+- Scoring: `weighted_affinity = (occurrence_count × tile_count) × native_multiplier`
+- Native boost: ×2.0, Unknown: ×1.0, Introduced: EXCLUDED
+- Returns: species ranked by LEAF score with tier (BEST/GOOD/ACCEPTABLE/LOW)
+- Tested on Appalachian-Blue Ridge: 3,292 species pool, 468 introduced excluded
+- Files: `backend/controllers/geospatial.js`, `backend/routes/geospatial.js`
+
+**Species Pages** - Updated to use WCVP native/introduced data
+- SpeciesInfobox "Native to" section now uses `wcvp_native` (97.5% coverage)
+- Geographic tab fields updated: "Native Regions", "Introduced Regions"
+- Added `wcvp_native`, `wcvp_introduced` to TypeScript types
+- Files: `frontend/app/species/[taxon_id]/components/SpeciesInfobox.tsx`, `frontend/app/species/[taxon_id]/hooks/useFieldDefinitions.ts`, `frontend/lib/types.ts`
+
+---
+
 ## 2025-12-12 - WCVP Native Status Integration
 
 **Database** - Imported authoritative WCVP (World Checklist of Vascular Plants) native/introduced data
