@@ -69,7 +69,6 @@ yarn-error.log*
 /SPEC_SHEET.md
 /TREEPAGE.md
 /API_COMPARE.md
-/CONTEXT.md
 /.mcp.json
 /FRONTEND_IMPROVEMENTS.md
 /LAUNCH.md
@@ -86,6 +85,12 @@ blazegraph/blazegraph.jnl
 /geohash.csv
 /images.json
 /Treekipedia_V6_countriesOK_bioregionsOK_wikimideaOK_ColumnsOK_April17d.csv
+
+# Large data files (parquet, CSV)
+data/*.parquet
+data/*.csv
+*.parquet
+test_tile_compressed.csv
 
 # Large GeoJSON files
 /scripts/*.geojson

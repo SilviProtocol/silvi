@@ -1,0 +1,355 @@
+{
+  "metadata": {
+    "species_scientific_name": "Ginkgo biloba",
+    "common_names": "Ginkgo, maidenhair tree",
+    "taxon_id": "AngGiGiGN21141-00",
+    "timestamp": "2026-01-04T10:48:07.969Z",
+    "test_type": "agentic_comparison"
+  },
+  "results": [
+    {
+      "strategy": "single_call",
+      "model": "grok-4-1-fast-reasoning",
+      "success": true,
+      "api_calls": 1,
+      "duration_ms": 43039,
+      "usage": {
+        "input_tokens": 25400,
+        "input_tokens_details": {
+          "cached_tokens": 9807
+        },
+        "output_tokens": 3508,
+        "output_tokens_details": {
+          "reasoning_tokens": 1843
+        },
+        "total_tokens": 28908,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 16,
+        "cost_in_usd_ticks": 853629500,
+        "server_side_tool_usage_details": {
+          "web_search_calls": 16,
+          "x_search_calls": 0,
+          "code_interpreter_calls": 0,
+          "file_search_calls": 0,
+          "mcp_calls": 0,
+          "document_search_calls": 0
+        }
+      },
+      "completion": {
+        "filled": 24,
+        "total": 24,
+        "percentage": 100,
+        "fieldStatus": {
+          "habitat_ai": true,
+          "elevation_ranges_ai": true,
+          "ecological_function_ai": true,
+          "native_adapted_habitats_ai": true,
+          "agroforestry_use_cases_ai": true,
+          "conservation_status_ai": true,
+          "general_description_ai": true,
+          "compatible_soil_types_ai": true,
+          "growth_form_ai": true,
+          "leaf_type_ai": true,
+          "deciduous_evergreen_ai": true,
+          "flower_color_ai": true,
+          "fruit_type_ai": true,
+          "bark_characteristics_ai": true,
+          "maximum_height_ai": true,
+          "maximum_diameter_ai": true,
+          "lifespan_ai": true,
+          "maximum_tree_age_ai": true,
+          "stewardship_best_practices_ai": true,
+          "planting_recipes_ai": true,
+          "pruning_maintenance_ai": true,
+          "disease_pest_management_ai": true,
+          "fire_management_ai": true,
+          "cultural_significance_ai": true
+        }
+      },
+      "data": {
+        "habitat_ai": "Disturbed sites including stream banks, rocky slopes, cliff edges, deciduous forests, and valleys on well-drained acidic loess soils in temperate regions.",
+        "elevation_ranges_ai": "300-1250",
+        "ecological_function_ai": "Pioneer species in disturbed habitats via clonal reproduction from lignotubers and aerial roots; resilient to erosion, pollution, and extreme events; contributes to soil stabilization and biodiversity persistence.",
+        "native_adapted_habitats_ai": "Southwestern China, mountainous regions around eastern Tibetan Plateau; temperate deciduous forests and valleys.",
+        "agroforestry_use_cases_ai": "Multi-purpose agroforestry for edible nuts (seeds), medicinal leaf extracts, high-quality timber; intercropped in subtropical/tropical systems for nuts, leaves, and wood.",
+        "conservation_status_ai": "Endangered (IUCN Red List)",
+        "general_description_ai": "Ginkgo biloba is the sole surviving species of Ginkgoales, a dioecious deciduous gymnosperm tree and living fossil with fan-shaped leaves featuring dichotomous venation, reaching 20-50m tall with angular crown, deep roots, extreme longevity over 1000+ years, disease/pest resistance, and striking golden autumn foliage.",
+        "compatible_soil_types_ai": "Well-drained sandy, loamy, clay, compacted, acidic loess; tolerant of alkaline, saline; pH 5.0-8.0",
+        "growth_form_ai": "Large upright pyramidal to broad conical tree with angular crown, long erratic branches, deep root system, often slender when young broadening with age.",
+        "leaf_type_ai": "Unique fan-shaped, leathery, 5-15cm long with radiating dichotomous veins, green turning bright yellow in fall; borne alternately on long shoots, clustered on short shoots.",
+        "deciduous_evergreen_ai": "deciduous",
+        "flower_color_ai": "Greenish inconspicuous pollen cones (males), stalk-borne ovules (females)",
+        "fruit_type_ai": "Fleshy-coated seeds (sarcotesta) 1.5-2cm, yellow-brown, foul-smelling butyric acid odor on females; hard inner shell.",
+        "bark_characteristics_ai": "Gray-brown, irregularly furrowed and fissured with age, corky texture.",
+        "maximum_height_ai": 50,
+        "maximum_diameter_ai": 5,
+        "lifespan_ai": "Extremely long-lived, often exceeding 1000 years with no senescence up to 667 years observed.",
+        "maximum_tree_age_ai": 3500,
+        "stewardship_best_practices_ai": "Full sun, well-drained soil, minimal watering once established; prefer male cultivars; tolerant of urban pollution, drought, salt.",
+        "planting_recipes_ai": "Plant in full sun, moist well-drained sites; space 10-15m; use grafted male clones; transplant easily in spring.",
+        "pruning_maintenance_ai": "Low maintenance; prune in spring for shape if needed; structural pruning on young trees.",
+        "disease_pest_management_ai": "Highly resistant; rare issues include leaf blight (treat with carbendazim), witches' broom; no serious pests.",
+        "fire_management_ai": "High fire tolerance; fire-resistant wood and bark sap; survives intense fires and resprouts.",
+        "cultural_significance_ai": "Symbol of longevity, resilience in Chinese/Japanese/Korean culture; temple plantings; used in traditional medicine (leaves for circulation), cuisine (roasted seeds); living fossil revered in Buddhism/Confucianism."
+      }
+    },
+    {
+      "strategy": "single_call",
+      "model": "grok-4-1-fast-non-reasoning",
+      "success": true,
+      "api_calls": 1,
+      "duration_ms": 16231,
+      "usage": {
+        "input_tokens": 62431,
+        "input_tokens_details": {
+          "cached_tokens": 316
+        },
+        "output_tokens": 1817,
+        "output_tokens_details": {
+          "reasoning_tokens": 0
+        },
+        "total_tokens": 64248,
+        "num_sources_used": 0,
+        "num_server_side_tools_used": 10,
+        "cost_in_usd_ticks": 633473000,
+        "server_side_tool_usage_details": {
+          "web_search_calls": 10,
+          "x_search_calls": 0,
+          "code_interpreter_calls": 0,
+          "file_search_calls": 0,
+          "mcp_calls": 0,
+          "document_search_calls": 0
+        }
+      },
+      "completion": {
+        "filled": 24,
+        "total": 24,
+        "percentage": 100,
+        "fieldStatus": {
+          "habitat_ai": true,
+          "elevation_ranges_ai": true,
+          "ecological_function_ai": true,
+          "native_adapted_habitats_ai": true,
+          "agroforestry_use_cases_ai": true,
+          "conservation_status_ai": true,
+          "general_description_ai": true,
+          "compatible_soil_types_ai": true,
+          "growth_form_ai": true,
+          "leaf_type_ai": true,
+          "deciduous_evergreen_ai": true,
+          "flower_color_ai": true,
+          "fruit_type_ai": true,
+          "bark_characteristics_ai": true,
+          "maximum_height_ai": true,
+          "maximum_diameter_ai": true,
+          "lifespan_ai": true,
+          "maximum_tree_age_ai": true,
+          "stewardship_best_practices_ai": true,
+          "planting_recipes_ai": true,
+          "pruning_maintenance_ai": true,
+          "disease_pest_management_ai": true,
+          "fire_management_ai": true,
+          "cultural_significance_ai": true
+        }
+      },
+      "data": {
+        "habitat_ai": "Deciduous forests, valleys, steep slopes, ravines, near exposed cliffs, limestone outcrops, and disturbed streamside environments in temperate regions of China.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">88</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">89</argument></grok:render>",
+        "elevation_ranges_ai": "300-1250",
+        "ecological_function_ai": "Pioneer species in disturbed environments like streamside and levees; provides habitat and food; extreme longevity contributes to ecosystem stability; resistant to pollution aiding urban ecology.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">118</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">119</argument></grok:render>",
+        "native_adapted_habitats_ai": "Native to southeastern China (Zhejiang, Guizhou, Tianmu Mountains, Dalou Mountains); adapted to temperate moist summers, cool winters, acidic loess soils with good drainage.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">89</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">102</argument></grok:render>",
+        "agroforestry_use_cases_ai": "Intercropped with tea, broad bean, wheat; improves soil fertility, enzyme activity, organic matter; used in urban forestry, reclamation, windbreaks; leaf litter suppresses soil diseases like potato scab.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">20</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">21</argument></grok:render>",
+        "conservation_status_ai": "IUCN Endangered (EN)",
+        "general_description_ai": "Deciduous dioecious gymnosperm tree, the only surviving species of Ginkgoales; fan-shaped bilobed leaves turn golden yellow in fall; naked seeds with fleshy sarcotesta on females; living fossil unchanged for 200+ million years.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">68</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">69</argument></grok:render>",
+        "compatible_soil_types_ai": "Well-drained sandy, loamy, clay, loess, compacted urban soils; pH 5.0-8.0 (acidic to alkaline); tolerant of poor, saline soils.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">89</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">148</argument></grok:render>",
+        "growth_form_ai": "Single trunk pyramidal in youth, becoming broad irregular spreading crown with age; branches in whorls; spur shoots bear leaves.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">70</argument></grok:render>",
+        "leaf_type_ai": "Fan-shaped, leathery, 5-8 cm, bilobed or deeply notched, parallel dichotomous veins; alternate on long shoots, clustered on spurs; bright yellow fall color.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">69</argument></grok:render>",
+        "deciduous_evergreen_ai": "deciduous",
+        "flower_color_ai": "Inconspicuous; male catkins yellow; female peduncles with greenish ovules",
+        "fruit_type_ai": "Naked gymnosperm seeds (not true fruit); female only: plum-like, 2.5 cm, fleshy yellow-orange sarcotesta (foul-smelling when ripe), hard inner nut edible when cooked.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">70</argument></grok:render>",
+        "bark_characteristics_ai": "Light gray, shallow ridges/furrows becoming deeply furrowed and corky with age.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">71</argument></grok:render>",
+        "maximum_height_ai": 50,
+        "maximum_diameter_ai": 4,
+        "lifespan_ai": "Extremely long-lived; can live over 1000 years without senescence",
+        "maximum_tree_age_ai": 3500,
+        "stewardship_best_practices_ai": "Full sun, well-drained soil; water young trees; mulch; male cultivars to avoid fruit mess; tolerant of drought, pollution, salt once established.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">1</argument></grok:render>",
+        "planting_recipes_ai": "Plant in spring/fall; full sun; space 30-40 ft; well-drained soil; male cultivars preferred; graft propagation for clones.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">0</argument></grok:render>",
+        "pruning_maintenance_ai": "Prune late winter/early spring for structure on young trees; remove dead/damaged branches; minimal needed as wounds heal slowly; form central leader.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">16</argument></grok:render>",
+        "disease_pest_management_ai": "Highly resistant to pests/diseases; occasional leaf spot (Pseudomonas), canker; prevent root rot by avoiding wet soil; monitor urban stress.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">20</argument></grok:render>",
+        "fire_management_ai": "Fire-resistant wood; survives low-intensity fires due to thick bark; used in fire-prone areas.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">155</argument></grok:render>",
+        "cultural_significance_ai": "Symbol of longevity, resilience, peace in China/Japan/Korea; planted in temples; seeds edible in cuisine; leaves in traditional medicine for memory, circulation; Goethe poem; Hiroshima survivor trees represent hope.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">108</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">112</argument></grok:render>"
+      }
+    },
+    {
+      "strategy": "three_group",
+      "model": "grok-4-1-fast-reasoning",
+      "success": true,
+      "api_calls": 3,
+      "duration_ms": 119728,
+      "usage": {
+        "total_tokens": 98983
+      },
+      "completion": {
+        "filled": 24,
+        "total": 24,
+        "percentage": 100,
+        "fieldStatus": {
+          "habitat_ai": true,
+          "elevation_ranges_ai": true,
+          "ecological_function_ai": true,
+          "native_adapted_habitats_ai": true,
+          "agroforestry_use_cases_ai": true,
+          "conservation_status_ai": true,
+          "general_description_ai": true,
+          "compatible_soil_types_ai": true,
+          "growth_form_ai": true,
+          "leaf_type_ai": true,
+          "deciduous_evergreen_ai": true,
+          "flower_color_ai": true,
+          "fruit_type_ai": true,
+          "bark_characteristics_ai": true,
+          "maximum_height_ai": true,
+          "maximum_diameter_ai": true,
+          "lifespan_ai": true,
+          "maximum_tree_age_ai": true,
+          "stewardship_best_practices_ai": true,
+          "planting_recipes_ai": true,
+          "pruning_maintenance_ai": true,
+          "disease_pest_management_ai": true,
+          "fire_management_ai": true,
+          "cultural_significance_ai": true
+        }
+      },
+      "data": {
+        "habitat_ai": "Disturbed deciduous forests, valleys, stream banks, rocky slopes, and cliff edges in mountainous regions such as Tianmu and Dalou Mountains; prefers full sun, well-watered, well-drained sites in broadleaved forests.",
+        "elevation_ranges_ai": "300-1250",
+        "ecological_function_ai": "Pioneer species in disturbed, erosion-prone habitats; persists via clonal resprouting from lignotubers and aerial roots; forms canopy layer in mixed forests; improves air quality, combats soil erosion, provides habitat and food for wildlife in urban settings.",
+        "native_adapted_habitats_ai": "Native to limited wild populations in southwestern China (Zhejiang, Guizhou, Anhui provinces, Tianmu Mountains, Dalou Mountains); adapted to temperate climates, urban pollution, confined soils, drought, and salt.",
+        "agroforestry_use_cases_ai": "In China: intercropped with tea (Ginkgo-tea systems), crops for nut production, medicinal leaves, timber; enhances soil fertility, carbon storage, fungal communities; sustainable systems in subtropical regions.",
+        "conservation_status_ai": "Endangered (IUCN)",
+        "general_description_ai": "Large, long-lived, deciduous dioecious gymnosperm tree reaching 20-40 m tall; angular crown with irregular branches; unique fan-shaped leaves (5-15 cm) with dichotomous venation, green turning golden yellow in fall; male pollen cones, female fleshy apricot-like seeds.",
+        "compatible_soil_types_ai": "Well-drained sandy, loamy, clay, loess; tolerant of compacted, urban, alkaline, occasionally wet soils; pH 5.0-8.0, prefers acidic (5.0-5.5 wild) to neutral.",
+        "growth_form_ai": "Large, long-lived, dioecious deciduous tree with pyramidal to broad pyramidal crown, angular branches, reaching 20-35 m tall (up to over 40 m), deep-rooted, with long shoots and short spur shoots.",
+        "leaf_type_ai": "Alternate, simple, fan-shaped, bilobed or notched, 5-10 cm long (up to 15 cm), with dichotomous venation (parallel veins forking), leathery texture, bright green turning vivid golden-yellow in autumn; clustered on spurs, spaced on long shoots.",
+        "deciduous_evergreen_ai": "deciduous",
+        "flower_color_ai": "Inconspicuous; male pollen cones catkin-like, pale yellow-green; female ovules green (cream/tan tones reported)",
+        "fruit_type_ai": "Naked seeds (not true fruit) on female trees only, 1.5-2.5 cm diameter, plum- or apricot-shaped, with soft fleshy yellow-orange sarcotesta (foul-smelling like rancid butter when ripe), hard sclerotesta shell enclosing edible nut-like kernel.",
+        "bark_characteristics_ai": "Light gray to gray-brown, with shallow ridges and furrows, slightly corky texture.",
+        "maximum_height_ai": 40,
+        "maximum_diameter_ai": 5,
+        "lifespan_ai": "Very long-lived, typically over 1000 years",
+        "maximum_tree_age_ai": 3500,
+        "stewardship_best_practices_ai": "Ginkgo biloba thrives in full sun with well-drained soils of any texture or pH, tolerating urban conditions, air pollution, drought, heat, salt, and compacted soils once established. Plant male cultivars to avoid foul-smelling seeds from females. Slow to establish post-transplant; provide adequate water and fertilizer initially but avoid overwatering or poor drainage. Highly adaptable for streets, parks, and landscapes. Long-lived (up to 1,000+ years), dioecious tree; propagate by seed (requiring stratification: warm then cold) or grafting males. Medium maintenance; excellent urban tolerance including road salt and deer resistance.",
+        "planting_recipes_ai": "USDA Zones 3-9; full sun (6+ hours); well-drained soil (sandy/loam/clay, pH acid to alkaline); avoid wet/poorly drained sites. Mature size 50-80 ft tall x 30-60 ft wide (dwarf/narrow cultivars available). Space 30-60+ ft apart. Plant in spring/fall; mulch to retain moisture. Grafted male cultivars preferred (e.g., 'Autumn Gold', 'Princeton Sentry'). Slow initial growth; ensure deep planting with central leader.",
+        "pruning_maintenance_ai": "Minimal pruning required. Prune young trees in spring for structural integrity: establish dominant central leader, remove competing vertical branches, wayward limbs, and suckers from grafted stock. Mature trees: remove only dead, damaged, or weak branches; allow natural form. Trunk/branches may droop with age, requiring clearance pruning for traffic. Low maintenance overall; focus on early formative pruning to prevent codominant stems.",
+        "disease_pest_management_ai": "Highly resistant; practically pest- and disease-free. Rare issues: bacterial leaf scorch (Xylella fastidiosa, confirm via lab), drought-induced leaf scorch, occasional foliage-feeding caterpillars (e.g., loopers), root nematodes. No serious pests; resistant to gypsy moth, storm damage. Prevent by proper siting (drainage/sun), avoid stress. Seeds/pulp may cause dermatitis (ginkgolic acid); female trees messy. Monitor urban trees for scorch.",
+        "fire_management_ai": "Fire-resistant with low flammability (second lowest among deciduous trees); bark secretes fire-retardant sap. Survives and recovers from fires; historically planted near Japanese temples for fire protection (e.g., post-Kanto earthquake). Tolerant of fire-prone urban/wildland interfaces; maintain via standard practices—no special fire management needed beyond general tree health.",
+        "cultural_significance_ai": "Ancient 'living fossil' (200+ million years); sole survivor of Ginkgoaceae. Sacred in China, Japan, Korea (Buddhism, Daoism, Shinto, Confucianism): symbol of longevity, resilience, unity (yin-yang leaves), fertility; planted at temples/shrines. Edible roasted seeds ('nuts') delicacy; medicinal (leaves for cognition, seeds in TCM). Featured in art, literature (Goethe poem), jewelry; global street tree for beauty, fall color, adaptability. Represents human stewardship in conservation."
+      },
+      "group_results": {
+        "ecological": {
+          "success": true,
+          "fields": 8
+        },
+        "morphological": {
+          "success": true,
+          "fields": 10
+        },
+        "stewardship": {
+          "success": true,
+          "fields": 6
+        }
+      },
+      "raw_responses": {
+        "ecological": "{\n  \"habitat_ai\": \"Disturbed deciduous forests, valleys, stream banks, rocky slopes, and cliff edges in mountainous regions such as Tianmu and Dalou Mountains; prefers full sun, well-watered, well-drained sites in broadleaved forests.\",\n  \"elevation_ranges_ai\": \"300-1250\",\n  \"ecological_function_ai\": \"Pioneer species in disturbed, erosion-prone habitats; persists via clonal resprouting from lignotubers and aerial roots; forms canopy layer in mixed forests; improves air quality, combats soil erosion, provides habitat and food for wildlife in urban settings.\",\n  \"native_adapted_habitats_ai\": \"Native to limited wild populations in southwestern China (Zhejiang, Guizhou, Anhui provinces, Tianmu Mountains, Dalou Mountains); adapted to temperate climates, urban pollution, confined soils, drought, and salt.\",\n  \"agroforestry_use_cases_ai\": \"In China: intercropped with tea (Ginkgo-tea systems), crops for nut production, medicinal leaves, timber; enhances soil fertility, carbon storage, fungal communities; sustainable systems in subtropical regions.\",\n  \"conservation_status_ai\": \"Endangered (IUCN)\",\n  \"general_description_ai\": \"Large, long-lived, deciduous dioecious gymnosperm tree reaching 20-40 m tall; angular crown with irregular branches; unique fan-shaped leaves (5-15 cm) with dichotomous venation, green turning golden yellow in fall; male pollen cones, female fleshy apricot-like seeds.\",\n  \"compatible_soil_types_ai\": \"Well-drained sandy, loamy, clay, loess; tolerant of compacted, urban, alkaline, occasionally wet soils; pH 5.0-8.0, prefers acidic (5.0-5.5 wild) to neutral.\"\n}",
+        "morphological": "{\n  \"growth_form_ai\": \"Large, long-lived, dioecious deciduous tree with pyramidal to broad pyramidal crown, angular branches, reaching 20-35 m tall (up to over 40 m), deep-rooted, with long shoots and short spur shoots.\",\n  \"leaf_type_ai\": \"Alternate, simple, fan-shaped, bilobed or notched, 5-10 cm long (up to 15 cm), with dichotomous venation (parallel veins forking), leathery texture, bright green turning vivid golden-yellow in autumn; clustered on spurs, spaced on long shoots.\",\n  \"deciduous_evergreen_ai\": \"deciduous\",\n  \"flower_color_ai\": \"Inconspicuous; male pollen cones catkin-like, pale yellow-green; female ovules green (cream/tan tones reported)\",\n  \"fruit_type_ai\": \"Naked seeds (not true fruit) on female trees only, 1.5-2.5 cm diameter, plum- or apricot-shaped, with soft fleshy yellow-orange sarcotesta (foul-smelling like rancid butter when ripe), hard sclerotesta shell enclosing edible nut-like kernel.\",\n  \"bark_characteristics_ai\": \"Light gray to gray-brown, with shallow ridges and furrows, slightly corky texture.\",\n  \"maximum_height_ai\": 40,\n  \"maximum_diameter_ai\": 5,\n  \"lifespan_ai\": \"Very long-lived, typically over 1000 years\",\n  \"maximum_tree_age_ai\": 3500\n}",
+        "stewardship": "{\n  \"stewardship_best_practices_ai\": \"Ginkgo biloba thrives in full sun with well-drained soils of any texture or pH, tolerating urban conditions, air pollution, drought, heat, salt, and compacted soils once established. Plant male cultivars to avoid foul-smelling seeds from females. Slow to establish post-transplant; provide adequate water and fertilizer initially but avoid overwatering or poor drainage. Highly adaptable for streets, parks, and landscapes. Long-lived (up to 1,000+ years), dioecious tree; propagate by seed (requiring stratification: warm then cold) or grafting males. Medium maintenance; excellent urban tolerance including road salt and deer resistance.\",\n  \"planting_recipes_ai\": \"USDA Zones 3-9; full sun (6+ hours); well-drained soil (sandy/loam/clay, pH acid to alkaline); avoid wet/poorly drained sites. Mature size 50-80 ft tall x 30-60 ft wide (dwarf/narrow cultivars available). Space 30-60+ ft apart. Plant in spring/fall; mulch to retain moisture. Grafted male cultivars preferred (e.g., 'Autumn Gold', 'Princeton Sentry'). Slow initial growth; ensure deep planting with central leader.\",\n  \"pruning_maintenance_ai\": \"Minimal pruning required. Prune young trees in spring for structural integrity: establish dominant central leader, remove competing vertical branches, wayward limbs, and suckers from grafted stock. Mature trees: remove only dead, damaged, or weak branches; allow natural form. Trunk/branches may droop with age, requiring clearance pruning for traffic. Low maintenance overall; focus on early formative pruning to prevent codominant stems.\",\n  \"disease_pest_management_ai\": \"Highly resistant; practically pest- and disease-free. Rare issues: bacterial leaf scorch (Xylella fastidiosa, confirm via lab), drought-induced leaf scorch, occasional foliage-feeding caterpillars (e.g., loopers), root nematodes. No serious pests; resistant to gypsy moth, storm damage. Prevent by proper siting (drainage/sun), avoid stress. Seeds/pulp may cause dermatitis (ginkgolic acid); female trees messy. Monitor urban trees for scorch.\",\n  \"fire_management_ai\": \"Fire-resistant with low flammability (second lowest among deciduous trees); bark secretes fire-retardant sap. Survives and recovers from fires; historically planted near Japanese temples for fire protection (e.g., post-Kanto earthquake). Tolerant of fire-prone urban/wildland interfaces; maintain via standard practices—no special fire management needed beyond general tree health.\",\n  \"cultural_significance_ai\": \"Ancient 'living fossil' (200+ million years); sole survivor of Ginkgoaceae. Sacred in China, Japan, Korea (Buddhism, Daoism, Shinto, Confucianism): symbol of longevity, resilience, unity (yin-yang leaves), fertility; planted at temples/shrines. Edible roasted seeds ('nuts') delicacy; medicinal (leaves for cognition, seeds in TCM). Featured in art, literature (Goethe poem), jewelry; global street tree for beauty, fall color, adaptability. Represents human stewardship in conservation.\"\n}"
+      }
+    },
+    {
+      "strategy": "three_group",
+      "model": "grok-4-1-fast-non-reasoning",
+      "success": true,
+      "api_calls": 3,
+      "duration_ms": 79549,
+      "usage": {
+        "total_tokens": 284997
+      },
+      "completion": {
+        "filled": 24,
+        "total": 24,
+        "percentage": 100,
+        "fieldStatus": {
+          "habitat_ai": true,
+          "elevation_ranges_ai": true,
+          "ecological_function_ai": true,
+          "native_adapted_habitats_ai": true,
+          "agroforestry_use_cases_ai": true,
+          "conservation_status_ai": true,
+          "general_description_ai": true,
+          "compatible_soil_types_ai": true,
+          "growth_form_ai": true,
+          "leaf_type_ai": true,
+          "deciduous_evergreen_ai": true,
+          "flower_color_ai": true,
+          "fruit_type_ai": true,
+          "bark_characteristics_ai": true,
+          "maximum_height_ai": true,
+          "maximum_diameter_ai": true,
+          "lifespan_ai": true,
+          "maximum_tree_age_ai": true,
+          "stewardship_best_practices_ai": true,
+          "planting_recipes_ai": true,
+          "pruning_maintenance_ai": true,
+          "disease_pest_management_ai": true,
+          "fire_management_ai": true,
+          "cultural_significance_ai": true
+        }
+      },
+      "data": {
+        "habitat_ai": "Deciduous forests, valleys, disturbed sites along stream banks, rocky slopes, cliff edges, limestone outcrops, rock crevices near creeks in mountainous regions.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">53</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">85</argument></grok:render>",
+        "elevation_ranges_ai": "300-1300",
+        "ecological_function_ai": "Pioneer in disturbed riparian environments; clonal reproduction via sprouts and aerial roots; seed dispersal by animals; contributes to forest regeneration; high tolerance to pollution; matches fossil assemblages in species composition.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">86</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">85</argument></grok:render>",
+        "native_adapted_habitats_ai": "Native to China (southwestern and southeastern regions: Dalou Mountains Guizhou/Chongqing, Tianmu Mountains Zhejiang, eastern Tibetan Plateau mountains); adapted to warm-temperate, subtropical monsoon climates; well-watered, well-drained areas; now widely cultivated globally.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">53</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">86</argument></grok:render>",
+        "agroforestry_use_cases_ai": "Intercropped with wheat, soybean, broad bean, rapeseed, tea, corn; improves soil fertility, organic matter, enzyme activity, microbial biomass; production of nuts, timber, medicinal leaves; urban forestry, reclamation, soil erosion control.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">32</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">33</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">37</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">65</argument></grok:render>",
+        "conservation_status_ai": "Endangered (IUCN)<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">52</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">0</argument></grok:render>",
+        "general_description_ai": "Tall deciduous dioecious gymnosperm tree, 20-50m high, fan-shaped leaves with dichotomous venation turning golden yellow in autumn; living fossil, last species in Ginkgoales; deep-rooted, wind-resistant, long-lived (up to 3500+ years); dioecious with fleshy foul-smelling seeds; resistant to disease, pollution, insects.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">53</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">52</argument></grok:render>",
+        "compatible_soil_types_ai": "Deep, free-draining, fertile sandy loams; acidic loess (fine silty soil) pH 5.0-5.5; moist well-drained sandy; tolerant of wide range including alkaline, compacted, saline, urban soils.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">2</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">54</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">53</argument></grok:render>",
+        "growth_form_ai": "Tall deciduous tree, initially conical or pyramidal, becoming broadly ovoid with age; long shoots and short spur shoots; dioecious with irregular branching.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">43</argument></grok:render>",
+        "leaf_type_ai": "Fan-shaped, simple, alternate, 5-10 cm long, dichotomously veined, often bilobed or notched, in clusters of 3-5 on spurs; emerald green, turning golden yellow in fall.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">111</argument></grok:render>",
+        "deciduous_evergreen_ai": "deciduous<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">79</argument></grok:render>",
+        "flower_color_ai": "Inconspicuous; male pollen cones green, female ovules greenish; not true flowers (gymnosperm).<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">110</argument></grok:render>",
+        "fruit_type_ai": "Naked seeds on female trees (not true fruit); plum-like, 1.5-2.5 cm, yellow-orange fleshy sarcotesta (foul-smelling when ripe), hard sclerotesta inside.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">41</argument></grok:render>",
+        "bark_characteristics_ai": "Grey-brown to light gray, with ridges, textured, becoming deeply furrowed with age; corky texture on older trees.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">40</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">42</argument></grok:render>",
+        "maximum_height_ai": 70,
+        "maximum_diameter_ai": 5,
+        "lifespan_ai": "Long-lived, often centuries; can exceed 1000 years",
+        "maximum_tree_age_ai": 3500,
+        "stewardship_best_practices_ai": "Ginkgo biloba is a slow-growing, long-lived deciduous tree (up to 1,000+ years) tolerant of urban conditions, pollution, salt, drought, heat, compacted/alkaline soils, and poor drainage (but avoid waterlogged sites). Plant male cultivars (e.g., 'Autumn Gold', 'Princeton Sentry', 'Fastigiata', 'Fairmont') to avoid foul-smelling, messy fruits from females. Provide full sun (preferred), well-drained soil (pH 5-8), regular water when young (drought-tolerant once established). Fertilize young trees in spring; mature trees rarely need it. Keep turf away from trunk for establishment. Medium maintenance: resistant to storms, pests/diseases. Suitable for streets, parks, bonsai. Propagation via grafting/cuttings for males; seeds require stratification but sex unknown until maturity (20-30 years).<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">158</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">156</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">157</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">155</argument></grok:render>",
+        "planting_recipes_ai": "USDA Zones 3-9. Full sun (6+ hrs; partial shade OK South). Well-drained soil (sand/loam/clay, pH 5-8); avoid wet sites. Space 25-35 ft apart (narrow cultivars 15-20 ft). Plant spring/fall; add compost to hole base. Moist soil first year; mulch to retain moisture. Grafted males preferred. Easily transplanted.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">158</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">156</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">157</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">154</argument></grok:render>",
+        "pruning_maintenance_ai": "Prune dormant (late winter/early spring) for central leader in youth; remove dead/diseased/weak branches anytime. Little needed mature; thin for air/light. Avoid spring growth flush. Structural pruning young for pyramid shape. Suckers from grafted understock occasionally removed. Bonsai: repot 1-5 yrs spring, light root prune, careful cuts as wounds slow-heal.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">158</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">157</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">155</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">154</argument></grok:render>",
+        "disease_pest_management_ai": "Highly resistant; practically pest-free (resists gypsy moth). Rare: leafhoppers/treehoppers transmit bacterial leaf scorch (Xylella fastidiosa; lab diagnosis, manage vectors). Occasional caterpillars/aphids: handpick, insecticidal soap/oil, natural predators. Phytophthora root rot: fosetyl-Al fungicide, improve drainage. Leaf spot: fungicides/sanitation. Nematodes: add compost/peat. Contact dermatitis from seeds. Promote health to prevent.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">157</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">156</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">155</argument></grok:render>",
+        "fire_management_ai": "Fire-resistant wood/bark; tolerates fire (survived Hiroshima atomic bomb fire). Deciduous habit reduces fuel load. Bark thickens with age aiding protection. Suitable fire-prone areas; low flammability sap reported. Drought-tolerant aids survival.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">20</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">96</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">101</argument></grok:render>",
+        "cultural_significance_ai": "\"Living fossil\" (200+ million years, sole Ginkgoales survivor). Sacred in China/Japan/Korea (Buddhist/Daoist temples, >1,500-yr trees preserved by monks). Symbols: longevity, resilience, peace, hope, fertility, unity (Goethe poem). Used in medicine (leaves/seeds for memory/circulation), food (roasted seeds), bonsai, urban ornamental/street tree. Feature in art/poetry; national tree China; logos/family crests Japan.<grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">159</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">76</argument></grok:render><grok:render type=\"render_inline_citation\"><argument name=\"citation_id\">156</argument></grok:render>"
+      },
+      "group_results": {
+        "ecological": {
+          "success": true,
+          "fields": 8
+        },
+        "morphological": {
+          "success": true,
+          "fields": 10
+        },
+        "stewardship": {
+          "success": true,
+          "fields": 6
+        }
+      },
+      "raw_responses": {
+        "ecological": "{\n  \"habitat_ai\": \"Deciduous forests, valleys, disturbed sites along stream banks, rocky slopes, cliff edges, limestone outcrops, rock crevices near creeks in mountainous regions.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">53</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">85</argument></grok:render>\",\n  \"elevation_ranges_ai\": \"300-1300\",\n  \"ecological_function_ai\": \"Pioneer in disturbed riparian environments; clonal reproduction via sprouts and aerial roots; seed dispersal by animals; contributes to forest regeneration; high tolerance to pollution; matches fossil assemblages in species composition.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">86</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">85</argument></grok:render>\",\n  \"native_adapted_habitats_ai\": \"Native to China (southwestern and southeastern regions: Dalou Mountains Guizhou/Chongqing, Tianmu Mountains Zhejiang, eastern Tibetan Plateau mountains); adapted to warm-temperate, subtropical monsoon climates; well-watered, well-drained areas; now widely cultivated globally.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">53</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">86</argument></grok:render>\",\n  \"agroforestry_use_cases_ai\": \"Intercropped with wheat, soybean, broad bean, rapeseed, tea, corn; improves soil fertility, organic matter, enzyme activity, microbial biomass; production of nuts, timber, medicinal leaves; urban forestry, reclamation, soil erosion control.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">32</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">33</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">37</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">65</argument></grok:render>\",\n  \"conservation_status_ai\": \"Endangered (IUCN)<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">52</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">0</argument></grok:render>\",\n  \"general_description_ai\": \"Tall deciduous dioecious gymnosperm tree, 20-50m high, fan-shaped leaves with dichotomous venation turning golden yellow in autumn; living fossil, last species in Ginkgoales; deep-rooted, wind-resistant, long-lived (up to 3500+ years); dioecious with fleshy foul-smelling seeds; resistant to disease, pollution, insects.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">53</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">52</argument></grok:render>\",\n  \"compatible_soil_types_ai\": \"Deep, free-draining, fertile sandy loams; acidic loess (fine silty soil) pH 5.0-5.5; moist well-drained sandy; tolerant of wide range including alkaline, compacted, saline, urban soils.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">2</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">54</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">53</argument></grok:render>\"\n}",
+        "morphological": "{\n  \"growth_form_ai\": \"Tall deciduous tree, initially conical or pyramidal, becoming broadly ovoid with age; long shoots and short spur shoots; dioecious with irregular branching.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">43</argument></grok:render>\",\n  \"leaf_type_ai\": \"Fan-shaped, simple, alternate, 5-10 cm long, dichotomously veined, often bilobed or notched, in clusters of 3-5 on spurs; emerald green, turning golden yellow in fall.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">111</argument></grok:render>\",\n  \"deciduous_evergreen_ai\": \"deciduous<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">79</argument></grok:render>\",\n  \"flower_color_ai\": \"Inconspicuous; male pollen cones green, female ovules greenish; not true flowers (gymnosperm).<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">110</argument></grok:render>\",\n  \"fruit_type_ai\": \"Naked seeds on female trees (not true fruit); plum-like, 1.5-2.5 cm, yellow-orange fleshy sarcotesta (foul-smelling when ripe), hard sclerotesta inside.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">41</argument></grok:render>\",\n  \"bark_characteristics_ai\": \"Grey-brown to light gray, with ridges, textured, becoming deeply furrowed with age; corky texture on older trees.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">40</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">42</argument></grok:render>\",\n  \"maximum_height_ai\": 70,\n  \"maximum_diameter_ai\": 5,\n  \"lifespan_ai\": \"Long-lived, often centuries; can exceed 1000 years\",\n  \"maximum_tree_age_ai\": 3500\n}",
+        "stewardship": "{\n  \"stewardship_best_practices_ai\": \"Ginkgo biloba is a slow-growing, long-lived deciduous tree (up to 1,000+ years) tolerant of urban conditions, pollution, salt, drought, heat, compacted/alkaline soils, and poor drainage (but avoid waterlogged sites). Plant male cultivars (e.g., 'Autumn Gold', 'Princeton Sentry', 'Fastigiata', 'Fairmont') to avoid foul-smelling, messy fruits from females. Provide full sun (preferred), well-drained soil (pH 5-8), regular water when young (drought-tolerant once established). Fertilize young trees in spring; mature trees rarely need it. Keep turf away from trunk for establishment. Medium maintenance: resistant to storms, pests/diseases. Suitable for streets, parks, bonsai. Propagation via grafting/cuttings for males; seeds require stratification but sex unknown until maturity (20-30 years).<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">158</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">156</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">157</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">155</argument></grok:render>\",\n  \"planting_recipes_ai\": \"USDA Zones 3-9. Full sun (6+ hrs; partial shade OK South). Well-drained soil (sand/loam/clay, pH 5-8); avoid wet sites. Space 25-35 ft apart (narrow cultivars 15-20 ft). Plant spring/fall; add compost to hole base. Moist soil first year; mulch to retain moisture. Grafted males preferred. Easily transplanted.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">158</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">156</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">157</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">154</argument></grok:render>\",\n  \"pruning_maintenance_ai\": \"Prune dormant (late winter/early spring) for central leader in youth; remove dead/diseased/weak branches anytime. Little needed mature; thin for air/light. Avoid spring growth flush. Structural pruning young for pyramid shape. Suckers from grafted understock occasionally removed. Bonsai: repot 1-5 yrs spring, light root prune, careful cuts as wounds slow-heal.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">158</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">157</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">155</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">154</argument></grok:render>\",\n  \"disease_pest_management_ai\": \"Highly resistant; practically pest-free (resists gypsy moth). Rare: leafhoppers/treehoppers transmit bacterial leaf scorch (Xylella fastidiosa; lab diagnosis, manage vectors). Occasional caterpillars/aphids: handpick, insecticidal soap/oil, natural predators. Phytophthora root rot: fosetyl-Al fungicide, improve drainage. Leaf spot: fungicides/sanitation. Nematodes: add compost/peat. Contact dermatitis from seeds. Promote health to prevent.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">157</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">156</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">155</argument></grok:render>\",\n  \"fire_management_ai\": \"Fire-resistant wood/bark; tolerates fire (survived Hiroshima atomic bomb fire). Deciduous habit reduces fuel load. Bark thickens with age aiding protection. Suitable fire-prone areas; low flammability sap reported. Drought-tolerant aids survival.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">20</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">96</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">101</argument></grok:render>\",\n  \"cultural_significance_ai\": \"\\\"Living fossil\\\" (200+ million years, sole Ginkgoales survivor). Sacred in China/Japan/Korea (Buddhist/Daoist temples, >1,500-yr trees preserved by monks). Symbols: longevity, resilience, peace, hope, fertility, unity (Goethe poem). Used in medicine (leaves/seeds for memory/circulation), food (roasted seeds), bonsai, urban ornamental/street tree. Feature in art/poetry; national tree China; logos/family crests Japan.<grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">159</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">76</argument></grok:render><grok:render type=\\\"render_inline_citation\\\"><argument name=\\\"citation_id\\\">156</argument></grok:render>\"\n}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "species_scientific_name": "Quercus robur",
+    "common_names": "English oak, pedunculate oak, common oak",
+    "taxon_id": null,
+    "timestamp": "2026-01-05T07:12:15.610Z",
+    "strategy": "single",
+    "model": "grok-4-1-fast-reasoning"
+  },
+  "strategy": "single_call",
+  "model": "grok-4-1-fast-reasoning",
+  "api_calls": 1,
+  "success": true,
+  "data": {
+    "popular_common_name_ai": "English oak",
+    "habitat_ai": "High-canopy woodlands, coppice, wood pasture, deciduous and mixed forests, hedges, margins of swamps, rivers, and ponds in temperate regions",
+    "elevation_ranges_ai": "0-1200",
+    "ecological_function_ai": "Keystone species supporting over 2300 associated species including insects (400+ herbivores), birds, mammals, lichens, bryophytes; acorns feed jays, squirrels, deer; leaf litter enriches soil; provides nesting/roosting sites for birds and bats",
+    "native_adapted_habitats_ai": "Most of Europe (British Isles to Caucasus), western Asia; temperate deciduous forests, woodlands on clay and loamy soils",
+    "agroforestry_use_cases_ai": "Timber production, coppicing/pollarding for fuel/fencing/baskets, wood pasture/silvopasture, fodder (acorns/leaves), hedges, compost activator from bark/leaves",
+    "conservation_status_ai": "Least Concern (IUCN)",
+    "general_description_ai": "Large deciduous tree up to 40m tall with stout trunk up to 11m girth, broad spreading unevenly domed crown, greyish-brown fissured bark, alternate lobed leaves, wind-pollinated catkins, pedunculate acorns; long-lived hardwood species",
+    "compatible_soil_types_ai": "Moist well-drained loams, clay, heavy soils; pH 5.0-8.0 (acid to alkaline tolerant); prefers deep fertile neutral loams, avoids prolonged waterlogging, acid peat, shallow limestone; drought tolerant once established",
+    "growth_form_ai": "Large tree with short stout trunk, massive lower branches, broad spreading rounded to unevenly domed crown",
+    "leaf_type_ai": "Alternate, oblong-ovate 10-12cm long x 7-8cm wide, short 2-3mm petiole, cordate base, 3-6 rounded lobes to midrib, dark green above paler below, glabrous or few hairs",
+    "deciduous_evergreen_ai": "deciduous",
+    "flower_color_ai": "Yellowish male catkins, inconspicuous brownish female flowers",
+    "fruit_type_ai": "Ovoid acorns 1.5-4cm long maturing brown-black, in shallow warty cups, clusters of 2-3 on 4-8cm peduncles",
+    "bark_characteristics_ai": "Greyish-brown, closely grooved with vertical plates, deeply furrowed on mature trees; thick corky bark on older trees",
+    "maximum_height_ai": 40,
+    "maximum_diameter_ai": 6,
+    "lifespan_ai": "Long-lived; typically 400-500 years, up to 1000+ years",
+    "maximum_tree_age_ai": 1500,
+    "stewardship_best_practices_ai": "Full sun, well-drained soil; slow-growing; transplant young; avoid root disturbance; maintain health to resist pests; coppice/pollard every 50 years if needed",
+    "planting_recipes_ai": "Sow fresh acorns autumn in outdoor beds or deep pots (protect from rodents); plant permanently young due to taproot; full sun, moist well-drained soil; forestry density e.g., thin to 2000/ha by age 20",
+    "pruning_maintenance_ai": "Prune dormant season (late winter/early spring) to avoid oak wilt/beetles; structural pruning young for strong form; remove dead/diseased/crossing branches; no more than 30% canopy/year",
+    "disease_pest_management_ai": "Diseases: acute/chronic oak decline, powdery mildew, oak wilt, anthracnose; Pests: oak processionary moth, galls (wasps), caterpillars (winter moth etc.), borers on stressed trees; promote health, prune dormant, monitor, fungicides if needed",
+    "fire_management_ai": "Mature trees fire-tolerant due to thick corky bark; young regenerate from base; low-severity fires historically maintained oak forests; suitable for post-fire reforestation",
+    "cultural_significance_ai": "National emblem of England; sacred to Druids (oak groves, mistletoe), Thor/Zeus/Jupiter (thunder god tree); symbol of strength/royalty (crowns); used in myths (world tree), Bach remedies, historical timber for ships/buildings"
+  },
+  "raw_response": "{\n  \"popular_common_name_ai\": \"English oak\",\n  \"habitat_ai\": \"High-canopy woodlands, coppice, wood pasture, deciduous and mixed forests, hedges, margins of swamps, rivers, and ponds in temperate regions\",\n  \"elevation_ranges_ai\": \"0-1200\",\n  \"ecological_function_ai\": \"Keystone species supporting over 2300 associated species including insects (400+ herbivores), birds, mammals, lichens, bryophytes; acorns feed jays, squirrels, deer; leaf litter enriches soil; provides nesting/roosting sites for birds and bats\",\n  \"native_adapted_habitats_ai\": \"Most of Europe (British Isles to Caucasus), western Asia; temperate deciduous forests, woodlands on clay and loamy soils\",\n  \"agroforestry_use_cases_ai\": \"Timber production, coppicing/pollarding for fuel/fencing/baskets, wood pasture/silvopasture, fodder (acorns/leaves), hedges, compost activator from bark/leaves\",\n  \"conservation_status_ai\": \"Least Concern (IUCN)\",\n  \"general_description_ai\": \"Large deciduous tree up to 40m tall with stout trunk up to 11m girth, broad spreading unevenly domed crown, greyish-brown fissured bark, alternate lobed leaves, wind-pollinated catkins, pedunculate acorns; long-lived hardwood species\",\n  \"compatible_soil_types_ai\": \"Moist well-drained loams, clay, heavy soils; pH 5.0-8.0 (acid to alkaline tolerant); prefers deep fertile neutral loams, avoids prolonged waterlogging, acid peat, shallow limestone; drought tolerant once established\",\n  \"growth_form_ai\": \"Large tree with short stout trunk, massive lower branches, broad spreading rounded to unevenly domed crown\",\n  \"leaf_type_ai\": \"Alternate, oblong-ovate 10-12cm long x 7-8cm wide, short 2-3mm petiole, cordate base, 3-6 rounded lobes to midrib, dark green above paler below, glabrous or few hairs\",\n  \"deciduous_evergreen_ai\": \"deciduous\",\n  \"flower_color_ai\": \"Yellowish male catkins, inconspicuous brownish female flowers\",\n  \"fruit_type_ai\": \"Ovoid acorns 1.5-4cm long maturing brown-black, in shallow warty cups, clusters of 2-3 on 4-8cm peduncles\",\n  \"bark_characteristics_ai\": \"Greyish-brown, closely grooved with vertical plates, deeply furrowed on mature trees; thick corky bark on older trees\",\n  \"maximum_height_ai\": 40,\n  \"maximum_diameter_ai\": 6,\n  \"lifespan_ai\": \"Long-lived; typically 400-500 years, up to 1000+ years\",\n  \"maximum_tree_age_ai\": 1500,\n  \"stewardship_best_practices_ai\": \"Full sun, well-drained soil; slow-growing; transplant young; avoid root disturbance; maintain health to resist pests; coppice/pollard every 50 years if needed\",\n  \"planting_recipes_ai\": \"Sow fresh acorns autumn in outdoor beds or deep pots (protect from rodents); plant permanently young due to taproot; full sun, moist well-drained soil; forestry density e.g., thin to 2000/ha by age 20\",\n  \"pruning_maintenance_ai\": \"Prune dormant season (late winter/early spring) to avoid oak wilt/beetles; structural pruning young for strong form; remove dead/diseased/crossing branches; no more than 30% canopy/year\",\n  \"disease_pest_management_ai\": \"Diseases: acute/chronic oak decline, powdery mildew, oak wilt, anthracnose; Pests: oak processionary moth, galls (wasps), caterpillars (winter moth etc.), borers on stressed trees; promote health, prune dormant, monitor, fungicides if needed\",\n  \"fire_management_ai\": \"Mature trees fire-tolerant due to thick corky bark; young regenerate from base; low-severity fires historically maintained oak forests; suitable for post-fire reforestation\",\n  \"cultural_significance_ai\": \"National emblem of England; sacred to Druids (oak groves, mistletoe), Thor/Zeus/Jupiter (thunder god tree); symbol of strength/royalty (crowns); used in myths (world tree), Bach remedies, historical timber for ships/buildings\"\n}",
+  "usage": {
+    "input_tokens": 48359,
+    "input_tokens_details": {
+      "cached_tokens": 24135
+    },
+    "output_tokens": 4882,
+    "output_tokens_details": {
+      "reasoning_tokens": 2956
+    },
+    "total_tokens": 53241,
+    "num_sources_used": 0,
+    "num_server_side_tools_used": 19,
+    "cost_in_usd_ticks": 1034925500,
+    "server_side_tool_usage_details": {
+      "web_search_calls": 19,
+      "x_search_calls": 0,
+      "code_interpreter_calls": 0,
+      "file_search_calls": 0,
+      "mcp_calls": 0,
+      "document_search_calls": 0
+    }
+  },
+  "duration_ms": 55967,
+  "citations": [],
+  "completion": {
+    "filled": 25,
+    "total": 25,
+    "percentage": 100,
+    "fieldStatus": {
+      "popular_common_name_ai": true,
+      "habitat_ai": true,
+      "elevation_ranges_ai": true,
+      "ecological_function_ai": true,
+      "native_adapted_habitats_ai": true,
+      "agroforestry_use_cases_ai": true,
+      "conservation_status_ai": true,
+      "general_description_ai": true,
+      "compatible_soil_types_ai": true,
+      "growth_form_ai": true,
+      "leaf_type_ai": true,
+      "deciduous_evergreen_ai": true,
+      "flower_color_ai": true,
+      "fruit_type_ai": true,
+      "bark_characteristics_ai": true,
+      "maximum_height_ai": true,
+      "maximum_diameter_ai": true,
+      "lifespan_ai": true,
+      "maximum_tree_age_ai": true,
+      "stewardship_best_practices_ai": true,
+      "planting_recipes_ai": true,
+      "pruning_maintenance_ai": true,
+      "disease_pest_management_ai": true,
+      "fire_management_ai": true,
+      "cultural_significance_ai": true
+    }
+  }
+}

@@ -62,6 +62,48 @@ LEAF Score = percentile rank (0-100)
 
 ---
 
+## [IN PROGRESS] - Geohash Occurrence Data Import
+
+**Status**: Planning complete, ready for implementation
+**Priority**: HIGH - Blocks updated LEAF scoring with 10M+ new occurrences
+**Planning Doc**: [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md)
+
+Import system for updated compressed geohash occurrence data. Supports full refresh (current need) and incremental updates (future need).
+
+**Current State**: 5.79M tiles, 94.4M occurrences, data ~1 year outdated
+**Target State**: ~6M+ tiles, 104M+ occurrences, new compression algorithm
+
+### Phase 1: Full Refresh Import (Current)
+- [ ] Create ecoregion cache backup SQL
+- [ ] Write `import_geohash_csv_v2.js` with array→object transformation
+- [ ] Add WKT geometry support (use pre-computed instead of ST_GeomFromGeoHash)
+- [ ] Add taxon_id validation against species table
+- [ ] Test on sample file (`test_tile_compressed.csv`)
+- [ ] Run full import on production data
+- [ ] Restore ecoregion assignments from cache
+- [ ] Run spatial assignment for new tiles only
+- [ ] Verify LEAF scoring still works
+- [ ] Update ACTIVE.md with new occurrence counts
+
+### Phase 2: Incremental Import Infrastructure (Future)
+- [ ] Create `merge_species_data()` PostgreSQL function
+- [ ] Add `--incremental` mode to import script
+- [ ] Test merge logic with sample data
+- [ ] Document incremental import workflow
+
+**Key Transformation**:
+```
+CSV format:   [{"taxon_id": "ABC-00", "count": 5}, ...]  (array)
+DB format:    {"ABC-00": 5, ...}                         (object)
+```
+
+**Ecoregion Preservation Strategy**:
+1. Cache 5.6M ecoregion assignments before truncate
+2. Restore via geohash lookup after import (fast, no spatial query)
+3. Only new tiles need expensive spatial assignment
+
+---
+
 ## [IN PROGRESS] - Frontend v10 Field Implementation
 
 **Status**: Backend v10 migration complete, frontend display pending
@@ -147,6 +189,21 @@ LEAF Score = percentile rank (0-100)
 
 ## [FUTURE] - Advanced Features
 
+### Unified Zone Schema
+**Status**: Planning
+**Planning Doc**: [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md)
+
+A unified schema for all environmental/geographic zones (biomes, ecoregions, land types, climate zones) with pre-computed connectivity. Solves the "continuous boundary problem" by clustering fragmented but logically connected regions.
+
+- [ ] Create treekipedia_zones master table
+- [ ] Create zone_connectivity table (pre-computed adjacency)
+- [ ] Create zone_clusters table (cluster summaries)
+- [ ] Migrate 847 WWF ecoregions to unified schema
+- [ ] Implement cluster assignment algorithm
+- [ ] Update geospatial API to use unified schema
+- [ ] Add cluster-aware LEAF scoring option
+- [ ] Import additional datasets (ESA CCI Land Cover, Köppen-Geiger climate zones)
+
 ### AI Research Enhancement
 - [ ] Analyze Claude 3.5 Haiku vs Grok 3 Mini testing results
 - [ ] Decide on production integration strategy
@@ -212,11 +269,12 @@ LEAF Score = percentile rank (0-100)
 
 ## Priority Order
 
-1. **LEAF™ Scoring Engine** - Critical for $100K bioregional campaigns
-2. **Frontend v10 Implementation** - Display new climate/ecological data
-3. **Documentation Updates** - API docs critical for users
-4. **Database Optimization** - Performance improvements
-5. **Advanced Features** - Long-term enhancements
+1. **Geohash Occurrence Import** - Blocks LEAF scoring with fresh data (10M+ new occurrences)
+2. **LEAF™ Scoring Engine** - Critical for $100K bioregional campaigns
+3. **Frontend v10 Implementation** - Display new climate/ecological data
+4. **Documentation Updates** - API docs critical for users
+5. **Database Optimization** - Performance improvements
+6. **Advanced Features** - Long-term enhancements
 
 ---
 
@@ -225,7 +283,9 @@ LEAF Score = percentile rank (0-100)
 | Section | Planning Doc | Status |
 |---------|--------------|--------|
 | LEAF™ Scoring | [docs/todo/LEAF.md](docs/todo/LEAF.md) | Active |
+| Geohash Import | [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md) | Active |
 | Frontend v10 | [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md) | Active |
+| Unified Zone Schema | [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md) | Planning |
 
 **Reference Documentation** (in `docs/`):
 - **RECOMMENDATION_SERVICE.md** - Species recommendation service specification

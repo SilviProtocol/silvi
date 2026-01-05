@@ -2,18 +2,21 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpeciesHeader } from "./components/SpeciesHeader";
 import { TabContainer } from "./components/TabContainer";
 import { ImageCarousel } from "./components/ImageCarousel";
 import { useSpeciesData } from "./hooks/useSpeciesData";
+import { triggerResearch } from "@/lib/api";
 
 export default function SpeciesDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const taxonId = params.taxon_id as string;
   const [activeTab, setActiveTab] = useState("overview");
+  const [isResearching, setIsResearching] = useState(false);
+  const [researchError, setResearchError] = useState<string | null>(null);
 
   // taxonId from URL parameter
 
@@ -29,6 +32,27 @@ export default function SpeciesDetailsPage() {
     refetchSpecies,
     refetchResearch,
   } = useSpeciesData(taxonId);
+
+  // Handle research button click
+  const handleResearch = async () => {
+    setIsResearching(true);
+    setResearchError(null);
+
+    try {
+      const result = await triggerResearch(taxonId);
+
+      if (result.success) {
+        // Refresh the data to show new research
+        await Promise.all([refetchSpecies(), refetchResearch()]);
+      } else {
+        setResearchError(result.error || 'Research failed');
+      }
+    } catch (err) {
+      setResearchError(err instanceof Error ? err.message : 'Research failed');
+    } finally {
+      setIsResearching(false);
+    }
+  };
 
   // Loading state
   if (isLoading) {
@@ -125,8 +149,8 @@ export default function SpeciesDetailsPage() {
           </div>
         </div>
 
-        {/* Back Button */}
-        <div className="mb-6">
+        {/* Back Button + Research Button */}
+        <div className="mb-6 flex items-center gap-3">
           <Button
             onClick={() => router.push("/search")}
             variant="outline"
@@ -135,6 +159,28 @@ export default function SpeciesDetailsPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Search
           </Button>
+
+          <Button
+            onClick={handleResearch}
+            disabled={isResearching}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600/80 hover:bg-emerald-600 backdrop-blur-md border border-emerald-400/30 text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isResearching ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Researching...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Research
+              </>
+            )}
+          </Button>
+
+          {researchError && (
+            <span className="text-red-400 text-sm">{researchError}</span>
+          )}
         </div>
 
         {/* Two-column layout: Content + Image Sidebar */}
