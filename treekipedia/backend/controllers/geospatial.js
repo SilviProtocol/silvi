@@ -3,6 +3,8 @@
  * Provides spatial queries on Marina's compressed occurrence data
  */
 
+const { buildWcvpNativeCondition, buildWcvpIntroducedExclusion } = require('../utils/wcvpRegions');
+
 module.exports = (pool) => {
 
 // Find species near a specific location
@@ -131,53 +133,82 @@ async function getSpeciesDistribution(req, res) {
 async function getOccurrenceHeatmap(req, res) {
   try {
     const { minLat, minLng, maxLat, maxLng } = req.query;
-    
+
     if (!minLat || !minLng || !maxLat || !maxLng) {
-      return res.status(400).json({ 
-        error: 'Missing required parameters: minLat, minLng, maxLat, maxLng' 
+      return res.status(400).json({
+        error: 'Missing required parameters: minLat, minLng, maxLat, maxLng'
       });
     }
-    
+
     const query = `
-      SELECT 
+      SELECT
         geohash_l7,
         total_occurrences,
         species_count,
         ST_AsGeoJSON(geometry)::json as geometry,
+        ST_Area(geometry::geography) / 1000000 as area_km2,
         datetime
       FROM geohash_species_tiles
       WHERE ST_Intersects(
         geometry,
         ST_MakeEnvelope($1, $2, $3, $4, 4326)
       )
-      ORDER BY total_occurrences DESC;
+      ORDER BY total_occurrences DESC
+      LIMIT 10000;
     `;
-    
+
     const result = await pool.query(query, [
       parseFloat(minLng),
       parseFloat(minLat),
       parseFloat(maxLng),
       parseFloat(maxLat)
     ]);
-    
+
+    // Calculate density and find min/max for normalization
+    const tilesWithDensity = result.rows.map(row => {
+      const area = parseFloat(row.area_km2) || 1; // Avoid division by zero
+      const density = row.total_occurrences / area; // occurrences per km²
+      return {
+        ...row,
+        density,
+        density_per_km2: Math.round(density * 100) / 100
+      };
+    });
+
+    // Find min/max density for color scale using a loop (to avoid stack overflow with large arrays)
+    let minDensity = Infinity;
+    let maxDensity = -Infinity;
+    for (const tile of tilesWithDensity) {
+      if (tile.density < minDensity) minDensity = tile.density;
+      if (tile.density > maxDensity) maxDensity = tile.density;
+    }
+
     res.json({
       bbox: {
         min: [parseFloat(minLng), parseFloat(minLat)],
         max: [parseFloat(maxLng), parseFloat(maxLat)]
       },
       tile_count: result.rows.length,
-      features: result.rows.map(row => ({
+      density_range: {
+        min: Math.round(minDensity * 100) / 100,
+        max: Math.round(maxDensity * 100) / 100
+      },
+      features: tilesWithDensity.map(row => ({
         type: 'Feature',
         properties: {
           geohash: row.geohash_l7,
           total_occurrences: row.total_occurrences,
           species_count: row.species_count,
-          datetime: row.datetime
+          area_km2: Math.round(parseFloat(row.area_km2) * 100) / 100,
+          density: row.density_per_km2,
+          datetime: row.datetime,
+          // Normalized density for color mapping (0-1 scale)
+          density_normalized: (row.density - minDensity) / (maxDensity - minDensity || 1)
         },
         geometry: row.geometry
       }))
     });
-    
+
   } catch (error) {
     console.error('Error in getOccurrenceHeatmap:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -375,6 +406,9 @@ async function analyzePlot(req, res) {
     // Convert GeoJSON polygon to PostGIS format
     const geoJsonString = JSON.stringify(geometry);
     
+    // Get WCVP region patterns for countries in the polygon
+    const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
+
     const query = `
       WITH user_polygon AS (
         SELECT ST_GeomFromGeoJSON($1) as geom
@@ -382,17 +416,13 @@ async function analyzePlot(req, res) {
       intersected_countries AS (
         SELECT
           c.admin,
-          CASE
-            WHEN c.admin = 'United States of America' THEN 'United States'
-            WHEN c.admin = 'United Kingdom' THEN 'United Kingdom'
-            ELSE c.admin
-          END as species_search_name,
+          c.name_en,
           ST_Area(ST_Intersection(c.geom, up.geom)) / ST_Area(up.geom) as area_fraction
         FROM countries c, user_polygon up
         WHERE ST_Intersects(c.geom, up.geom)
       ),
       primary_country AS (
-        SELECT admin, species_search_name
+        SELECT admin, name_en
         FROM intersected_countries
         ORDER BY area_fraction DESC
         LIMIT 1
@@ -424,34 +454,11 @@ async function analyzePlot(req, res) {
 
         -- Country detection (primary country for display)
         pc.admin as country_name,
-        pc.species_search_name,
+        pc.name_en as country_name_en,
 
-        -- Native status analysis (check ALL intersected countries)
-        CASE
-          WHEN EXISTS (
-            SELECT 1 FROM intersected_countries ic
-            WHERE s.countries_native LIKE '%' || ic.species_search_name || '%'
-          ) THEN 'native'
-          WHEN EXISTS (
-            SELECT 1 FROM intersected_countries ic
-            WHERE s.countries_introduced LIKE '%' || ic.species_search_name || '%'
-          ) THEN 'introduced'
-          ELSE 'unknown'
-        END as native_status,
-
-        -- Calculate native percentage across all intersected countries
-        COALESCE((
-          SELECT
-            ROUND(
-              SUM(
-                CASE
-                  WHEN s.countries_native LIKE '%' || ic.species_search_name || '%' THEN ic.area_fraction * 100
-                  ELSE 0
-                END
-              )
-            )
-          FROM intersected_countries ic
-        ), 0) as native_percentage,
+        -- WCVP native/introduced data for post-processing
+        s.wcvp_native,
+        s.wcvp_introduced,
 
         -- Intact forest analysis
         CASE
@@ -468,56 +475,108 @@ async function analyzePlot(req, res) {
       LEFT JOIN primary_country pc ON true
       ORDER BY sa.total_occurrences DESC;
     `;
-    
+
     const result = await pool.query(query, [geoJsonString]);
 
-    const totalOccurrences = result.rows.reduce(
+    // Get countries intersecting the polygon for WCVP matching
+    const countryQuery = `
+      WITH user_polygon AS (
+        SELECT ST_GeomFromGeoJSON($1) as geom
+      )
+      SELECT
+        c.name_en,
+        ST_Area(ST_Intersection(c.geom, up.geom)) / ST_Area(up.geom) as area_fraction
+      FROM countries c, user_polygon up
+      WHERE ST_Intersects(c.geom, up.geom)
+      ORDER BY area_fraction DESC;
+    `;
+    const countryResult = await pool.query(countryQuery, [geoJsonString]);
+    const intersectedCountries = countryResult.rows;
+
+    // Build WCVP search patterns from all intersected countries
+    let wcvpSearchPatterns = [];
+    let countryFractions = {};
+    for (const country of intersectedCountries) {
+      const countryName = country.name_en;
+      const regions = getWcvpRegionsForCountry(countryName);
+      for (const region of regions) {
+        wcvpSearchPatterns.push(region.toLowerCase());
+        // Track which country each region belongs to for percentage calculation
+        countryFractions[region.toLowerCase()] = country.area_fraction;
+      }
+    }
+
+    // Process results to determine native status using WCVP data
+    const processedRows = result.rows.map(row => {
+      let nativeStatus = 'unknown';
+      let nativePercentage = 0;
+
+      if (row.wcvp_native) {
+        const wcvpNativeLower = row.wcvp_native.toLowerCase();
+        // Check if any of the WCVP search patterns match
+        const matchingNativeRegions = wcvpSearchPatterns.filter(pattern =>
+          wcvpNativeLower.includes(pattern)
+        );
+
+        if (matchingNativeRegions.length > 0) {
+          nativeStatus = 'native';
+          // For native percentage, we use the max area fraction of matching countries
+          // (not sum, because regions belong to a single country)
+          const maxFraction = Math.max(
+            ...matchingNativeRegions.map(region => countryFractions[region] || 0)
+          );
+          nativePercentage = Math.min(100, Math.round(maxFraction * 100));
+        }
+      }
+
+      if (nativeStatus === 'unknown' && row.wcvp_introduced) {
+        const wcvpIntroducedLower = row.wcvp_introduced.toLowerCase();
+        const matchingIntroducedRegions = wcvpSearchPatterns.filter(pattern =>
+          wcvpIntroducedLower.includes(pattern)
+        );
+
+        if (matchingIntroducedRegions.length > 0) {
+          nativeStatus = 'introduced';
+        }
+      }
+
+      return {
+        ...row,
+        native_status: nativeStatus,
+        native_percentage: nativePercentage
+      };
+    });
+
+    const totalOccurrences = processedRows.reduce(
       (sum, row) => sum + parseInt(row.total_occurrences),
       0
     );
 
     // Calculate cross-analysis statistics
     let crossAnalysis = null;
-    if (result.rows.length > 0) {
-      const firstRow = result.rows[0];
+    if (processedRows.length > 0) {
+      const firstRow = processedRows[0];
       const countryDetected = firstRow.country_name != null;
 
-      // Get all intersected countries for display
-      const countriesQuery = `
-        WITH user_polygon AS (
-          SELECT ST_GeomFromGeoJSON($1) as geom
-        ),
-        intersected_countries AS (
-          SELECT
-            c.admin,
-            ST_Area(ST_Intersection(c.geom, up.geom)) / ST_Area(up.geom) as area_fraction
-          FROM countries c, user_polygon up
-          WHERE ST_Intersects(c.geom, up.geom)
-          ORDER BY area_fraction DESC
-        )
-        SELECT admin, ROUND(area_fraction * 100) as percentage
-        FROM intersected_countries
-        WHERE area_fraction > 0.01;  -- Only show countries with >1% overlap
-      `;
+      // Build country list for display
+      const countryList = intersectedCountries
+        .filter(c => c.area_fraction > 0.01)
+        .map(c => `${c.name_en} (${Math.round(c.area_fraction * 100)}%)`)
+        .join(', ');
 
-      const countriesResult = await pool.query(countriesQuery, [geoJsonString]);
-      const countryList = countriesResult.rows.map(r =>
-        `${r.admin} (${r.percentage}%)`
-      ).join(', ');
-
-      // Count native status categories
-      const nativeSpecies = result.rows.filter(row => row.native_status === 'native').length;
-      const introducedSpecies = result.rows.filter(row => row.native_status === 'introduced').length;
-      const unknownNativeStatus = result.rows.filter(row => row.native_status === 'unknown').length;
+      // Count native status categories (now using WCVP data)
+      const nativeSpecies = processedRows.filter(row => row.native_status === 'native').length;
+      const introducedSpecies = processedRows.filter(row => row.native_status === 'introduced').length;
+      const unknownNativeStatus = processedRows.filter(row => row.native_status === 'unknown').length;
 
       // Count intact forest status categories
-      const intactForestSpecies = result.rows.filter(row => row.intact_forest_status === 'present').length;
-      const nonIntactForestSpecies = result.rows.filter(row => row.intact_forest_status === 'absent').length;
-      const unknownForestStatus = result.rows.filter(row => row.intact_forest_status === 'unknown').length;
+      const intactForestSpecies = processedRows.filter(row => row.intact_forest_status === 'present').length;
+      const nonIntactForestSpecies = processedRows.filter(row => row.intact_forest_status === 'absent').length;
+      const unknownForestStatus = processedRows.filter(row => row.intact_forest_status === 'unknown').length;
 
       // Count commercial species
-      const commercialSpecies = result.rows.filter(row => row.is_commercial === true).length;
-      const nonCommercialSpecies = result.rows.filter(row => row.is_commercial === false).length;
+      const commercialSpecies = processedRows.filter(row => row.is_commercial === true).length;
+      const nonCommercialSpecies = processedRows.filter(row => row.is_commercial === false).length;
 
       crossAnalysis = {
         country: countryList || null,
@@ -529,15 +588,16 @@ async function analyzePlot(req, res) {
         nonIntactForestSpecies,
         unknownForestStatus,
         commercialSpecies,
-        nonCommercialSpecies
+        nonCommercialSpecies,
+        dataSource: 'WCVP (World Checklist of Vascular Plants)'
       };
     }
 
     res.json({
-      totalSpecies: result.rows.length,
+      totalSpecies: processedRows.length,
       totalOccurrences: totalOccurrences,
       crossAnalysis: crossAnalysis,
-      species: result.rows.map(row => ({
+      species: processedRows.map(row => ({
         taxon_id: row.taxon_id,
         scientific_name: row.scientific_name || `Unknown (${row.taxon_id})`,
         common_name: row.common_name || null,
@@ -991,8 +1051,260 @@ async function getEcoregionBoundaries(req, res) {
   }
 }
 
+// In-memory cache for intact forest data
+class IntactForestCache {
+  constructor() {
+    this.cache = new Map();
+    this.maxSize = 100;
+    this.ttl = 5 * 60 * 1000; // 5 minutes
+    this.hits = 0;
+    this.misses = 0;
+    this.slowQueries = [];
+
+    // Cleanup old entries every minute
+    setInterval(() => this.cleanup(), 60000);
+  }
+
+  getCacheKey(minLat, maxLat, minLng, maxLng, zoom) {
+    // Dynamic precision based on zoom level
+    const precision = zoom > 10 ? 3 : zoom > 5 ? 2 : 1;
+    return `${parseFloat(minLat).toFixed(precision)},${parseFloat(maxLat).toFixed(precision)},` +
+           `${parseFloat(minLng).toFixed(precision)},${parseFloat(maxLng).toFixed(precision)},${zoom}`;
+  }
+
+  get(key) {
+    const entry = this.cache.get(key);
+    if (!entry) {
+      this.misses++;
+      return null;
+    }
+
+    if (Date.now() - entry.timestamp > this.ttl) {
+      this.cache.delete(key);
+      this.misses++;
+      return null;
+    }
+
+    this.hits++;
+    return entry.data;
+  }
+
+  set(key, data) {
+    if (this.cache.size >= this.maxSize) {
+      // Remove oldest entry
+      const firstKey = this.cache.keys().next().value;
+      this.cache.delete(firstKey);
+    }
+
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now()
+    });
+  }
+
+  cleanup() {
+    const now = Date.now();
+    for (const [key, entry] of this.cache.entries()) {
+      if (now - entry.timestamp > this.ttl) {
+        this.cache.delete(key);
+      }
+    }
+  }
+
+  recordSlowQuery(duration, params) {
+    this.slowQueries.push({
+      duration,
+      params,
+      timestamp: Date.now()
+    });
+
+    // Keep only last 10 slow queries
+    if (this.slowQueries.length > 10) {
+      this.slowQueries.shift();
+    }
+  }
+
+  getStats() {
+    const total = this.hits + this.misses;
+    return {
+      size: this.cache.size,
+      hits: this.hits,
+      misses: this.misses,
+      hitRate: total > 0 ? (this.hits / total * 100).toFixed(2) + '%' : 'N/A',
+      slowQueries: this.slowQueries
+    };
+  }
+}
+
+// Initialize cache
+const intactForestCache = new IntactForestCache();
+
+// Rate limiting (simple IP-based)
+const rateLimiter = new Map();
+const RATE_LIMIT = 100; // requests per minute (increased for map interactions)
+const RATE_WINDOW = 60000; // 1 minute
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  const record = rateLimiter.get(ip);
+
+  if (!record) {
+    rateLimiter.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+
+  if (now > record.resetTime) {
+    rateLimiter.set(ip, { count: 1, resetTime: now + RATE_WINDOW });
+    return true;
+  }
+
+  if (record.count >= RATE_LIMIT) {
+    return false;
+  }
+
+  record.count++;
+  return true;
+}
+
+// Helper function to determine which table to use based on zoom level
+// Currently only the base table exists, so we always use it
+function getTableForZoom(zoom) {
+  // TODO: Create pre-simplified tables for better performance at low zoom levels
+  // if (zoom <= 3) return 'intact_forest_z0_z3';
+  // if (zoom <= 6) return 'intact_forest_z4_z6';
+  // if (zoom <= 9) return 'intact_forest_z7_z9';
+  return 'intact_forest_landscapes_2021';
+}
+
+// Get intact forest boundaries for map display
+async function getIntactForestBoundaries(req, res) {
+  const startTime = Date.now();
+  const clientIp = req.ip || req.connection.remoteAddress;
+
+  try {
+    // Rate limiting
+    if (!checkRateLimit(clientIp)) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        message: 'Maximum 30 requests per minute allowed'
+      });
+    }
+
+    const { bbox, zoom = 3 } = req.query;
+
+    if (!bbox) {
+      return res.status(400).json({
+        error: 'Missing required parameter: bbox',
+        format: 'bbox=minLng,minLat,maxLng,maxLat'
+      });
+    }
+
+    // Parse bbox
+    const [minLng, minLat, maxLng, maxLat] = bbox.split(',').map(Number);
+
+    if ([minLng, minLat, maxLng, maxLat].some(isNaN)) {
+      return res.status(400).json({
+        error: 'Invalid bbox format',
+        format: 'bbox=minLng,minLat,maxLng,maxLat (all numeric)'
+      });
+    }
+
+    const zoomLevel = parseInt(zoom);
+
+    // Check cache
+    const cacheKey = intactForestCache.getCacheKey(minLat, maxLat, minLng, maxLng, zoomLevel);
+    const cached = intactForestCache.get(cacheKey);
+
+    if (cached) {
+      res.set('X-Cache', 'HIT');
+      return res.json(cached);
+    }
+
+    // Determine table based on zoom level
+    const tableName = getTableForZoom(zoomLevel);
+
+    // Progressive polygon limit based on zoom
+    const polygonLimit = zoomLevel <= 3 ? 500 : zoomLevel <= 6 ? 300 : zoomLevel <= 9 ? 200 : 100;
+
+    // Query using spatial index for performance
+    // Index: intact_forest_landscapes_2021_geom_geom_idx (GIST on geom)
+    const query = `
+      WITH viewport_polygons AS (
+        SELECT
+          ogc_fid,
+          ifl_id,
+          year,
+          ROUND((gfw_area__ / 1000000)::numeric, 2) as area_km2,
+          ST_Intersection(geom, ST_MakeEnvelope($1, $2, $3, $4, 4326)) as clipped_geom
+        FROM ${tableName}
+        WHERE ST_Intersects(geom, ST_MakeEnvelope($1, $2, $3, $4, 4326))
+          AND ST_IsValid(geom)
+        ORDER BY gfw_area__ DESC
+        LIMIT $5
+      )
+      SELECT
+        ogc_fid,
+        ifl_id,
+        year,
+        area_km2,
+        ST_AsGeoJSON(clipped_geom)::json as geometry,
+        ST_NPoints(clipped_geom) as vertex_count
+      FROM viewport_polygons
+      WHERE clipped_geom IS NOT NULL
+        AND ST_IsValid(clipped_geom);
+    `;
+
+    const queryStartTime = Date.now();
+    const result = await pool.query(query, [minLng, minLat, maxLng, maxLat, polygonLimit]);
+    const queryDuration = Date.now() - queryStartTime;
+
+    // Record slow queries (>2 seconds)
+    if (queryDuration > 2000) {
+      intactForestCache.recordSlowQuery(queryDuration, { bbox, zoom: zoomLevel, table: tableName });
+    }
+
+    // Build GeoJSON response
+    const response = {
+      type: 'FeatureCollection',
+      features: result.rows.map(row => ({
+        type: 'Feature',
+        properties: {
+          ogc_fid: row.ogc_fid,
+          ifl_id: row.ifl_id,
+          year: row.year,
+          area_km2: parseFloat(row.area_km2),
+          vertex_count: row.vertex_count
+        },
+        geometry: row.geometry
+      })),
+      metadata: {
+        zoom_level: zoomLevel,
+        table_used: tableName,
+        bbox: { minLng, minLat, maxLng, maxLat },
+        polygon_count: result.rows.length,
+        polygon_limit: polygonLimit,
+        query_time_ms: queryDuration
+      }
+    };
+
+    // Cache the result
+    intactForestCache.set(cacheKey, response);
+
+    res.set('X-Cache', 'MISS');
+    res.set('X-Query-Time', `${queryDuration}ms`);
+    res.json(response);
+
+  } catch (error) {
+    console.error('Error in getIntactForestBoundaries:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+}
+
 // Get native species for an ecoregion by name
-// Uses species.ecoregions field and filters by native status
+// Uses species.ecoregions field and filters by native status and biome
 async function getNativeSpeciesByEcoregionName(req, res) {
   try {
     const { ecoregion_name } = req.params;
@@ -1004,33 +1316,62 @@ async function getNativeSpeciesByEcoregionName(req, res) {
       });
     }
 
-    // Get countries that intersect this ecoregion
-    const countriesQuery = `
-      SELECT array_agg(DISTINCT
-        CASE
-          WHEN name_en = 'United States of America' THEN 'United States'
-          WHEN name_en = 'United Kingdom' THEN 'United Kingdom'
-          ELSE name_en
-        END
-      ) as country_list
+    // Get ecoregion metadata including biome and intersecting countries
+    const ecoregionMetadataQuery = `
+      SELECT
+        e.eco_id,
+        e.eco_name,
+        e.biome_name,
+        e.realm,
+        ST_Area(e.geom::geography) / 1000000 as area_km2,
+        array_agg(DISTINCT
+          CASE
+            WHEN c.name_en = 'United States of America' THEN 'United States'
+            WHEN c.name_en = 'United Kingdom' THEN 'United Kingdom'
+            ELSE c.name_en
+          END
+        ) as country_list
       FROM ecoregions e
-      JOIN countries c ON ST_Intersects(e.geom, c.geom)
-      WHERE e.eco_name = $1;
+      LEFT JOIN countries c ON ST_Intersects(e.geom, c.geom)
+      WHERE e.eco_name = $1
+      GROUP BY e.eco_id, e.eco_name, e.biome_name, e.realm, e.geom;
     `;
 
-    const countriesResult = await pool.query(countriesQuery, [ecoregion_name]);
+    const ecoregionResult = await pool.query(ecoregionMetadataQuery, [ecoregion_name]);
 
-    if (countriesResult.rows.length === 0 || !countriesResult.rows[0].country_list) {
+    if (ecoregionResult.rows.length === 0) {
       return res.status(404).json({
-        error: 'Ecoregion not found or no countries intersect this ecoregion'
+        error: 'Ecoregion not found'
       });
     }
 
-    const countries = countriesResult.rows[0].country_list;
+    const ecoregion = ecoregionResult.rows[0];
+    const countries = ecoregion.country_list || [];
+    const biomeName = ecoregion.biome_name;
 
-    // Build SQL pattern matching for countries
-    const countryPatterns = countries.map(c => `countries_native LIKE '%${c}%'`).join(' OR ');
+    // Build WCVP native condition using region mappings (e.g., US → state names)
+    let nativeCondition = '';
+    let nativeParams = [];
+    if (native_only === 'true' && countries.length > 0) {
+      const wcvpNative = buildWcvpNativeCondition(countries, 4);
+      if (wcvpNative.condition) {
+        nativeCondition = `AND ${wcvpNative.condition}`;
+        nativeParams = wcvpNative.params;
+      }
+    }
 
+    // Build WCVP introduced exclusion condition
+    let introducedCondition = '';
+    let introducedParams = [];
+    if (exclude_invasive === 'true' && countries.length > 0) {
+      const wcvpIntroduced = buildWcvpIntroducedExclusion(countries, 4 + nativeParams.length);
+      if (wcvpIntroduced.condition) {
+        introducedCondition = `AND ${wcvpIntroduced.condition}`;
+        introducedParams = wcvpIntroduced.params;
+      }
+    }
+
+    // Query species with biome filtering and WCVP native status matching
     const query = `
       SELECT
         taxon_id,
@@ -1039,41 +1380,44 @@ async function getNativeSpeciesByEcoregionName(req, res) {
         common_name,
         family,
         genus,
-        countries_native,
-        countries_invasive,
-        countries_introduced
+        biomes,
+        wcvp_native,
+        wcvp_introduced
       FROM species
       WHERE ecoregions LIKE $1
         AND ecoregions != 'NA'
-        ${native_only === 'true' ? `AND (${countryPatterns})` : ''}
-        ${exclude_invasive === 'true' ? `AND (countries_invasive = 'NA' OR countries_invasive NOT LIKE ANY($2))` : ''}
+        AND biomes LIKE $2
+        AND biomes != 'NA'
+        ${nativeCondition}
+        ${introducedCondition}
       ORDER BY species_scientific_name
       LIMIT $3;
     `;
 
-    const invasivePatterns = countries.map(c => `%${c}%`);
-    const result = await pool.query(query, [
+    const queryParams = [
       `%${ecoregion_name}%`,
-      invasivePatterns,
-      limit
-    ]);
+      `%${biomeName}%`,
+      limit,
+      ...nativeParams,
+      ...introducedParams
+    ];
 
-    // Get ecoregion metadata
-    const ecoregionInfoQuery = `
-      SELECT eco_id, eco_name, biome_name, realm,
-             ST_Area(geom::geography) / 1000000 as area_km2
-      FROM ecoregions
-      WHERE eco_name = $1;
-    `;
-
-    const ecoregionInfo = await pool.query(ecoregionInfoQuery, [ecoregion_name]);
+    const result = await pool.query(query, queryParams);
 
     res.json({
-      ecoregion: ecoregionInfo.rows[0] || { eco_name: ecoregion_name },
+      ecoregion: {
+        eco_id: ecoregion.eco_id,
+        eco_name: ecoregion.eco_name,
+        biome_name: ecoregion.biome_name,
+        realm: ecoregion.realm,
+        area_km2: Math.round(parseFloat(ecoregion.area_km2))
+      },
       countries_in_ecoregion: countries,
       filters_applied: {
         native_only: native_only === 'true',
-        exclude_invasive: exclude_invasive === 'true'
+        exclude_introduced: exclude_invasive === 'true',
+        biome_match: biomeName,
+        data_source: 'WCVP (World Checklist of Vascular Plants)'
       },
       species_count: result.rows.length,
       species: result.rows.map(row => ({
@@ -1082,12 +1426,336 @@ async function getNativeSpeciesByEcoregionName(req, res) {
         scientific_name: row.species_scientific_name,
         common_name: row.common_name || null,
         family: row.family || null,
-        genus: row.genus || null
+        genus: row.genus || null,
+        wcvp_native: row.wcvp_native || null,
+        wcvp_introduced: row.wcvp_introduced || null
       }))
     });
 
   } catch (error) {
     console.error('Error in getNativeSpeciesByEcoregionName:', error);
+    res.status(500).json({ error: 'Internal server error', details: error.message });
+  }
+}
+
+/**
+ * LEAF™ Score Endpoint
+ * Location-based Ecological Aptness Forecast
+ *
+ * Accepts: eco_id, lat/lng point, or GeoJSON polygon
+ * Returns: Species ranked by LEAF score with native status integration
+ */
+async function getLeafScore(req, res) {
+  try {
+    const { eco_id, eco_name, lat, lng, limit = 500, min_score = 0 } = req.query;
+    const geometry = req.body?.geometry;
+
+    // Validate input - must have one of: eco_id, eco_name, lat/lng, or geometry
+    if (!eco_id && !eco_name && !(lat && lng) && !geometry) {
+      return res.status(400).json({
+        error: 'Must provide one of: eco_id, eco_name, lat/lng coordinates, or GeoJSON geometry in request body'
+      });
+    }
+
+    let ecoregions = [];
+
+    // STEP 1: Resolve input to ecoregion(s) with area weights
+    if (eco_id || eco_name) {
+      // Direct eco_id or eco_name lookup
+      const ecoQuery = eco_id
+        ? 'SELECT eco_id, eco_name, biome_name, realm, ST_Area(geom::geography) / 1000000 as area_km2, 1.0 as weight FROM ecoregions WHERE eco_id = $1'
+        : 'SELECT eco_id, eco_name, biome_name, realm, ST_Area(geom::geography) / 1000000 as area_km2, 1.0 as weight FROM ecoregions WHERE eco_name = $1';
+      const ecoResult = await pool.query(ecoQuery, [eco_id || eco_name]);
+
+      if (ecoResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Ecoregion not found' });
+      }
+      ecoregions = ecoResult.rows;
+
+    } else if (lat && lng) {
+      // Point lookup - find containing ecoregion
+      const pointResult = await pool.query(`
+        SELECT
+          eco_id, eco_name, biome_name, realm,
+          ST_Area(geom::geography) / 1000000 as area_km2,
+          1.0 as weight
+        FROM ecoregions
+        WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+        LIMIT 1
+      `, [parseFloat(lng), parseFloat(lat)]);
+
+      if (pointResult.rows.length === 0) {
+        return res.status(404).json({ error: 'No ecoregion found at this location' });
+      }
+      ecoregions = pointResult.rows;
+
+    } else if (geometry) {
+      // Polygon - find all intersecting ecoregions with area weights
+      const polyResult = await pool.query(`
+        WITH input_geom AS (
+          SELECT ST_SetSRID(ST_GeomFromGeoJSON($1), 4326) as geom
+        ),
+        intersections AS (
+          SELECT
+            e.eco_id, e.eco_name, e.biome_name, e.realm,
+            ST_Area(e.geom::geography) / 1000000 as area_km2,
+            ST_Area(ST_Intersection(e.geom, i.geom)::geography) as intersection_area
+          FROM ecoregions e, input_geom i
+          WHERE ST_Intersects(e.geom, i.geom)
+        ),
+        total_area AS (
+          SELECT SUM(intersection_area) as total FROM intersections
+        )
+        SELECT
+          i.*,
+          CASE WHEN t.total > 0 THEN i.intersection_area / t.total ELSE 1.0 END as weight
+        FROM intersections i, total_area t
+        ORDER BY weight DESC
+      `, [JSON.stringify(geometry)]);
+
+      if (polyResult.rows.length === 0) {
+        return res.status(404).json({ error: 'No ecoregions found in this area' });
+      }
+      ecoregions = polyResult.rows;
+    }
+
+    // STEP 2: Get countries for all ecoregions (for WCVP lookup)
+    const ecoIds = ecoregions.map(e => e.eco_id);
+    const countriesResult = await pool.query(`
+      SELECT DISTINCT
+        CASE
+          WHEN c.name_en = 'United States of America' THEN 'United States'
+          WHEN c.name_en = 'United Kingdom' THEN 'United Kingdom'
+          ELSE c.name_en
+        END as country_name
+      FROM ecoregions e
+      JOIN countries c ON ST_Intersects(e.geom, c.geom)
+      WHERE e.eco_id = ANY($1)
+    `, [ecoIds]);
+
+    const countries = countriesResult.rows.map(r => r.country_name).filter(Boolean);
+
+    // STEP 3: Build WCVP search patterns for native/introduced matching
+    const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
+    const wcvpPatterns = [];
+    for (const country of countries) {
+      const regions = getWcvpRegionsForCountry(country);
+      wcvpPatterns.push(...regions.map(r => r.toLowerCase()));
+    }
+
+    // STEP 4: For each ecoregion, get occurrence data and calculate raw affinities
+    const speciesScores = new Map(); // taxon_id -> { affinities: [{eco_id, weight, affinity}], is_native, ... }
+
+    for (const eco of ecoregions) {
+      // Get occurrence data for this ecoregion
+      const occurrenceQuery = `
+        WITH tile_species AS (
+          SELECT
+            (jsonb_each_text(species_data)).key AS taxon_id,
+            (jsonb_each_text(species_data)).value::int AS occurrences
+          FROM geohash_species_tiles
+          WHERE eco_id = $1
+        )
+        SELECT
+          taxon_id,
+          SUM(occurrences) AS occurrence_count,
+          COUNT(*) AS tile_count
+        FROM tile_species
+        GROUP BY taxon_id
+      `;
+
+      const occResult = await pool.query(occurrenceQuery, [eco.eco_id]);
+
+      for (const row of occResult.rows) {
+        const affinity = parseInt(row.occurrence_count) * parseInt(row.tile_count);
+
+        if (!speciesScores.has(row.taxon_id)) {
+          speciesScores.set(row.taxon_id, {
+            taxon_id: row.taxon_id,
+            affinities: [],
+            total_occurrences: 0,
+            total_tiles: 0,
+            is_native: null, // Will be determined later
+            is_introduced: null
+          });
+        }
+
+        const species = speciesScores.get(row.taxon_id);
+        species.affinities.push({
+          eco_id: eco.eco_id,
+          weight: parseFloat(eco.weight),
+          affinity: affinity,
+          occurrence_count: parseInt(row.occurrence_count),
+          tile_count: parseInt(row.tile_count)
+        });
+        species.total_occurrences += parseInt(row.occurrence_count);
+        species.total_tiles += parseInt(row.tile_count);
+      }
+    }
+
+    // STEP 5: Get WCVP native species (to add to pool even if no occurrences)
+    if (wcvpPatterns.length > 0) {
+      const nativePatterns = wcvpPatterns.map(p => `%${p}%`);
+      const nativeQuery = `
+        SELECT taxon_id, wcvp_native, wcvp_introduced
+        FROM species
+        WHERE wcvp_native IS NOT NULL
+          AND wcvp_native ILIKE ANY($1)
+      `;
+      const nativeResult = await pool.query(nativeQuery, [nativePatterns]);
+
+      for (const row of nativeResult.rows) {
+        if (!speciesScores.has(row.taxon_id)) {
+          // WCVP-only native (no occurrences) - add with baseline
+          speciesScores.set(row.taxon_id, {
+            taxon_id: row.taxon_id,
+            affinities: [{ eco_id: null, weight: 1.0, affinity: 100, occurrence_count: 0, tile_count: 0 }],
+            total_occurrences: 0,
+            total_tiles: 0,
+            is_native: true,
+            is_introduced: false
+          });
+        } else {
+          speciesScores.get(row.taxon_id).is_native = true;
+        }
+      }
+    }
+
+    // STEP 6: Check introduced status and mark for exclusion
+    if (wcvpPatterns.length > 0) {
+      const introducedPatterns = wcvpPatterns.map(p => `%${p}%`);
+      const introducedQuery = `
+        SELECT taxon_id
+        FROM species
+        WHERE wcvp_introduced IS NOT NULL
+          AND wcvp_introduced ILIKE ANY($1)
+      `;
+      const introducedResult = await pool.query(introducedQuery, [introducedPatterns]);
+      const introducedSet = new Set(introducedResult.rows.map(r => r.taxon_id));
+
+      for (const [taxon_id, species] of speciesScores) {
+        if (introducedSet.has(taxon_id)) {
+          species.is_introduced = true;
+        }
+      }
+    }
+
+    // STEP 7: Filter out introduced species and calculate weighted affinities
+    const filteredSpecies = [];
+    for (const [taxon_id, species] of speciesScores) {
+      if (species.is_introduced) continue; // Exclude introduced
+
+      // Calculate weighted affinity across ecoregions
+      let weightedAffinity = 0;
+      let totalWeight = 0;
+      for (const aff of species.affinities) {
+        weightedAffinity += aff.affinity * aff.weight;
+        totalWeight += aff.weight;
+      }
+      const avgAffinity = totalWeight > 0 ? weightedAffinity / totalWeight : 0;
+
+      // Apply native boost
+      const nativeMultiplier = species.is_native ? 2.0 : 1.0;
+      const finalAffinity = avgAffinity * nativeMultiplier;
+
+      filteredSpecies.push({
+        taxon_id,
+        weighted_affinity: finalAffinity,
+        total_occurrences: species.total_occurrences,
+        total_tiles: species.total_tiles,
+        is_native: species.is_native === true,
+        ecoregion_count: species.affinities.filter(a => a.eco_id !== null).length
+      });
+    }
+
+    // STEP 8: Calculate percentile LEAF scores
+    filteredSpecies.sort((a, b) => a.weighted_affinity - b.weighted_affinity);
+    const total = filteredSpecies.length;
+    for (let i = 0; i < total; i++) {
+      filteredSpecies[i].leaf_score = total > 1 ? Math.round((i / (total - 1)) * 1000) / 10 : 100;
+    }
+
+    // STEP 9: Get species details and filter by min_score
+    const qualifyingSpecies = filteredSpecies
+      .filter(s => s.leaf_score >= parseFloat(min_score))
+      .sort((a, b) => b.leaf_score - a.leaf_score)
+      .slice(0, parseInt(limit));
+
+    if (qualifyingSpecies.length === 0) {
+      return res.json({
+        ecoregions: ecoregions.map(e => ({ eco_id: e.eco_id, eco_name: e.eco_name, weight: e.weight })),
+        countries: countries,
+        methodology: {
+          version: '1.0',
+          formula: 'weighted_affinity = (occurrence_count × tile_count) × native_multiplier',
+          native_boost: 2.0,
+          introduced: 'excluded'
+        },
+        statistics: {
+          total_in_pool: speciesScores.size,
+          introduced_excluded: [...speciesScores.values()].filter(s => s.is_introduced).length,
+          qualifying_species: 0
+        },
+        species: []
+      });
+    }
+
+    const taxonIds = qualifyingSpecies.map(s => s.taxon_id);
+    const detailsResult = await pool.query(`
+      SELECT
+        taxon_id, species_scientific_name, common_name, family, genus
+      FROM species
+      WHERE taxon_id = ANY($1)
+    `, [taxonIds]);
+
+    const detailsMap = new Map(detailsResult.rows.map(r => [r.taxon_id, r]));
+
+    // STEP 10: Build response
+    const speciesResponse = qualifyingSpecies.map(s => {
+      const details = detailsMap.get(s.taxon_id) || {};
+      return {
+        taxon_id: s.taxon_id,
+        scientific_name: details.species_scientific_name || null,
+        common_name: details.common_name || null,
+        family: details.family || null,
+        genus: details.genus || null,
+        leaf_score: s.leaf_score,
+        tier: s.leaf_score >= 90 ? 'BEST' : s.leaf_score >= 70 ? 'GOOD' : s.leaf_score >= 50 ? 'ACCEPTABLE' : 'LOW',
+        is_native: s.is_native,
+        occurrence_count: s.total_occurrences,
+        tile_count: s.total_tiles,
+        ecoregion_count: s.ecoregion_count
+      };
+    });
+
+    res.json({
+      ecoregions: ecoregions.map(e => ({
+        eco_id: e.eco_id,
+        eco_name: e.eco_name,
+        biome_name: e.biome_name,
+        realm: e.realm,
+        weight: Math.round(parseFloat(e.weight) * 1000) / 1000
+      })),
+      countries: countries,
+      methodology: {
+        version: '1.0',
+        formula: 'weighted_affinity = (occurrence_count × tile_count) × native_multiplier',
+        native_boost: 2.0,
+        introduced: 'excluded',
+        data_sources: ['GBIF occurrences via geohash tiles', 'WCVP native/introduced status']
+      },
+      statistics: {
+        total_in_pool: speciesScores.size,
+        introduced_excluded: [...speciesScores.values()].filter(s => s.is_introduced).length,
+        native_species: speciesResponse.filter(s => s.is_native).length,
+        unknown_status: speciesResponse.filter(s => !s.is_native).length,
+        qualifying_species: speciesResponse.length
+      },
+      species: speciesResponse
+    });
+
+  } catch (error) {
+    console.error('Error in getLeafScore:', error);
     res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
@@ -1106,7 +1774,9 @@ return {
   getEcoregionStats,
   exportEcoregion,
   getEcoregionBoundaries,
-  getNativeSpeciesByEcoregionName
+  getNativeSpeciesByEcoregionName,
+  getIntactForestBoundaries,
+  getLeafScore
 };
 
 };

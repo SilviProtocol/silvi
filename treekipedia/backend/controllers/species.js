@@ -274,5 +274,120 @@ module.exports = (pool) => {
     }
   });
 
+  /**
+   * POST /:taxon_id/research
+   * Trigger AI research for a species and update the database
+   * Route params: taxon_id - The unique identifier for the species
+   */
+  router.post('/:taxon_id/research', async (req, res) => {
+    const { taxon_id } = req.params;
+
+    try {
+      console.log(`POST /species/${taxon_id}/research - Starting AI research`);
+
+      // Get species info
+      const speciesQuery = `
+        SELECT taxon_id, species_scientific_name, common_name
+        FROM species
+        WHERE taxon_id = $1
+      `;
+      const speciesResult = await pool.query(speciesQuery, [taxon_id]);
+
+      if (speciesResult.rows.length === 0) {
+        return res.status(404).json({ success: false, error: 'Species not found' });
+      }
+
+      const species = speciesResult.rows[0];
+      const scientificName = species.species_scientific_name;
+      const commonNames = species.common_name || '';
+
+      // Perform AI research
+      const grokResearch = require('../services/grokResearch');
+      const result = await grokResearch.performResearch(scientificName, commonNames);
+
+      if (!result.success) {
+        console.error(`Research failed for ${taxon_id}:`, result.error);
+        return res.status(500).json({ success: false, error: result.error });
+      }
+
+      // Update species table with research data
+      const updateQuery = `
+        UPDATE species SET
+          popular_common_name_ai = $1,
+          habitat_ai = $2,
+          elevation_ranges_ai = $3,
+          ecological_function_ai = $4,
+          native_adapted_habitats_ai = $5,
+          agroforestry_use_cases_ai = $6,
+          conservation_status_ai = $7,
+          general_description_ai = $8,
+          compatible_soil_types_ai = $9,
+          growth_form_ai = $10,
+          leaf_type_ai = $11,
+          deciduous_evergreen_ai = $12,
+          flower_color_ai = $13,
+          fruit_type_ai = $14,
+          bark_characteristics_ai = $15,
+          maximum_height_ai = $16,
+          maximum_diameter_ai = $17,
+          lifespan_ai = $18,
+          maximum_tree_age_ai = $19,
+          stewardship_best_practices_ai = $20,
+          planting_recipes_ai = $21,
+          pruning_maintenance_ai = $22,
+          disease_pest_management_ai = $23,
+          fire_management_ai = $24,
+          cultural_significance_ai = $25
+        WHERE taxon_id = $26
+      `;
+
+      const d = result.data;
+      await pool.query(updateQuery, [
+        d.popular_common_name_ai,
+        d.habitat_ai,
+        d.elevation_ranges_ai,
+        d.ecological_function_ai,
+        d.native_adapted_habitats_ai,
+        d.agroforestry_use_cases_ai,
+        d.conservation_status_ai,
+        d.general_description_ai,
+        d.compatible_soil_types_ai,
+        d.growth_form_ai,
+        d.leaf_type_ai,
+        d.deciduous_evergreen_ai,
+        d.flower_color_ai,
+        d.fruit_type_ai,
+        d.bark_characteristics_ai,
+        d.maximum_height_ai,
+        d.maximum_diameter_ai,
+        d.lifespan_ai,
+        d.maximum_tree_age_ai,
+        d.stewardship_best_practices_ai,
+        d.planting_recipes_ai,
+        d.pruning_maintenance_ai,
+        d.disease_pest_management_ai,
+        d.fire_management_ai,
+        d.cultural_significance_ai,
+        taxon_id
+      ]);
+
+      console.log(`POST /species/${taxon_id}/research - Database updated successfully`);
+
+      res.json({
+        success: true,
+        taxon_id: taxon_id,
+        scientific_name: scientificName,
+        fields_filled: result.fields_filled,
+        fields_total: result.fields_total,
+        duration_ms: result.duration_ms,
+        data: result.data
+      });
+
+    } catch (error) {
+      console.error(`Error in research for species "${taxon_id}":`, error);
+      res.status(500).json({ success: false, error: 'Internal server error' });
+    }
+  });
+
   return router;
 };

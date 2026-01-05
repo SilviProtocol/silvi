@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, AlertCircle, Info } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { FieldDefinition } from "../hooks/useFieldDefinitions";
 
 interface DataFieldProps {
@@ -15,8 +15,8 @@ export function DataField({ field, getFieldValue, isResearched, isFieldResearche
 
   // Helper method to format values based on type
   const formatValue = (value: any, type?: string): React.ReactNode => {
-    if (value === undefined || value === null) {
-      return <span className="text-white/50 italic">Not available</span>;
+    if (value === undefined || value === null || value === "" || value === "NA") {
+      return null;
     }
 
     // Handle numeric values
@@ -83,36 +83,26 @@ export function DataField({ field, getFieldValue, isResearched, isFieldResearche
     return String(value);
   };
 
-  // Special case for field not researched yet
-  if (!fieldValue && field.hasAiHuman && !isFieldResearched(field.key)) {
-    return (
-      <div className="p-3 rounded-lg bg-black/30 border border-white/10">
-        <h4 className="font-medium text-white/70 mb-2">{field.label}:</h4>
-        <div className="text-white/50 italic flex items-center gap-2">
-          {isResearched ? (
-            <>
-              <Info className="w-4 h-4 text-blue-400" />
-              <span>Not available in research data</span>
-            </>
-          ) : (
-            <>
-              <AlertCircle className="w-4 h-4 text-amber-400" />
-              <span>Awaiting research</span>
-            </>
-          )}
-        </div>
-      </div>
-    );
+  // If no data, don't render anything
+  if (!fieldValue || fieldValue === "" || fieldValue === "NA") {
+    return null;
+  }
+
+  const formattedValue = formatValue(fieldValue, field.type);
+
+  // If formatValue returns null, don't render
+  if (!formattedValue) {
+    return null;
   }
 
   // The main return for the component
   return (
-    <div className="p-3 rounded-lg bg-black/30 border border-white/10">
-      <h4 className="font-medium text-white/70 mb-2">{field.label}:</h4>
+    <div className="p-3 rounded-xl bg-black/40 border border-white/15">
+      <h4 className="font-medium text-white/60 mb-2">{field.label}:</h4>
 
       {/* Display content with source indicators */}
-      <div className={`text-white ${fieldSource === "ai" ? "bg-emerald-800/20 border-l-4 border-emerald-400 pl-3 py-1 rounded" : fieldSource === "human" ? "border-l-4 border-blue-400 pl-3 py-1 rounded" : ""}`}>
-        {formatValue(fieldValue, field.type)}
+      <div className={`text-white/85 ${fieldSource === "ai" ? "bg-emerald-800/20 border-l-4 border-emerald-400 pl-3 py-1 rounded" : fieldSource === "human" ? "border-l-4 border-blue-400 pl-3 py-1 rounded" : ""}`}>
+        {formattedValue}
       </div>
     </div>
   );

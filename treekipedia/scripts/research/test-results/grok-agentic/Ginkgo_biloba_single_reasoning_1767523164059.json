@@ -1,0 +1,96 @@
+{
+  "metadata": {
+    "species_scientific_name": "Ginkgo biloba",
+    "common_names": "Ginkgo, maidenhair tree",
+    "taxon_id": "AngGiGiGN21141-00",
+    "timestamp": "2026-01-04T10:39:24.059Z",
+    "strategy": "single",
+    "model": "grok-4-1-fast-reasoning"
+  },
+  "strategy": "single_call",
+  "model": "grok-4-1-fast-reasoning",
+  "api_calls": 1,
+  "success": true,
+  "data": {
+    "habitat_ai": "Infrequently in deciduous forests, valleys on acidic loess soils with good drainage; disturbed sites including stream banks, rocky slopes, cliff edges in mountainous regions like Tianmu Mountains, southeastern China.",
+    "elevation_ranges_ai": "300-1250",
+    "ecological_function_ai": "Pioneer species in disturbed environments via clonal reproduction and sprouting from basal lignotubers; stabilizes eroded slopes; provides habitat for birds and food via seeds; resilient in low-density mixed forests.",
+    "native_adapted_habitats_ai": "Native to southeastern China (e.g., Zhejiang, Tianmu Mountains); adapted to temperate deciduous/mixed broadleaf forests, urban environments, pollution-tolerant worldwide.",
+    "agroforestry_use_cases_ai": "Fruit (seed) production for edible nuts (ginnan) and medicinal uses in China; leaf extracts for pharmaceuticals; urban street trees; limited timber; agroforestry plantations in China for nuts and leaves.",
+    "conservation_status_ai": "Endangered (IUCN 3.1)",
+    "general_description_ai": "Ginkgo biloba is the sole surviving species of Ginkgoales, a gymnosperm tree native to East Asia. Long-lived (up to 3500+ years), disease- and pest-resistant, dioecious with unique fan-shaped leaves turning bright yellow in autumn. Grows 20-50m tall, deep-rooted, capable of clonal reproduction via basal sprouts and aerial roots.",
+    "compatible_soil_types_ai": "Well-drained sandy, loamy, or silty (loess) soils; pH 5.0-8.0; tolerates poor, compacted, alkaline, urban polluted, and salty soils.",
+    "growth_form_ai": "Deciduous gymnosperm tree; pyramidal/conical when young, developing broad, irregular, angular crown with age; deep-rooted, wind- and snow-resistant; short spur shoots and long shoots.",
+    "leaf_type_ai": "Fan-shaped, 5-10 cm (up to 15 cm) long, leathery, with dichotomous venation; alternate on long shoots, clustered on spur shoots; bright green turning golden yellow in fall.",
+    "deciduous_evergreen_ai": "deciduous",
+    "flower_color_ai": "Inconspicuous; greenish-yellow (male pollen cones/catkins), cream/tan-green (female ovules)",
+    "fruit_type_ai": "Fleshy-coated naked seeds (sarcotesta), 1.5-2 cm, plum-like, yellow-brown, foul-smelling (butyric acid) when ripe; hard sclerotesta shell enclosing edible gametophyte nut.",
+    "bark_characteristics_ai": "Light gray to gray-brown, deeply furrowed with irregular ridges and furrows; corky, fire-resistant.",
+    "maximum_height_ai": 50,
+    "maximum_diameter_ai": 5,
+    "lifespan_ai": "Extremely long-lived, typically 1000+ years",
+    "maximum_tree_age_ai": 3500,
+    "stewardship_best_practices_ai": "Full sun exposure; well-drained soil; moderate water until established, then drought-tolerant; highly resilient to urban stress, pollution, salt; prefer male cultivars to avoid messy fruit.",
+    "planting_recipes_ai": "Plant in spring or fall; full sun, well-drained site; space 10-15 m apart; transplant balled-and-burlapped or container; mulch base; select grafted male clones for urban/ornamental use.",
+    "pruning_maintenance_ai": "Minimal required; formative pruning in late winter during youth to develop central leader and structure; remove dead/weak branches; tolerates heavy pruning.",
+    "disease_pest_management_ai": "Highly resistant to diseases and pests; minor issues include aphids, spider mites, seed bugs (on females); manage with insecticidal soap or horticultural oil if needed; rarely problematic.",
+    "fire_management_ai": "Fire-resistant with low flammability, thick bark secreting retardant sap; survives low-intensity fires via resprouting; second lowest flammability among deciduous trees.",
+    "cultural_significance_ai": "Symbol of longevity, resilience, peace in Chinese, Japanese, Korean cultures; sacred tree planted at temples since 14th century; medicinal uses (leaves/seeds) for 1000+ years; official tree of Tokyo; ginkgo leaf icons in universities, tea ceremony."
+  },
+  "raw_response": "{\n  \"habitat_ai\": \"Infrequently in deciduous forests, valleys on acidic loess soils with good drainage; disturbed sites including stream banks, rocky slopes, cliff edges in mountainous regions like Tianmu Mountains, southeastern China.\",\n  \"elevation_ranges_ai\": \"300-1250\",\n  \"ecological_function_ai\": \"Pioneer species in disturbed environments via clonal reproduction and sprouting from basal lignotubers; stabilizes eroded slopes; provides habitat for birds and food via seeds; resilient in low-density mixed forests.\",\n  \"native_adapted_habitats_ai\": \"Native to southeastern China (e.g., Zhejiang, Tianmu Mountains); adapted to temperate deciduous/mixed broadleaf forests, urban environments, pollution-tolerant worldwide.\",\n  \"agroforestry_use_cases_ai\": \"Fruit (seed) production for edible nuts (ginnan) and medicinal uses in China; leaf extracts for pharmaceuticals; urban street trees; limited timber; agroforestry plantations in China for nuts and leaves.\",\n  \"conservation_status_ai\": \"Endangered (IUCN 3.1)\",\n  \"general_description_ai\": \"Ginkgo biloba is the sole surviving species of Ginkgoales, a gymnosperm tree native to East Asia. Long-lived (up to 3500+ years), disease- and pest-resistant, dioecious with unique fan-shaped leaves turning bright yellow in autumn. Grows 20-50m tall, deep-rooted, capable of clonal reproduction via basal sprouts and aerial roots.\",\n  \"compatible_soil_types_ai\": \"Well-drained sandy, loamy, or silty (loess) soils; pH 5.0-8.0; tolerates poor, compacted, alkaline, urban polluted, and salty soils.\",\n  \"growth_form_ai\": \"Deciduous gymnosperm tree; pyramidal/conical when young, developing broad, irregular, angular crown with age; deep-rooted, wind- and snow-resistant; short spur shoots and long shoots.\",\n  \"leaf_type_ai\": \"Fan-shaped, 5-10 cm (up to 15 cm) long, leathery, with dichotomous venation; alternate on long shoots, clustered on spur shoots; bright green turning golden yellow in fall.\",\n  \"deciduous_evergreen_ai\": \"deciduous\",\n  \"flower_color_ai\": \"Inconspicuous; greenish-yellow (male pollen cones/catkins), cream/tan-green (female ovules)\",\n  \"fruit_type_ai\": \"Fleshy-coated naked seeds (sarcotesta), 1.5-2 cm, plum-like, yellow-brown, foul-smelling (butyric acid) when ripe; hard sclerotesta shell enclosing edible gametophyte nut.\",\n  \"bark_characteristics_ai\": \"Light gray to gray-brown, deeply furrowed with irregular ridges and furrows; corky, fire-resistant.\",\n  \"maximum_height_ai\": 50,\n  \"maximum_diameter_ai\": 5,\n  \"lifespan_ai\": \"Extremely long-lived, typically 1000+ years\",\n  \"maximum_tree_age_ai\": 3500,\n  \"stewardship_best_practices_ai\": \"Full sun exposure; well-drained soil; moderate water until established, then drought-tolerant; highly resilient to urban stress, pollution, salt; prefer male cultivars to avoid messy fruit.\",\n  \"planting_recipes_ai\": \"Plant in spring or fall; full sun, well-drained site; space 10-15 m apart; transplant balled-and-burlapped or container; mulch base; select grafted male clones for urban/ornamental use.\",\n  \"pruning_maintenance_ai\": \"Minimal required; formative pruning in late winter during youth to develop central leader and structure; remove dead/weak branches; tolerates heavy pruning.\",\n  \"disease_pest_management_ai\": \"Highly resistant to diseases and pests; minor issues include aphids, spider mites, seed bugs (on females); manage with insecticidal soap or horticultural oil if needed; rarely problematic.\",\n  \"fire_management_ai\": \"Fire-resistant with low flammability, thick bark secreting retardant sap; survives low-intensity fires via resprouting; second lowest flammability among deciduous trees.\",\n  \"cultural_significance_ai\": \"Symbol of longevity, resilience, peace in Chinese, Japanese, Korean cultures; sacred tree planted at temples since 14th century; medicinal uses (leaves/seeds) for 1000+ years; official tree of Tokyo; ginkgo leaf icons in universities, tea ceremony.\"\n}",
+  "usage": {
+    "input_tokens": 34464,
+    "input_tokens_details": {
+      "cached_tokens": 12977
+    },
+    "output_tokens": 4513,
+    "output_tokens_details": {
+      "reasoning_tokens": 2566
+    },
+    "total_tokens": 38977,
+    "num_sources_used": 0,
+    "num_server_side_tools_used": 19,
+    "cost_in_usd_ticks": 1022027500,
+    "server_side_tool_usage_details": {
+      "web_search_calls": 19,
+      "x_search_calls": 0,
+      "code_interpreter_calls": 0,
+      "file_search_calls": 0,
+      "mcp_calls": 0,
+      "document_search_calls": 0
+    }
+  },
+  "duration_ms": 52194,
+  "citations": [],
+  "completion": {
+    "filled": 24,
+    "total": 24,
+    "percentage": 100,
+    "fieldStatus": {
+      "habitat_ai": true,
+      "elevation_ranges_ai": true,
+      "ecological_function_ai": true,
+      "native_adapted_habitats_ai": true,
+      "agroforestry_use_cases_ai": true,
+      "conservation_status_ai": true,
+      "general_description_ai": true,
+      "compatible_soil_types_ai": true,
+      "growth_form_ai": true,
+      "leaf_type_ai": true,
+      "deciduous_evergreen_ai": true,
+      "flower_color_ai": true,
+      "fruit_type_ai": true,
+      "bark_characteristics_ai": true,
+      "maximum_height_ai": true,
+      "maximum_diameter_ai": true,
+      "lifespan_ai": true,
+      "maximum_tree_age_ai": true,
+      "stewardship_best_practices_ai": true,
+      "planting_recipes_ai": true,
+      "pruning_maintenance_ai": true,
+      "disease_pest_management_ai": true,
+      "fire_management_ai": true,
+      "cultural_significance_ai": true
+    }
+  }
+}

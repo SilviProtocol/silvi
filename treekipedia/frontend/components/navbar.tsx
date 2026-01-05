@@ -3,11 +3,9 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useAccount } from 'wagmi'
-import { Menu, User, X } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { WalletConnectButton } from "./wallet-connect-button"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 
 /**
  * Enhanced Navbar component combining elements from the current implementation
@@ -15,8 +13,7 @@ import { Button } from "@/components/ui/button"
  */
 export function Navbar() {
   const pathname = usePathname()
-  const { isConnected } = useAccount()
-  
+
   // State management
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
@@ -31,11 +28,6 @@ export function Navbar() {
       href: "/analysis",
       label: "Analysis",
       active: pathname === "/analysis",
-    },
-    {
-      href: "/treederboard",
-      label: "Treederboard",
-      active: pathname === "/treederboard",
     },
     {
       href: "/about",
@@ -80,29 +72,15 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Right side: Profile and Wallet */}
+          {/* Right side: Wallet */}
           <div className="flex items-center space-x-4">
-            {/* Profile Icon (only when connected) */}
-            {isConnected && (
-              <Link href="/profile" className="inline-block">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="text-white hover:bg-white/10 border border-transparent hover:border-white/20"
-                >
-                  <User className="h-5 w-5" />
-                  <span className="sr-only">Profile</span>
-                </Button>
-              </Link>
-            )}
-            
             {/* Wallet Connection */}
             <div className="wallet-container relative">
               <WalletConnectButton />
             </div>
-            
+
             {/* Mobile menu button */}
-            <button 
+            <button
               className="md:hidden z-10 p-2 rounded-md text-white hover:bg-white/10"
               onClick={toggleMobileMenu}
             >
@@ -126,9 +104,9 @@ export function Navbar() {
       >
         <div className="flex flex-col space-y-4 mt-4">
           {routes.map((route) => (
-            <Link 
+            <Link
               key={route.href}
-              href={route.href} 
+              href={route.href}
               className={cn(
                 "text-white py-3 px-4 rounded-lg hover:bg-white/10 font-medium text-lg flex items-center",
                 route.active && "bg-white/5 border-l-2 border-emerald-300 pl-3 text-emerald-300"
@@ -138,21 +116,7 @@ export function Navbar() {
               {route.label}
             </Link>
           ))}
-          
-          {isConnected && (
-            <Link 
-              href="/profile" 
-              className={cn(
-                "text-white py-3 px-4 rounded-lg hover:bg-white/10 font-medium text-lg flex items-center",
-                pathname === "/profile" && "bg-white/5 border-l-2 border-emerald-300 pl-3 text-emerald-300"
-              )}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              <User className="h-5 w-5 mr-2" />
-              Profile
-            </Link>
-          )}
-          
+
           <div className="pt-4 border-t border-white/20">
             <div className="flex justify-center" onClick={() => setMobileMenuOpen(false)}>
               <WalletConnectButton />

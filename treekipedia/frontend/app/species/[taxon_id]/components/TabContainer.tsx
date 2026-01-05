@@ -38,7 +38,7 @@ export function TabContainer({
   return (
     <div>
       {/* Tab Navigation */}
-      <div className="flex border-b border-white/20 mb-6 overflow-x-auto">
+      <div className="flex border-b border-white/15 mb-6 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
         <button
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 whitespace-nowrap ${

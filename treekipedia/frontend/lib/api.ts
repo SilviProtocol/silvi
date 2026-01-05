@@ -111,6 +111,23 @@ export const fundResearch = async (
 };
 
 /**
+ * Trigger AI research for a species (simple endpoint, no web3)
+ */
+export const triggerResearch = async (taxon_id: string): Promise<{
+  success: boolean;
+  taxon_id: string;
+  scientific_name?: string;
+  fields_filled?: number;
+  fields_total?: number;
+  duration_ms?: number;
+  error?: string;
+  data?: ResearchData;
+}> => {
+  const { data } = await apiClient.post(`/species/${taxon_id}/research`);
+  return data;
+};
+
+/**
  * Get research data for a specific species
  */
 export const getResearchData = async (taxon_id: string): Promise<ResearchData> => {

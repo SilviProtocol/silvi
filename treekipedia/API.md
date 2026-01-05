@@ -810,6 +810,113 @@ Get overall statistics about the geospatial data.
 
 ---
 
+### LEAF™ Score - Species Recommendations
+
+Get species recommendations ranked by LEAF™ (Location-based Ecological Aptness Forecast) score for any location. Supports ecoregion ID, point coordinates, or polygon geometry.
+
+**Endpoints:**
+- `GET /api/geospatial/leaf/score` - For eco_id or lat/lng queries
+- `POST /api/geospatial/leaf/score` - For polygon geometry
+
+**Query Parameters:**
+- `eco_id` (optional): Direct ecoregion ID lookup (e.g., "331")
+- `lat` (optional): Latitude for point lookup
+- `lng` (optional): Longitude for point lookup
+- `limit` (optional): Maximum species to return (default: 500)
+- `min_score` (optional): Minimum LEAF score threshold (default: 0)
+
+**Request Body (POST only):**
+```json
+{
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[[-83.5, 35.0], [-82.0, 35.0], [-82.0, 36.5], [-83.5, 36.5], [-83.5, 35.0]]]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "ecoregions": [
+    {
+      "eco_id": "331",
+      "eco_name": "Appalachian-Blue Ridge forests",
+      "biome_name": "Temperate Broadleaf & Mixed Forests",
+      "realm": "Nearctic",
+      "weight": 1.0
+    }
+  ],
+  "countries": ["United States"],
+  "methodology": {
+    "version": "1.0",
+    "formula": "weighted_affinity = (occurrence_count × tile_count) × native_multiplier",
+    "native_boost": 2.0,
+    "introduced": "excluded",
+    "data_sources": ["GBIF occurrences via geohash tiles", "WCVP native/introduced status"]
+  },
+  "statistics": {
+    "total_in_pool": 3292,
+    "introduced_excluded": 468,
+    "native_species": 98,
+    "unknown_status": 2,
+    "qualifying_species": 100
+  },
+  "species": [
+    {
+      "taxon_id": "AngMaFaFgCx14604-00",
+      "scientific_name": "Quercus alba",
+      "common_name": "White Oak",
+      "family": "Fagaceae",
+      "genus": "Quercus",
+      "leaf_score": 100.0,
+      "tier": "BEST",
+      "is_native": true,
+      "occurrence_count": 120816,
+      "tile_count": 12307,
+      "ecoregion_count": 1
+    }
+  ]
+}
+```
+
+**Algorithm:**
+1. **Pool**: Union of WCVP native species + species with GBIF occurrences
+2. **Exclusion**: Species marked as introduced in WCVP are excluded
+3. **Affinity**: `occurrence_count × tile_count × native_multiplier`
+   - Native species: ×2.0 boost
+   - Unknown status: ×1.0 (neutral)
+4. **Score**: Percentile rank (0-100) within the pool
+
+**Tier Classification:**
+| Tier | Score Range | Meaning |
+|------|-------------|---------|
+| BEST | 90-100 | Top 10% - Highly recommended |
+| GOOD | 70-89 | Next 20% - Appropriate choice |
+| ACCEPTABLE | 50-69 | Middle tier - Viable option |
+| LOW | <50 | Below threshold |
+
+**Multi-Ecoregion Support:**
+For polygons spanning multiple ecoregions, scores are weighted by intersection area. Species appearing in multiple ecoregions show `ecoregion_count > 1`.
+
+**Example Requests:**
+```bash
+# By ecoregion ID
+curl "https://treekipedia-api.silvi.earth/api/geospatial/leaf/score?eco_id=331&limit=50"
+
+# By coordinates
+curl "https://treekipedia-api.silvi.earth/api/geospatial/leaf/score?lat=35.5951&lng=-82.5515"
+
+# By polygon
+curl -X POST "https://treekipedia-api.silvi.earth/api/geospatial/leaf/score" \
+  -H "Content-Type: application/json" \
+  -d '{"geometry": {"type": "Polygon", "coordinates": [...]}}'
+```
+
+**Usage:** Bioregional reforestation campaigns, native species recommendations, ecological restoration planning.
+
+---
+
 ## Missing API Endpoints
 
 Based on the frontend requirements in the spec sheet, these endpoints may be needed but aren't currently implemented:
