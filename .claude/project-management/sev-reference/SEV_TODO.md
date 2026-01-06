@@ -1,0 +1,304 @@
+# TODO.md - Treekipedia Implementation Plan
+
+Active tasks and planned work. See CHANGELOG.md for completed features.
+
+**Planning docs**: Detailed plans for each section are in `docs/todo/`. When complete, move to `docs/completed/`.
+
+---
+
+## [IN PROGRESS] - LEAF™ Scoring Engine
+
+**Status**: Algorithm tested, implementation starting
+**Planning Doc**: [docs/todo/LEAF.md](docs/todo/LEAF.md)
+**Reference**: [docs/RECOMMENDATION_SERVICE.md](docs/RECOMMENDATION_SERVICE.md)
+
+**LEAF™** = **Location-based Ecological Aptness Forecast**
+
+### MVP: Union Pool + Native Boost + Introduced Exclusion ✅ IMPLEMENTED
+**Goal**: Point/Polygon/Ecoregion → Native-aware species recommendations
+
+**Endpoint**: `GET/POST /api/geospatial/leaf/score`
+- `?eco_id=331` - Direct ecoregion ID lookup
+- `?eco_name=Appalachian-Blue%20Ridge%20forests` - Ecoregion name lookup
+- `?lat=35.5&lng=-82.5` - Point lookup
+- POST with `{ geometry: {...} }` - Polygon (multi-ecoregion weighted)
+
+**Integration Guide**: [docs/LEAF_INTEGRATION_GUIDE.md](docs/LEAF_INTEGRATION_GUIDE.md)
+
+**Tested on Appalachian-Blue Ridge:**
+- 3,292 species in pool (natives + occurrences)
+- 468 introduced species excluded (Tree of Heaven, Mimosa, etc.)
+- Top results: White Oak, Red Maple, Red Oak, Black Cherry (iconic natives)
+
+**Algorithm:**
+```
+Pool = WCVP natives for region UNION occurrence species
+     MINUS species in wcvp_introduced
+
+Affinity = (occurrence_count × tile_count) × native_multiplier
+  - Native: ×2.0 boost
+  - Unknown: ×1.0 neutral
+  - Introduced: EXCLUDED
+
+LEAF Score = percentile rank (0-100)
+```
+
+**Remaining Tasks:**
+- [ ] Add index on `eco_id` column for query performance
+- [ ] Test on all 12 target bioregional campaign ecoregions
+- [ ] CSV export for campaign distribution
+
+### v1.1: Biome Matching (after MVP)
+- [ ] Add biome match modifier (×1.2 bonus / ×0.8 penalty)
+- [ ] Include biome_match flag in API response
+
+### v1.2: Commercial Penalty (after v1.1)
+- [ ] Add commercial species penalty (×0.7)
+- [ ] Include is_commercial flag in API response
+
+### v1.3: Family Diversity Quotas (after v1.2)
+- [ ] Post-filter: Cap 15-20 species per family in BEST tier
+- [ ] Report family distribution in API response
+
+---
+
+## [IN PROGRESS] - Geohash Occurrence Data Import
+
+**Status**: Planning complete, ready for implementation
+**Priority**: HIGH - Blocks updated LEAF scoring with 10M+ new occurrences
+**Planning Doc**: [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md)
+
+Import system for updated compressed geohash occurrence data. Supports full refresh (current need) and incremental updates (future need).
+
+**Current State**: 5.79M tiles, 94.4M occurrences, data ~1 year outdated
+**Target State**: ~6M+ tiles, 104M+ occurrences, new compression algorithm
+
+### Phase 1: Full Refresh Import (Current)
+- [ ] Create ecoregion cache backup SQL
+- [ ] Write `import_geohash_csv_v2.js` with array→object transformation
+- [ ] Add WKT geometry support (use pre-computed instead of ST_GeomFromGeoHash)
+- [ ] Add taxon_id validation against species table
+- [ ] Test on sample file (`test_tile_compressed.csv`)
+- [ ] Run full import on production data
+- [ ] Restore ecoregion assignments from cache
+- [ ] Run spatial assignment for new tiles only
+- [ ] Verify LEAF scoring still works
+- [ ] Update ACTIVE.md with new occurrence counts
+
+### Phase 2: Incremental Import Infrastructure (Future)
+- [ ] Create `merge_species_data()` PostgreSQL function
+- [ ] Add `--incremental` mode to import script
+- [ ] Test merge logic with sample data
+- [ ] Document incremental import workflow
+
+**Key Transformation**:
+```
+CSV format:   [{"taxon_id": "ABC-00", "count": 5}, ...]  (array)
+DB format:    {"ABC-00": 5, ...}                         (object)
+```
+
+**Ecoregion Preservation Strategy**:
+1. Cache 5.6M ecoregion assignments before truncate
+2. Restore via geohash lookup after import (fast, no spatial query)
+3. Only new tiles need expensive spatial assignment
+
+---
+
+## [IN PROGRESS] - Frontend v10 Field Implementation
+
+**Status**: Backend v10 migration complete, frontend display pending
+**Planning Doc**: [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md)
+
+### Species Detail Page Updates
+- [ ] Implement ClimateProfile component display (Köppen-Geiger, temperature, precipitation)
+- [ ] Implement EcologicalInteractions component (GloBI data visualization)
+- [ ] Add SBTN land cover display to species pages
+- [ ] Update TypeScript types in `lib/types.ts` for new v10 fields
+- [ ] Test all new field displays across species with varying data coverage
+
+### Ecoregion Frontend Integration
+- [ ] Display ecoregion data in CrossAnalysisSummary
+- [ ] Add ecoregion-based analysis option alongside country-based
+- [ ] Create UI toggle for country vs ecoregion analysis mode
+- [ ] Show ecoregion metadata (name, biome, realm) in results
+- [ ] Optional: Add ecoregion boundary visualization on map
+
+---
+
+## [HIGH PRIORITY] - Documentation & API
+
+**Status**: Core docs need alignment with new system
+
+### API Documentation
+- [ ] Document new `/api/geospatial/analyze-plot` cross-analysis response format in API.md
+- [ ] Document all 7 ecoregion endpoints in API.md
+- [ ] Add examples of cross-analysis responses to PUBLIC_API_GUIDE.md
+- [ ] Complete PUBLIC_API_GUIDE.md (currently nearly empty)
+- [ ] Add OpenAPI/Swagger documentation
+
+### Code Quality
+- [ ] Write tests for native status analysis functionality
+- [ ] Write tests for ecoregion endpoints
+- [ ] Add comprehensive error handling for cross-analysis edge cases
+
+---
+
+## [MEDIUM PRIORITY] - Database & Performance
+
+**Status**: Functional, optimization opportunities exist
+
+### Codebase Migration: taxon_full
+- [ ] Migrate frontend from `species_scientific_name` to `taxon_full`
+- [ ] Migrate backend API responses to use `taxon_full`
+- [ ] Update LEAF endpoint to return `taxon_full` (currently uses `scientific_name`)
+- [ ] Deprecate `species_scientific_name`, `taxon_id_new` (redundant fields)
+
+### Database Optimization
+- [ ] Add indexes on `wcvp_native` and `wcvp_introduced` columns (replaces countries_native)
+- [ ] Optimize cross-analysis query performance
+- [ ] Complete remaining 3% of ecoregion tile assignments (171k tiles)
+- [ ] Monitor query performance with larger polygon analyses
+
+### Geospatial Data Enhancement
+- [ ] Add Natural Earth Admin-1 boundaries (states/provinces shapefile)
+  - Enables precise state-ecoregion intersection queries
+  - Required for dynamic WCVP region matching instead of static lists
+  - Source: Natural Earth 10m Admin-1 States/Provinces
+- [ ] Complete WCVP region mappings for all countries with sub-national regions:
+  - [ ] Argentina (Northeast, Northwest, South)
+  - [ ] Australia (7 states/territories)
+  - [ ] Chile (Central, North, South)
+  - [ ] India (Assam, East Himalaya, West Himalaya, others)
+  - [ ] New Zealand (North, South)
+  - [ ] Russia (20+ regions)
+  - [ ] South Africa (4 provinces)
+- [ ] Verify WCVP region mappings against actual ecoregion intersections
+
+### Backend Enhancements
+- [ ] Create helper functions for country name mapping/normalization
+- [ ] Add caching for frequent country polygon intersections
+- [ ] Implement query result caching for repeated analysis requests
+- [ ] Add request rate limiting for analysis endpoints
+
+### Cleanup Tasks
+- [ ] Archive `/scripts/research/` test files (48 files, 4.1MB)
+- [ ] Remove unused test files from recent migrations
+- [ ] Clean up temporary scripts
+
+---
+
+## [FUTURE] - Advanced Features
+
+### Unified Zone Schema
+**Status**: Planning
+**Planning Doc**: [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md)
+
+A unified schema for all environmental/geographic zones (biomes, ecoregions, land types, climate zones) with pre-computed connectivity. Solves the "continuous boundary problem" by clustering fragmented but logically connected regions.
+
+- [ ] Create treekipedia_zones master table
+- [ ] Create zone_connectivity table (pre-computed adjacency)
+- [ ] Create zone_clusters table (cluster summaries)
+- [ ] Migrate 847 WWF ecoregions to unified schema
+- [ ] Implement cluster assignment algorithm
+- [ ] Update geospatial API to use unified schema
+- [ ] Add cluster-aware LEAF scoring option
+- [ ] Import additional datasets (ESA CCI Land Cover, Köppen-Geiger climate zones)
+
+### AI Research Enhancement
+- [ ] Analyze Claude 3.5 Haiku vs Grok 3 Mini testing results
+- [ ] Decide on production integration strategy
+- [ ] Implement improved 3-group research strategy (Ecological, Morphological, Stewardship)
+
+### Blazegraph Knowledge Graph
+- [ ] Assess current Blazegraph instance vs Fuseki capabilities
+- [ ] Research SPARQL query patterns for species relationships
+- [ ] Evaluate RDF data modeling for taxonomic hierarchies
+- [ ] Plan data modeling: species-ecosystem-location-taxonomy in RDF
+
+### Advanced Analysis Features
+- [ ] Multi-country polygon analysis (species crossing borders)
+- [ ] Temporal analysis capabilities (species changes over time)
+- [ ] Biodiversity metrics (Shannon diversity, Simpson index)
+- [ ] Species co-occurrence analysis
+- [ ] Elevation-based analysis using terrain data
+- [ ] Climate zone cross-referencing
+
+### Data Enrichment
+- [ ] Integrate climate data for species-environment correlations
+- [ ] Add elevation data for elevation range analysis
+- [ ] Consider IUCN Red List integration for conservation status
+- [ ] Explore trait data integration for functional diversity
+
+### User Experience
+- [ ] Export as GeoJSON (species locations with metadata)
+- [ ] Export as JSON (full analysis results)
+- [ ] Analysis history and saved polygon management
+- [ ] Comparison tools for multiple polygon analyses
+- [ ] Interactive D3.js visualizations
+- [ ] Share analysis via unique URL
+
+---
+
+## [BACKLOG] - Long-term Vision
+
+### Community Features
+- [ ] User accounts and saved analyses
+- [ ] Public sharing of analysis results
+- [ ] Community-contributed species observations
+- [ ] Collaborative research notes
+
+### Advanced Visualizations
+- [ ] 3D terrain visualization with species distribution
+- [ ] Time-series animation of species spread
+- [ ] Interactive phylogenetic trees
+- [ ] Heat maps of biodiversity hotspots
+
+### External Integrations
+- [ ] GBIF data sync
+- [ ] iNaturalist observations integration
+- [ ] eBird data for bird species
+- [ ] Forest inventory data from national databases
+
+### Open Data & Governance
+- [ ] Automated monthly exports to IPFS
+- [ ] Database schema documentation to EAS
+- [ ] RDF/Turtle exports for semantic web
+- [ ] Version control for dataset changes
+
+---
+
+## Priority Order
+
+1. **Geohash Occurrence Import** - Blocks LEAF scoring with fresh data (10M+ new occurrences)
+2. **LEAF™ Scoring Engine** - Critical for $100K bioregional campaigns
+3. **Frontend v10 Implementation** - Display new climate/ecological data
+4. **Documentation Updates** - API docs critical for users
+5. **Database Optimization** - Performance improvements
+6. **Advanced Features** - Long-term enhancements
+
+---
+
+## Planning Documents
+
+| Section | Planning Doc | Status |
+|---------|--------------|--------|
+| LEAF™ Scoring | [docs/todo/LEAF.md](docs/todo/LEAF.md) | Active |
+| Geohash Import | [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md) | Active |
+| Frontend v10 | [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md) | Active |
+| Unified Zone Schema | [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md) | Planning |
+
+**Reference Documentation** (in `docs/`):
+- **RECOMMENDATION_SERVICE.md** - Species recommendation service specification
+- **SPECIES_NATIVE_STATUS_ROADMAP.md** - Native status scoring roadmap
+- **LIGHTPAPER.md** - Project vision
+- **SPEC_SHEET.md** - Feature specifications
+- **TREEKIPEDIA_EXTENSIVE.md** - Architectural vision
+
+---
+
+## Documentation References
+
+- **GO.md** - Onboarding procedure
+- **ACTIVE.md** - Current system status
+- **CHANGELOG.md** - Completed features
+- **README.md** - Architecture overview

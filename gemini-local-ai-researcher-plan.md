@@ -185,3 +185,5 @@ This will be a new set of pages within the existing `treekipedia/frontend` Next.
 - **Database**:
   - Existing PostgreSQL with PostGIS.
   - [Apache AGE](https://age.apache.org/) extension for graph queries.
+
+

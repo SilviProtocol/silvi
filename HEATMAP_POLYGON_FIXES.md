@@ -377,3 +377,4 @@ const loadHeatmap = async () => {
 2. **Polygon Intersection**: Use proper polygon intersection instead of point-in-polygon for geohash tiles
 3. **Caching**: Cache filtered results to avoid re-filtering on map movements
 4. **Progressive Loading**: Load heatmap data progressively as user zooms in
+

@@ -1,0 +1,437 @@
+openapi: 3.0.3
+info:
+  title: Treekipedia Python Microservice API
+  description: |
+    Headless Python backend for GraphFlow functionality integrated into Treekipedia.
+
+    This microservice provides:
+    - OWL/RDF ontology generation using owlready2 and rdflib
+    - PostgreSQL → Apache Fuseki synchronization
+    - Google Sheets integration for ontology import
+    - Multi-sheet biodiversity ontology generation
+
+    **Security**: This service should ONLY be accessible from the Express backend (localhost:5001).
+    It is NOT intended to be publicly exposed.
+  version: 1.0.0
+  contact:
+    name: Treekipedia Development Team
+servers:
+  - url: http://localhost:5002
+    description: Local development server
+  - url: http://localhost:5002
+    description: Production (internal only)
+
+tags:
+  - name: Health
+    description: Health check and status endpoints
+  - name: Sync
+    description: PostgreSQL → Fuseki synchronization
+  - name: Ontology
+    description: OWL/RDF ontology generation
+  - name: SPARQL
+    description: SPARQL query execution
+  - name: Versions
+    description: Ontology version management
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Returns service health status and version information
+      responses:
+        '200':
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  service:
+                    type: string
+                    example: treekipedia-python-microservice
+                  version:
+                    type: string
+                    example: 1.0.0
+                  timestamp:
+                    type: string
+                    format: date-time
+                  graphflow_available:
+                    type: boolean
+                    description: Whether GraphFlow modules are loaded
+
+  /api/status:
+    get:
+      tags:
+        - Health
+      summary: Get service connection status
+      description: Check status of PostgreSQL, Fuseki, and GraphFlow modules
+      responses:
+        '200':
+          description: Status information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  postgres:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [connected, disconnected, unknown]
+                      message:
+                        type: string
+                  fuseki:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [connected, disconnected, unknown]
+                      message:
+                        type: string
+                  graphflow_modules:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        enum: [available, unavailable]
+
+  /api/status/fuseki:
+    get:
+      tags:
+        - Health
+      summary: Get detailed Fuseki statistics
+      description: Returns Fuseki connection status and triple count statistics
+      responses:
+        '200':
+          description: Fuseki statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: connected
+                  endpoint:
+                    type: string
+                    example: http://167.172.143.162:3030/treekipedia/sparql
+                  dataset:
+                    type: string
+                    example: treekipedia
+                  stats:
+                    type: object
+                    properties:
+                      triples:
+                        type: integer
+                        example: 1500000
+                      graphs:
+                        type: integer
+        '503':
+          description: Fuseki is disconnected or GraphFlow modules unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/sync/species:
+    post:
+      tags:
+        - Sync
+      summary: Sync species table to Fuseki
+      description: |
+        Synchronizes species data from PostgreSQL to Apache Fuseki triple store.
+        Returns Server-Sent Events stream with progress updates.
+
+        This endpoint can take 20-30 minutes for 67,743 species.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                batchSize:
+                  type: integer
+                  default: 1000
+                  description: Number of species to sync per batch
+                table:
+                  type: string
+                  default: species
+                  description: PostgreSQL table name to sync
+      responses:
+        '200':
+          description: Server-Sent Events stream
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: |
+                  SSE events with JSON data payloads:
+                  - type: "status" - Status update message
+                  - type: "progress" - Progress update with percentage
+                  - type: "complete" - Sync completed successfully
+                  - type: "error" - Error occurred
+              example: |
+                data: {"type":"status","message":"Starting sync..."}
+
+                data: {"type":"progress","message":"Syncing species with batch size 1000..."}
+
+                data: {"type":"complete","message":"Sync completed successfully"}
+        '503':
+          description: GraphFlow modules not available
+
+  /api/sync/incremental:
+    post:
+      tags:
+        - Sync
+      summary: Incremental sync (only new/updated species)
+      description: Syncs only species added or updated since a given timestamp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                since:
+                  type: string
+                  format: date-time
+                  description: ISO timestamp - only sync species modified after this time
+                  example: "2025-01-01T00:00:00Z"
+      responses:
+        '200':
+          description: Incremental sync completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  synced:
+                    type: integer
+                    description: Number of species synced
+                  message:
+                    type: string
+        '500':
+          description: Sync error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/ontology/generate:
+    post:
+      tags:
+        - Ontology
+      summary: Generate OWL ontology from CSV files
+      description: |
+        Upload CSV files and generate OWL/RDF ontology using multi-sheet biodiversity generator.
+        Supports automatic field detection and relationship mapping.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                  description: CSV files to process
+      responses:
+        '200':
+          description: Ontology generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  ontology_path:
+                    type: string
+                    description: Path to generated OWL file
+                  field_detection:
+                    type: object
+                    description: Detected fields from CSV files
+                  quality_score:
+                    type: number
+                    description: Ontology quality score (0-100)
+        '400':
+          description: No files uploaded
+        '500':
+          description: Generation error
+
+  /api/ontology/from-sheets:
+    post:
+      tags:
+        - Ontology
+      summary: Generate ontology from Google Sheets
+      description: Import data from Google Sheets and generate OWL ontology
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - spreadsheetId
+              properties:
+                spreadsheetId:
+                  type: string
+                  description: Google Sheets ID
+                  example: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+                sheets:
+                  type: array
+                  items:
+                    type: string
+                  description: Specific sheet names to process (optional - processes all if omitted)
+      responses:
+        '200':
+          description: Ontology generated from sheets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  ontology_path:
+                    type: string
+                  sheets_processed:
+                    type: array
+                    items:
+                      type: string
+                  field_detection:
+                    type: object
+        '400':
+          description: Missing spreadsheetId
+        '500':
+          description: Generation error
+
+  /api/sparql/query:
+    post:
+      tags:
+        - SPARQL
+      summary: Execute SPARQL query against Fuseki
+      description: Run arbitrary SPARQL queries against the Fuseki triple store
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - query
+              properties:
+                query:
+                  type: string
+                  description: SPARQL query string
+                  example: |
+                    PREFIX bd: <http://www.example.org/biodiversity-ontology#>
+                    SELECT ?species ?name WHERE {
+                      ?species bd:scientificName ?name .
+                    } LIMIT 10
+      responses:
+        '200':
+          description: Query results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  results:
+                    type: object
+                    description: SPARQL query results in JSON format
+        '400':
+          description: Missing query parameter
+        '500':
+          description: Query execution error
+
+  /api/versions:
+    get:
+      tags:
+        - Versions
+      summary: List all ontology versions
+      description: Get list of all ontology version snapshots
+      responses:
+        '200':
+          description: List of versions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        version:
+                          type: string
+                        timestamp:
+                          type: string
+                          format: date-time
+                        description:
+                          type: string
+                  message:
+                    type: string
+
+  /api/versions/create:
+    post:
+      tags:
+        - Versions
+      summary: Create new ontology version snapshot
+      description: Create a new version snapshot of the current ontology
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  description: Version description
+      responses:
+        '200':
+          description: Version created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  version:
+                    type: string
+                  message:
+                    type: string
+
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+      required:
+        - error
+
+  securitySchemes:
+    internal:
+      type: apiKey
+      in: header
+      name: X-Internal-Auth
+      description: Internal authentication token (Express backend only)
+
+security:
+  - internal: []

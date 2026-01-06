@@ -1,0 +1,2581 @@
+/Users/djimoserodio/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+✅ Earth Engine initialized (project: treekipedia-476404)
+======================================================================
+ALPHAEARTH EMBEDDINGS - 100 SPECIES PILOT (PRODUCTION)
+======================================================================
+
+Features:
+  ✓ Auto-retry on failures (up to 3 attempts)
+  ✓ Checkpoint/resume system (survives crashes)
+  ✓ Progress tracking with ETA
+  ✓ Can safely Ctrl+C and resume later
+
+Architecture:
+  GBIF Parquet (local) → Python → GEE → BigQuery
+
+GBIF data: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/gbif_occurrences_top100_gps.parquet
+Checkpoint file: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/checkpoints.json
+======================================================================
+
+📊 Loading GBIF occurrence data...
+✅ Loaded 95,934 occurrences from 100 species
+
+Checkpoint status:
+  ✅ Completed: 0
+  ❌ Failed: 0
+  ⏳ In progress: 0
+  🔄 Retry queue: 0
+
+📋 Preparing species list...
+✅ Ready to process 100 species
+
+
+[1/100] 
+======================================================================
+Processing: Castanea sativa Mill. (AngMaFaFgCx14165-00)
+Occurrence count: 69,651
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 69,651 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14165-00_20251027_211255)...
+
+  📦 Exporting batch: AngMaFaFgCx14165-00_20251027_211255
+     Points: 69651, Tasks: ~35
+     ✓ Task 1/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk000 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 2/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk001 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 3/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk002 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 4/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk003 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 5/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk004 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 6/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk005 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 7/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk006 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 8/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk007 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 9/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk008 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 10/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk009 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 11/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk010 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 12/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk011 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 13/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk012 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 14/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk013 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 15/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk014 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 16/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk015 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 17/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk016 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 18/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk017 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 19/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk018 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 20/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk019 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 21/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk020 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 22/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk021 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 23/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk022 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 24/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk023 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 25/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk024 (2000 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 26/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk025 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 27/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk026 (2000 pts, years: [2018, 2019, 2020, 2021, 2022, 2023])
+     ✓ Task 28/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk027 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023])
+     ✓ Task 29/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk028 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 30/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk029 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 31/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk030 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 32/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk031 (2000 pts, years: [2017, 2018, 2019])
+     ✓ Task 33/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk032 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 34/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk033 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022])
+     ✓ Task 35/35: ae_AngMaFaFgCx14165-00_20251027_211255_chunk034 (1651 pts, years: [2017, 2018, 2019, 2020])
+
+  ⏳ Waiting for 35 GEE tasks...
+
+  ⏳ Monitoring 35 GEE tasks...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ⏳ 35 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/35)
+     ✅ Task completed (2/35)
+     ⏳ 33 tasks still pending (next check in 30s)...
+     ✅ Task completed (3/35)
+     ✅ Task completed (4/35)
+     ✅ Task completed (5/35)
+     ⏳ 30 tasks still pending (next check in 30s)...
+     ✅ Task completed (6/35)
+     ✅ Task completed (7/35)
+     ✅ Task completed (8/35)
+     ✅ Task completed (9/35)
+     ⏳ 26 tasks still pending (next check in 30s)...
+     ✅ Task completed (10/35)
+     ✅ Task completed (11/35)
+     ⏳ 24 tasks still pending (next check in 30s)...
+     ✅ Task completed (12/35)
+     ✅ Task completed (13/35)
+     ✅ Task completed (14/35)
+     ⏳ 21 tasks still pending (next check in 30s)...
+     ✅ Task completed (15/35)
+     ✅ Task completed (16/35)
+     ✅ Task completed (17/35)
+     ⏳ 18 tasks still pending (next check in 30s)...
+     ✅ Task completed (18/35)
+     ✅ Task completed (19/35)
+     ✅ Task completed (20/35)
+     ✅ Task completed (21/35)
+     ⏳ 14 tasks still pending (next check in 30s)...
+     ✅ Task completed (22/35)
+     ✅ Task completed (23/35)
+     ✅ Task completed (24/35)
+     ⏳ 11 tasks still pending (next check in 30s)...
+     ✅ Task completed (25/35)
+     ✅ Task completed (26/35)
+     ⏳ 9 tasks still pending (next check in 30s)...
+     ✅ Task completed (27/35)
+     ✅ Task completed (28/35)
+     ⏳ 7 tasks still pending (next check in 30s)...
+     ✅ Task completed (29/35)
+     ✅ Task completed (30/35)
+     ⏳ 5 tasks still pending (next check in 30s)...
+     ✅ Task completed (31/35)
+     ✅ Task completed (32/35)
+     ✅ Task completed (33/35)
+     ⏳ 2 tasks still pending (next check in 30s)...
+     ✅ Task completed (34/35)
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (35/35)
+
+  ✅ All tasks completed successfully!
+
+
+[2/100] 
+======================================================================
+Processing: Acacia pycnantha Benth. (AngMaFaFbCx09400-00)
+Occurrence count: 2,853
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 2,853 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09400-00_20251027_213820)...
+
+  📦 Exporting batch: AngMaFaFbCx09400-00_20251027_213820
+     Points: 2853, Tasks: ~2
+     ✓ Task 1/2: ae_AngMaFaFbCx09400-00_20251027_213820_chunk000 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 2/2: ae_AngMaFaFbCx09400-00_20251027_213820_chunk001 (853 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 2 GEE tasks...
+
+  ⏳ Monitoring 2 GEE tasks...
+     ✅ Task completed (1/2)
+     ✅ Task completed (2/2)
+
+  ✅ All tasks completed successfully!
+
+
+[3/100] 
+======================================================================
+Processing: Quercus rotundifolia Lam. (AngMaFaFgCx14890-00)
+Occurrence count: 2,390
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 2,390 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14890-00_20251027_213853)...
+
+  📦 Exporting batch: AngMaFaFgCx14890-00_20251027_213853
+     Points: 2390, Tasks: ~2
+     ✓ Task 1/2: ae_AngMaFaFgCx14890-00_20251027_213853_chunk000 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 2/2: ae_AngMaFaFgCx14890-00_20251027_213853_chunk001 (390 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 2 GEE tasks...
+
+  ⏳ Monitoring 2 GEE tasks...
+     ❌ Task failed: Feature [1_1_1_1_1_1_2_63_0] has value of incompatible type for property [longitude].
+     ✅ Task completed (1/2)
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 1/3)
+
+
+[4/100] 
+======================================================================
+Processing: Acacia cyclops A.Cunn. ex G.Don (AngMaFaFbCx09174-00)
+Occurrence count: 2,066
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 2,066 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09174-00_20251027_213926)...
+
+  📦 Exporting batch: AngMaFaFbCx09174-00_20251027_213926
+     Points: 2066, Tasks: ~2
+     ✓ Task 1/2: ae_AngMaFaFbCx09174-00_20251027_213926_chunk000 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 2/2: ae_AngMaFaFbCx09174-00_20251027_213926_chunk001 (66 pts, years: [2017, 2018, 2019])
+
+  ⏳ Waiting for 2 GEE tasks...
+
+  ⏳ Monitoring 2 GEE tasks...
+     ✅ Task completed (1/2)
+     ✅ Task completed (2/2)
+
+  ✅ All tasks completed successfully!
+
+
+[5/100] 
+======================================================================
+Processing: Eucalyptus obliqua L'Hér. (AngMaMyMyRt37891-00)
+Occurrence count: 1,614
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 1,614 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37891-00_20251027_213958)...
+
+  📦 Exporting batch: AngMaMyMyRt37891-00_20251027_213958
+     Points: 1614, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37891-00_20251027_213958_chunk000 (1614 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 4/100 (4.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 1
+⏳ Remaining: 96/100
+⏱️  Elapsed: 0:27:36.123375
+🕐 ETA: 11:02:26
+======================================================================
+
+
+
+[6/100] 
+======================================================================
+Processing: Acacia floribunda (Vent.) Willd. (AngMaFaFbCx09228-00)
+Occurrence count: 1,082
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 1,082 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09228-00_20251027_214030)...
+
+  📦 Exporting batch: AngMaFaFbCx09228-00_20251027_214030
+     Points: 1082, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09228-00_20251027_214030_chunk000 (1082 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[7/100] 
+======================================================================
+Processing: Acacia decurrens Willd. (AngMaFaFbCx09182-00)
+Occurrence count: 1,011
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 1,011 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09182-00_20251027_214101)...
+
+  📦 Exporting batch: AngMaFaFbCx09182-00_20251027_214101
+     Points: 1011, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09182-00_20251027_214101_chunk000 (1011 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[8/100] 
+======================================================================
+Processing: Angophora inopina K.D.Hill (AngMaMyMyRt37252-00)
+Occurrence count: 957
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 957 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37252-00_20251027_214132)...
+
+  📦 Exporting batch: AngMaMyMyRt37252-00_20251027_214132
+     Points: 957, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37252-00_20251027_214132_chunk000 (957 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[9/100] 
+======================================================================
+Processing: Eucalyptus propinqua H.Deane & Maiden (AngMaMyMyRt37968-00)
+Occurrence count: 882
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 882 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37968-00_20251027_214203)...
+
+  📦 Exporting batch: AngMaMyMyRt37968-00_20251027_214203
+     Points: 882, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37968-00_20251027_214203_chunk000 (882 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[10/100] 
+======================================================================
+Processing: Syzygium australe (J.C.Wendl. ex Link) B.Hyland (AngMaMyMyRt39985-00)
+Occurrence count: 844
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 844 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39985-00_20251027_214234)...
+
+  📦 Exporting batch: AngMaMyMyRt39985-00_20251027_214234
+     Points: 844, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39985-00_20251027_214234_chunk000 (844 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 9/100 (9.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 1
+⏳ Remaining: 91/100
+⏱️  Elapsed: 0:30:11.611616
+🕐 ETA: 5:05:17
+======================================================================
+
+
+
+[11/100] 
+======================================================================
+Processing: Senna didymobotrya (Fresen.) H.S.Irwin & Barneby (AngMaFaFbCx13105-00)
+Occurrence count: 792
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 792 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13105-00_20251027_214306)...
+
+  📦 Exporting batch: AngMaFaFbCx13105-00_20251027_214306
+     Points: 792, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13105-00_20251027_214306_chunk000 (792 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[12/100] 
+======================================================================
+Processing: Salix caroliniana Michx. (AngMaMaSlCc32585-00)
+Occurrence count: 705
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 705 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32585-00_20251027_214337)...
+
+  📦 Exporting batch: AngMaMaSlCc32585-00_20251027_214337
+     Points: 705, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32585-00_20251027_214337_chunk000 (705 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[13/100] 
+======================================================================
+Processing: Angophora robur L.A.S.Johnson & K.D.Hill (AngMaMyMyRt37255-00)
+Occurrence count: 667
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 667 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37255-00_20251027_214408)...
+
+  📦 Exporting batch: AngMaMyMyRt37255-00_20251027_214408
+     Points: 667, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37255-00_20251027_214408_chunk000 (667 pts, years: [2017, 2018, 2019, 2020, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[14/100] 
+======================================================================
+Processing: Pinus coulteri D.Don (GymPiPiPnCx50757-00)
+Occurrence count: 634
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 634 occurrence points
+  🚀 Submitting to GEE (batch: GymPiPiPnCx50757-00_20251027_214439)...
+
+  📦 Exporting batch: GymPiPiPnCx50757-00_20251027_214439
+     Points: 634, Tasks: ~1
+     ✓ Task 1/1: ae_GymPiPiPnCx50757-00_20251027_214439_chunk000 (634 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[15/100] 
+======================================================================
+Processing: Senegalia roemeriana (Scheele) Britton & Rose (AngMaFaFbCx13060-00)
+Occurrence count: 569
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 569 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13060-00_20251027_214540)...
+
+  📦 Exporting batch: AngMaFaFbCx13060-00_20251027_214540
+     Points: 569, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13060-00_20251027_214540_chunk000 (569 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 14/100 (14.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 1
+⏳ Remaining: 86/100
+⏱️  Elapsed: 0:33:16.742903
+🕐 ETA: 3:24:25
+======================================================================
+
+
+
+[16/100] 
+======================================================================
+Processing: Quercus hypoleucoides A.Camus (AngMaFaFgCx14757-00)
+Occurrence count: 524
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 524 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14757-00_20251027_214611)...
+
+  📦 Exporting batch: AngMaFaFgCx14757-00_20251027_214611
+     Points: 524, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFgCx14757-00_20251027_214611_chunk000 (524 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[17/100] 
+======================================================================
+Processing: Vachellia xanthophloea (Benth.) Banfi & Galasso (AngMaFaFbCx13735-00)
+Occurrence count: 510
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 510 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13735-00_20251027_214642)...
+
+  📦 Exporting batch: AngMaFaFbCx13735-00_20251027_214642
+     Points: 510, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13735-00_20251027_214642_chunk000 (510 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[18/100] 
+======================================================================
+Processing: Anagyris foetida L. (AngMaFaFbCx09695-00)
+Occurrence count: 444
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 444 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09695-00_20251027_214712)...
+
+  📦 Exporting batch: AngMaFaFbCx09695-00_20251027_214712
+     Points: 444, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09695-00_20251027_214712_chunk000 (444 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[19/100] 
+======================================================================
+Processing: Eucalyptus haemastoma Sm. (AngMaMyMyRt37750-00)
+Occurrence count: 389
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 389 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37750-00_20251027_214744)...
+
+  📦 Exporting batch: AngMaMyMyRt37750-00_20251027_214744
+     Points: 389, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37750-00_20251027_214744_chunk000 (389 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[20/100] 
+======================================================================
+Processing: Eucalyptus caliginosa Blakely & Mc Kie (AngMaMyMyRt37558-00)
+Occurrence count: 360
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 360 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37558-00_20251027_214814)...
+
+  📦 Exporting batch: AngMaMyMyRt37558-00_20251027_214814
+     Points: 360, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37558-00_20251027_214814_chunk000 (360 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ❌ Task failed: Feature [1_1_1_1_1_1_2_290_0] has value of incompatible type for property [longitude].
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 1/3)
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 18/100 (18.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 82/100
+⏱️  Elapsed: 0:35:51.312132
+🕐 ETA: 2:43:20
+======================================================================
+
+
+
+[21/100] 
+======================================================================
+Processing: Eucalyptus nortonii (Blakely) L.A.S.Johnson (AngMaMyMyRt37883-00)
+Occurrence count: 346
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 346 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37883-00_20251027_214845)...
+
+  📦 Exporting batch: AngMaMyMyRt37883-00_20251027_214845
+     Points: 346, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37883-00_20251027_214845_chunk000 (346 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[22/100] 
+======================================================================
+Processing: Melaleuca squarrosa Donn (AngMaMyMyRt39051-00)
+Occurrence count: 325
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 325 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39051-00_20251027_214916)...
+
+  📦 Exporting batch: AngMaMyMyRt39051-00_20251027_214916
+     Points: 325, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39051-00_20251027_214916_chunk000 (325 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[23/100] 
+======================================================================
+Processing: Acacia flocktoniae Maiden (AngMaFaFbCx09227-00)
+Occurrence count: 319
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 319 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09227-00_20251027_214946)...
+
+  📦 Exporting batch: AngMaFaFbCx09227-00_20251027_214946
+     Points: 319, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09227-00_20251027_214946_chunk000 (319 pts, years: [2018, 2021, 2022, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[24/100] 
+======================================================================
+Processing: Peltophorum africanum Sond. (AngMaFaFbCx12678-00)
+Occurrence count: 293
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 293 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx12678-00_20251027_215017)...
+
+  📦 Exporting batch: AngMaFaFbCx12678-00_20251027_215017
+     Points: 293, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx12678-00_20251027_215017_chunk000 (293 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[25/100] 
+======================================================================
+Processing: Kunzea ericoides (A.Rich.) J.Thomps. (AngMaMyMyRt38947-00)
+Occurrence count: 289
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 289 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38947-00_20251027_215048)...
+
+  📦 Exporting batch: AngMaMyMyRt38947-00_20251027_215048
+     Points: 289, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38947-00_20251027_215048_chunk000 (289 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 23/100 (23.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 77/100
+⏱️  Elapsed: 0:38:24.347607
+🕐 ETA: 2:08:34
+======================================================================
+
+
+
+[26/100] 
+======================================================================
+Processing: Erythrina lysistemon Hutch. (AngMaFaFbCx11183-00)
+Occurrence count: 275
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 275 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx11183-00_20251027_215118)...
+
+  📦 Exporting batch: AngMaFaFbCx11183-00_20251027_215118
+     Points: 275, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx11183-00_20251027_215118_chunk000 (275 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[27/100] 
+======================================================================
+Processing: Quercus oblongifolia Torr. (AngMaFaFgCx14838-00)
+Occurrence count: 258
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 258 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14838-00_20251027_215149)...
+
+  📦 Exporting batch: AngMaFaFgCx14838-00_20251027_215149
+     Points: 258, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFgCx14838-00_20251027_215149_chunk000 (258 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[28/100] 
+======================================================================
+Processing: Acacia tetragonophylla F.Muell. (AngMaFaFbCx09471-00)
+Occurrence count: 229
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 229 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09471-00_20251027_215220)...
+
+  📦 Exporting batch: AngMaFaFbCx09471-00_20251027_215220
+     Points: 229, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09471-00_20251027_215220_chunk000 (229 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[29/100] 
+======================================================================
+Processing: Acacia rubida A.Cunn. (AngMaFaFbCx09422-00)
+Occurrence count: 222
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 222 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09422-00_20251027_215251)...
+
+  📦 Exporting batch: AngMaFaFbCx09422-00_20251027_215251
+     Points: 222, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09422-00_20251027_215251_chunk000 (222 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[30/100] 
+======================================================================
+Processing: Eucalyptus porosa Miq. (AngMaMyMyRt37962-00)
+Occurrence count: 187
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 187 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37962-00_20251027_215322)...
+
+  📦 Exporting batch: AngMaMyMyRt37962-00_20251027_215322
+     Points: 187, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37962-00_20251027_215322_chunk000 (187 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 28/100 (28.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 72/100
+⏱️  Elapsed: 0:40:59.759984
+🕐 ETA: 1:45:25
+======================================================================
+
+
+
+[31/100] 
+======================================================================
+Processing: Acacia binervia (J.C.Wendl.) J.F.Macbr. (AngMaFaFbCx09116-00)
+Occurrence count: 180
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 180 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09116-00_20251027_215354)...
+
+  📦 Exporting batch: AngMaFaFbCx09116-00_20251027_215354
+     Points: 180, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09116-00_20251027_215354_chunk000 (180 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[32/100] 
+======================================================================
+Processing: Myrciaria glazioviana (Kiaersk.) G.M.Barroso ex Sobral (AngMaMyMyRt39671-00)
+Occurrence count: 177
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 177 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39671-00_20251027_215425)...
+
+  📦 Exporting batch: AngMaMyMyRt39671-00_20251027_215425
+     Points: 177, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39671-00_20251027_215425_chunk000 (177 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[33/100] 
+======================================================================
+Processing: Pilidiostigma glabrum Burret (AngMaMyMyRt39713-00)
+Occurrence count: 166
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 166 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39713-00_20251027_215456)...
+
+  📦 Exporting batch: AngMaMyMyRt39713-00_20251027_215456
+     Points: 166, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39713-00_20251027_215456_chunk000 (166 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[34/100] 
+======================================================================
+Processing: Plinia cauliflora (DC.) Kausel (AngMaMyMyRt39736-00)
+Occurrence count: 159
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 159 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39736-00_20251027_215527)...
+
+  📦 Exporting batch: AngMaMyMyRt39736-00_20251027_215527
+     Points: 159, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39736-00_20251027_215527_chunk000 (159 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[35/100] 
+======================================================================
+Processing: Populus laurifolia Ledeb. (AngMaMaSlCc32521-00)
+Occurrence count: 144
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 144 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32521-00_20251027_215558)...
+
+  📦 Exporting batch: AngMaMaSlCc32521-00_20251027_215558
+     Points: 144, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32521-00_20251027_215558_chunk000 (144 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 33/100 (33.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 67/100
+⏱️  Elapsed: 0:43:35.331645
+🕐 ETA: 1:28:29
+======================================================================
+
+
+
+[36/100] 
+======================================================================
+Processing: Acacia chrysotricha Tindale (AngMaFaFbCx09144-00)
+Occurrence count: 136
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 136 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09144-00_20251027_215629)...
+
+  📦 Exporting batch: AngMaFaFbCx09144-00_20251027_215629
+     Points: 136, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09144-00_20251027_215629_chunk000 (136 pts, years: [2017, 2018, 2019, 2020, 2021])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[37/100] 
+======================================================================
+Processing: Erythrina speciosa Andrews (AngMaFaFbCx11214-00)
+Occurrence count: 125
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 125 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx11214-00_20251027_215701)...
+
+  📦 Exporting batch: AngMaFaFbCx11214-00_20251027_215701
+     Points: 125, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx11214-00_20251027_215701_chunk000 (125 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[38/100] 
+======================================================================
+Processing: Vachellia macracantha (Humb. & Bonpl. ex Willd.) Seigler & Ebinger (AngMaFaFbCx13681-00)
+Occurrence count: 120
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 120 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13681-00_20251027_215732)...
+
+  📦 Exporting batch: AngMaFaFbCx13681-00_20251027_215732
+     Points: 120, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13681-00_20251027_215732_chunk000 (120 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[39/100] 
+======================================================================
+Processing: Eucalyptus pumila Cambage (AngMaMyMyRt37978-00)
+Occurrence count: 120
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 120 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37978-00_20251027_215802)...
+
+  📦 Exporting batch: AngMaMyMyRt37978-00_20251027_215802
+     Points: 120, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37978-00_20251027_215802_chunk000 (120 pts, years: [2017, 2018, 2019, 2021, 2022, 2023])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[40/100] 
+======================================================================
+Processing: Tristaniopsis collina Peter G.Wilson & J.T.Waterh. (AngMaMyMyRt40824-00)
+Occurrence count: 116
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 116 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt40824-00_20251027_215833)...
+
+  📦 Exporting batch: AngMaMyMyRt40824-00_20251027_215833
+     Points: 116, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt40824-00_20251027_215833_chunk000 (116 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 38/100 (38.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 62/100
+⏱️  Elapsed: 0:46:09.380219
+🕐 ETA: 1:15:18
+======================================================================
+
+
+
+[41/100] 
+======================================================================
+Processing: Scolopia zeyheri (Nees) Szyszyl. (AngMaMaSlCc32741-00)
+Occurrence count: 106
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 106 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32741-00_20251027_215903)...
+
+  📦 Exporting batch: AngMaMaSlCc32741-00_20251027_215903
+     Points: 106, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32741-00_20251027_215903_chunk000 (106 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[42/100] 
+======================================================================
+Processing: Bolusanthus speciosus (Bolus) Harms (AngMaFaFbCx10099-00)
+Occurrence count: 100
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 100 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx10099-00_20251027_215934)...
+
+  📦 Exporting batch: AngMaFaFbCx10099-00_20251027_215934
+     Points: 100, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx10099-00_20251027_215934_chunk000 (100 pts, years: [2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[43/100] 
+======================================================================
+Processing: Quercus humboldtii Bonpl. (AngMaFaFgCx14755-00)
+Occurrence count: 97
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 97 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14755-00_20251027_220004)...
+
+  📦 Exporting batch: AngMaFaFgCx14755-00_20251027_220004
+     Points: 97, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFgCx14755-00_20251027_220004_chunk000 (97 pts, years: [2017, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[44/100] 
+======================================================================
+Processing: Acacia hakeoides A.Cunn. ex Benth. (AngMaFaFbCx09246-00)
+Occurrence count: 92
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 92 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09246-00_20251027_220035)...
+
+  📦 Exporting batch: AngMaFaFbCx09246-00_20251027_220035
+     Points: 92, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09246-00_20251027_220035_chunk000 (92 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[45/100] 
+======================================================================
+Processing: Eucalyptus tectifica F.Muell. (AngMaMyMyRt38084-00)
+Occurrence count: 85
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 85 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38084-00_20251027_220106)...
+
+  📦 Exporting batch: AngMaMyMyRt38084-00_20251027_220106
+     Points: 85, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38084-00_20251027_220106_chunk000 (85 pts, years: [2018, 2019, 2020, 2021, 2022, 2023])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 43/100 (43.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 57/100
+⏱️  Elapsed: 0:48:42.293136
+🕐 ETA: 1:04:33
+======================================================================
+
+
+
+[46/100] 
+======================================================================
+Processing: Eucalyptus pyrocarpa L.A.S Johnson & Blaxell (AngMaMyMyRt37983-00)
+Occurrence count: 83
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 83 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37983-00_20251027_220136)...
+
+  📦 Exporting batch: AngMaMyMyRt37983-00_20251027_220136
+     Points: 83, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37983-00_20251027_220136_chunk000 (83 pts, years: [2017, 2018, 2019, 2021, 2022])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[47/100] 
+======================================================================
+Processing: Eucalyptus hypostomatica L.A.S.Johnson & K.D.Hill (AngMaMyMyRt37761-00)
+Occurrence count: 77
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 77 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37761-00_20251027_220207)...
+
+  📦 Exporting batch: AngMaMyMyRt37761-00_20251027_220207
+     Points: 77, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37761-00_20251027_220207_chunk000 (77 pts, years: [2017, 2018, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[48/100] 
+======================================================================
+Processing: Xylosma flexuosa (Kunth) Hemsl. (AngMaMaSlCc32773-00)
+Occurrence count: 77
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 77 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32773-00_20251027_220237)...
+
+  📦 Exporting batch: AngMaMaSlCc32773-00_20251027_220237
+     Points: 77, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32773-00_20251027_220237_chunk000 (77 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[49/100] 
+======================================================================
+Processing: Eucalyptus nova-anglica H.Deane & Maiden (AngMaMyMyRt37886-00)
+Occurrence count: 76
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 76 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37886-00_20251027_220338)...
+
+  📦 Exporting batch: AngMaMyMyRt37886-00_20251027_220338
+     Points: 76, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37886-00_20251027_220338_chunk000 (76 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[50/100] 
+======================================================================
+Processing: Myrcianthes leucoxyla (Ortega) Mc Vaugh (AngMaMyMyRt39646-00)
+Occurrence count: 75
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 75 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39646-00_20251027_220408)...
+
+  📦 Exporting batch: AngMaMyMyRt39646-00_20251027_220408
+     Points: 75, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39646-00_20251027_220408_chunk000 (75 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 48/100 (48.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 52/100
+⏱️  Elapsed: 0:51:45.005880
+🕐 ETA: 0:56:03
+======================================================================
+
+
+
+[51/100] 
+======================================================================
+Processing: Dovyalis rhamnoides Burch. ex Harv. & Sond. (AngMaMaSlCc32283-00)
+Occurrence count: 70
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 70 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32283-00_20251027_220439)...
+
+  📦 Exporting batch: AngMaMaSlCc32283-00_20251027_220439
+     Points: 70, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32283-00_20251027_220439_chunk000 (70 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[52/100] 
+======================================================================
+Processing: Acacia neriifolia A.Cunn. ex Benth. (AngMaFaFbCx09346-00)
+Occurrence count: 69
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 69 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09346-00_20251027_220510)...
+
+  📦 Exporting batch: AngMaFaFbCx09346-00_20251027_220510
+     Points: 69, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09346-00_20251027_220510_chunk000 (69 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[53/100] 
+======================================================================
+Processing: Eucalyptus morrisii R.T.Baker (AngMaMyMyRt37868-00)
+Occurrence count: 68
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 68 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37868-00_20251027_220541)...
+
+  📦 Exporting batch: AngMaMyMyRt37868-00_20251027_220541
+     Points: 68, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37868-00_20251027_220541_chunk000 (68 pts, years: [2017, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[54/100] 
+======================================================================
+Processing: Corymbia polycarpa (F.Muell.) K.D.Hill & L.A.S.Johnson (AngMaMyMyRt37410-00)
+Occurrence count: 65
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 65 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37410-00_20251027_220612)...
+
+  📦 Exporting batch: AngMaMyMyRt37410-00_20251027_220612
+     Points: 65, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37410-00_20251027_220612_chunk000 (65 pts, years: [2018, 2020, 2021, 2022, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[55/100] 
+======================================================================
+Processing: Eucalyptus bancroftii (Maiden) Maiden (AngMaMyMyRt37518-00)
+Occurrence count: 63
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 63 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37518-00_20251027_220643)...
+
+  📦 Exporting batch: AngMaMyMyRt37518-00_20251027_220643
+     Points: 63, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37518-00_20251027_220643_chunk000 (63 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 53/100 (53.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 47/100
+⏱️  Elapsed: 0:54:19.144716
+🕐 ETA: 0:48:10
+======================================================================
+
+
+
+[56/100] 
+======================================================================
+Processing: Quercus inopina Ashe (AngMaFaFgCx14765-00)
+Occurrence count: 62
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 62 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14765-00_20251027_220713)...
+
+  📦 Exporting batch: AngMaFaFgCx14765-00_20251027_220713
+     Points: 62, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFgCx14765-00_20251027_220713_chunk000 (62 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[57/100] 
+======================================================================
+Processing: Acacia vestita Ker Gawl. (AngMaFaFbCx09492-00)
+Occurrence count: 62
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 62 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09492-00_20251027_220744)...
+
+  📦 Exporting batch: AngMaFaFbCx09492-00_20251027_220744
+     Points: 62, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09492-00_20251027_220744_chunk000 (62 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[58/100] 
+======================================================================
+Processing: Senegalia bonariensis (Gillies ex Hook. & Arn.) Seigler & Ebinger (AngMaFaFbCx12974-00)
+Occurrence count: 59
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 59 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx12974-00_20251027_220815)...
+
+  📦 Exporting batch: AngMaFaFbCx12974-00_20251027_220815
+     Points: 59, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx12974-00_20251027_220815_chunk000 (59 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[59/100] 
+======================================================================
+Processing: Eucalyptus microtheca F.Muell. (AngMaMyMyRt37857-00)
+Occurrence count: 57
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 57 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37857-00_20251027_220846)...
+
+  📦 Exporting batch: AngMaMyMyRt37857-00_20251027_220846
+     Points: 57, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37857-00_20251027_220846_chunk000 (57 pts, years: [2017, 2018, 2020, 2021, 2022, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[60/100] 
+======================================================================
+Processing: Casearia guianensis (Aubl.) Urb. (AngMaMaSlCc32170-00)
+Occurrence count: 54
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 54 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32170-00_20251027_220916)...
+
+  📦 Exporting batch: AngMaMaSlCc32170-00_20251027_220916
+     Points: 54, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32170-00_20251027_220916_chunk000 (54 pts, years: [2017, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 58/100 (58.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 42/100
+⏱️  Elapsed: 0:56:53.271834
+🕐 ETA: 0:41:11
+======================================================================
+
+
+
+[61/100] 
+======================================================================
+Processing: Gossia acmenoides (F.Muell.) N.Snow & Guymer (AngMaMyMyRt38903-00)
+Occurrence count: 54
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 54 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38903-00_20251027_220947)...
+
+  📦 Exporting batch: AngMaMyMyRt38903-00_20251027_220947
+     Points: 54, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38903-00_20251027_220947_chunk000 (54 pts, years: [2017, 2018, 2019, 2020, 2021, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[62/100] 
+======================================================================
+Processing: Acacia dodonaeifolia (Pers.) Balb. (AngMaFaFbCx09196-00)
+Occurrence count: 54
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 54 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09196-00_20251027_221018)...
+
+  📦 Exporting batch: AngMaFaFbCx09196-00_20251027_221018
+     Points: 54, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09196-00_20251027_221018_chunk000 (54 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[63/100] 
+======================================================================
+Processing: Senegalia wrightii (Benth.) Britton & Rose (AngMaFaFbCx13076-00)
+Occurrence count: 53
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 53 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13076-00_20251027_221048)...
+
+  📦 Exporting batch: AngMaFaFbCx13076-00_20251027_221048
+     Points: 53, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13076-00_20251027_221048_chunk000 (53 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[64/100] 
+======================================================================
+Processing: Eucalyptus utilis Brooker & Hopper (AngMaMyMyRt38118-00)
+Occurrence count: 51
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 51 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38118-00_20251027_221119)...
+
+  📦 Exporting batch: AngMaMyMyRt38118-00_20251027_221119
+     Points: 51, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38118-00_20251027_221119_chunk000 (51 pts, years: [2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[65/100] 
+======================================================================
+Processing: Bauhinia acuminata L. (AngMaFaFbCx09959-00)
+Occurrence count: 50
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 50 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09959-00_20251027_221150)...
+
+  📦 Exporting batch: AngMaFaFbCx09959-00_20251027_221150
+     Points: 50, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09959-00_20251027_221150_chunk000 (50 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 63/100 (63.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 37/100
+⏱️  Elapsed: 0:59:26.793061
+🕐 ETA: 0:34:54
+======================================================================
+
+
+
+[66/100] 
+======================================================================
+Processing: Angophora woodsiana F.M.Bailey (AngMaMyMyRt37257-00)
+Occurrence count: 49
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 49 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37257-00_20251027_221221)...
+
+  📦 Exporting batch: AngMaMyMyRt37257-00_20251027_221221
+     Points: 49, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37257-00_20251027_221221_chunk000 (49 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[67/100] 
+======================================================================
+Processing: Eucalyptus taurina A.R.Bean & Brooker (AngMaMyMyRt38083-00)
+Occurrence count: 48
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 48 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38083-00_20251027_221253)...
+
+  📦 Exporting batch: AngMaMyMyRt38083-00_20251027_221253
+     Points: 48, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38083-00_20251027_221253_chunk000 (48 pts, years: [2018, 2019, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[68/100] 
+======================================================================
+Processing: Eucalyptus behriana F.Muell. (AngMaMyMyRt37525-00)
+Occurrence count: 46
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 46 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37525-00_20251027_221323)...
+
+  📦 Exporting batch: AngMaMyMyRt37525-00_20251027_221323
+     Points: 46, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37525-00_20251027_221323_chunk000 (46 pts, years: [2017, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[69/100] 
+======================================================================
+Processing: Adenolobus garipensis (E.Mey.) Torre & Hillc. (AngMaFaFbCx09522-00)
+Occurrence count: 45
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 45 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09522-00_20251027_221355)...
+
+  📦 Exporting batch: AngMaFaFbCx09522-00_20251027_221355
+     Points: 45, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09522-00_20251027_221355_chunk000 (45 pts, years: [2017, 2018, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[70/100] 
+======================================================================
+Processing: Acacia lamprocarpa O.Schwarz (AngMaFaFbCx09283-00)
+Occurrence count: 45
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 45 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09283-00_20251027_221425)...
+
+  📦 Exporting batch: AngMaFaFbCx09283-00_20251027_221425
+     Points: 45, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09283-00_20251027_221425_chunk000 (45 pts, years: [2018, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 68/100 (68.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 32/100
+⏱️  Elapsed: 1:02:02.027010
+🕐 ETA: 0:29:11
+======================================================================
+
+
+
+[71/100] 
+======================================================================
+Processing: Inga alba (Sw.) Willd. (AngMaFaFbCx11506-00)
+Occurrence count: 45
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 45 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx11506-00_20251027_221456)...
+
+  📦 Exporting batch: AngMaFaFbCx11506-00_20251027_221456
+     Points: 45, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx11506-00_20251027_221456_chunk000 (45 pts, years: [2020, 2021, 2022, 2023])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[72/100] 
+======================================================================
+Processing: Acacia cambagei R.T.Baker (AngMaFaFbCx09133-00)
+Occurrence count: 43
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 43 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09133-00_20251027_221527)...
+
+  📦 Exporting batch: AngMaFaFbCx09133-00_20251027_221527
+     Points: 43, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09133-00_20251027_221527_chunk000 (43 pts, years: [2017, 2018, 2019, 2020, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[73/100] 
+======================================================================
+Processing: Vachellia natalitia (E.Mey.) Kyal. & Boatwr. (AngMaFaFbCx13688-00)
+Occurrence count: 42
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 42 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13688-00_20251027_221557)...
+
+  📦 Exporting batch: AngMaFaFbCx13688-00_20251027_221557
+     Points: 42, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13688-00_20251027_221557_chunk000 (42 pts, years: [2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[74/100] 
+======================================================================
+Processing: Vachellia drepanolobium (Harms ex Y.Sjöstedt) P.J.H.Hurter (AngMaFaFbCx13644-00)
+Occurrence count: 41
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 41 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13644-00_20251027_221658)...
+
+  📦 Exporting batch: AngMaFaFbCx13644-00_20251027_221658
+     Points: 41, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13644-00_20251027_221658_chunk000 (41 pts, years: [2018, 2019, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[75/100] 
+======================================================================
+Processing: Casearia corymbosa Kunth (AngMaMaSlCc32139-00)
+Occurrence count: 38
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 38 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32139-00_20251027_221729)...
+
+  📦 Exporting batch: AngMaMaSlCc32139-00_20251027_221729
+     Points: 38, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32139-00_20251027_221729_chunk000 (38 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 73/100 (73.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 27/100
+⏱️  Elapsed: 1:05:05.724362
+🕐 ETA: 0:24:04
+======================================================================
+
+
+
+[76/100] 
+======================================================================
+Processing: Salix geyeriana Andersson (AngMaMaSlCc32612-00)
+Occurrence count: 38
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 38 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMaSlCc32612-00_20251027_221800)...
+
+  📦 Exporting batch: AngMaMaSlCc32612-00_20251027_221800
+     Points: 38, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMaSlCc32612-00_20251027_221800_chunk000 (38 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[77/100] 
+======================================================================
+Processing: Clitoria dendrina Pittier (AngMaFaFbCx10447-00)
+Occurrence count: 33
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 33 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx10447-00_20251027_221830)...
+
+  📦 Exporting batch: AngMaFaFbCx10447-00_20251027_221830
+     Points: 33, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx10447-00_20251027_221830_chunk000 (33 pts, years: [2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[78/100] 
+======================================================================
+Processing: Melaleuca cheelii C.T.White (AngMaMyMyRt39003-00)
+Occurrence count: 33
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 33 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39003-00_20251027_221902)...
+
+  📦 Exporting batch: AngMaMyMyRt39003-00_20251027_221902
+     Points: 33, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39003-00_20251027_221902_chunk000 (33 pts, years: [2019, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[79/100] 
+======================================================================
+Processing: Inga brachyrhachis Harms (AngMaFaFbCx11524-00)
+Occurrence count: 29
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 29 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx11524-00_20251027_221933)...
+
+  📦 Exporting batch: AngMaFaFbCx11524-00_20251027_221933
+     Points: 29, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx11524-00_20251027_221933_chunk000 (29 pts, years: [2020, 2022])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[80/100] 
+======================================================================
+Processing: Kunzea sulphurea Tovey & P.Morris (AngMaMyMyRt38953-00)
+Occurrence count: 28
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 28 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38953-00_20251027_222004)...
+
+  📦 Exporting batch: AngMaMyMyRt38953-00_20251027_222004
+     Points: 28, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38953-00_20251027_222004_chunk000 (28 pts, years: [2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 78/100 (78.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 22/100
+⏱️  Elapsed: 1:07:41.765768
+🕐 ETA: 0:19:05
+======================================================================
+
+
+
+[81/100] 
+======================================================================
+Processing: Acacia nyssophylla F.Muell. (AngMaFaFbCx09349-00)
+Occurrence count: 28
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 28 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09349-00_20251027_222036)...
+
+  📦 Exporting batch: AngMaFaFbCx09349-00_20251027_222036
+     Points: 28, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09349-00_20251027_222036_chunk000 (28 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[82/100] 
+======================================================================
+Processing: Melaleuca dealbata S.T.Blake (AngMaMyMyRt39009-00)
+Occurrence count: 28
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 28 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt39009-00_20251027_222107)...
+
+  📦 Exporting batch: AngMaMyMyRt39009-00_20251027_222107
+     Points: 28, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt39009-00_20251027_222107_chunk000 (28 pts, years: [2017, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[83/100] 
+======================================================================
+Processing: Cenostigma eriostachys (Benth.) Gagnon & G.P.Lewis (AngMaFaFbCx10332-00)
+Occurrence count: 27
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 27 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx10332-00_20251027_222138)...
+
+  📦 Exporting batch: AngMaFaFbCx10332-00_20251027_222138
+     Points: 27, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx10332-00_20251027_222138_chunk000 (27 pts, years: [2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[84/100] 
+======================================================================
+Processing: Acacia silvestris Tindale (AngMaFaFbCx09441-00)
+Occurrence count: 26
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 26 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09441-00_20251027_222209)...
+
+  📦 Exporting batch: AngMaFaFbCx09441-00_20251027_222209
+     Points: 26, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09441-00_20251027_222209_chunk000 (26 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[85/100] 
+======================================================================
+Processing: Vachellia haematoxylon (Willd.) Seigler & Ebinger (AngMaFaFbCx13660-00)
+Occurrence count: 25
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 25 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx13660-00_20251027_222240)...
+
+  📦 Exporting batch: AngMaFaFbCx13660-00_20251027_222240
+     Points: 25, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx13660-00_20251027_222240_chunk000 (25 pts, years: [2017, 2020, 2021, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 83/100 (83.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 17/100
+⏱️  Elapsed: 1:10:16.771474
+🕐 ETA: 0:14:23
+======================================================================
+
+
+
+[86/100] 
+======================================================================
+Processing: Acacia conferta A.Cunn. ex Benth. (AngMaFaFbCx09154-00)
+Occurrence count: 25
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 25 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09154-00_20251027_222311)...
+
+  📦 Exporting batch: AngMaFaFbCx09154-00_20251027_222311
+     Points: 25, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09154-00_20251027_222311_chunk000 (25 pts, years: [2017, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[87/100] 
+======================================================================
+Processing: Eucalyptus nitens (H.Deane & Maiden) Maiden (AngMaMyMyRt37879-00)
+Occurrence count: 25
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 25 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37879-00_20251027_222342)...
+
+  📦 Exporting batch: AngMaMyMyRt37879-00_20251027_222342
+     Points: 25, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37879-00_20251027_222342_chunk000 (25 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[88/100] 
+======================================================================
+Processing: Eucalyptus angulosa Schauer (AngMaMyMyRt37483-00)
+Occurrence count: 25
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 25 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37483-00_20251027_222413)...
+
+  📦 Exporting batch: AngMaMyMyRt37483-00_20251027_222413
+     Points: 25, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37483-00_20251027_222413_chunk000 (25 pts, years: [2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[89/100] 
+======================================================================
+Processing: Eucalyptus kitsoniana Luehm. ex Maiden (AngMaMyMyRt37785-00)
+Occurrence count: 24
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 24 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37785-00_20251027_222444)...
+
+  📦 Exporting batch: AngMaMyMyRt37785-00_20251027_222444
+     Points: 24, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37785-00_20251027_222444_chunk000 (24 pts, years: [2017, 2018, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[90/100] 
+======================================================================
+Processing: Amomyrtus meli (Phil.) D.Legrand & Kausel (AngMaMyMyRt37247-00)
+Occurrence count: 22
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 22 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37247-00_20251027_222515)...
+
+  📦 Exporting batch: AngMaMyMyRt37247-00_20251027_222515
+     Points: 22, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37247-00_20251027_222515_chunk000 (22 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 88/100 (88.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 12/100
+⏱️  Elapsed: 1:12:53.055131
+🕐 ETA: 0:09:56
+======================================================================
+
+
+
+[91/100] 
+======================================================================
+Processing: Dalbergia brownei (Jacq.) Schinz (AngMaFaFbCx10730-00)
+Occurrence count: 22
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 22 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx10730-00_20251027_222547)...
+
+  📦 Exporting batch: AngMaFaFbCx10730-00_20251027_222547
+     Points: 22, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx10730-00_20251027_222547_chunk000 (22 pts, years: [2017, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[92/100] 
+======================================================================
+Processing: Eucalyptus albopurpurea (Boomsma) D.Nicolle (AngMaMyMyRt37474-00)
+Occurrence count: 21
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 21 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37474-00_20251027_222618)...
+
+  📦 Exporting batch: AngMaMyMyRt37474-00_20251027_222618
+     Points: 21, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37474-00_20251027_222618_chunk000 (21 pts, years: [2019, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[93/100] 
+======================================================================
+Processing: Acacia thomsonii Maslin & M.W.McDonald (AngMaFaFbCx09472-00)
+Occurrence count: 20
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 20 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09472-00_20251027_222753)...
+
+  📦 Exporting batch: AngMaFaFbCx09472-00_20251027_222753
+     Points: 20, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09472-00_20251027_222753_chunk000 (20 pts, years: [2017, 2018, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[94/100] 
+======================================================================
+Processing: Corymbia bleeseri (Blakely) K.D.Hill & L.A.S.Johnson (AngMaMyMyRt37347-00)
+Occurrence count: 20
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 20 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37347-00_20251027_222823)...
+
+  📦 Exporting batch: AngMaMyMyRt37347-00_20251027_222823
+     Points: 20, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37347-00_20251027_222823_chunk000 (20 pts, years: [2018, 2021, 2023])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[95/100] 
+======================================================================
+Processing: Kunzea serotina de Lange & Toelken (AngMaMyMyRt38951-00)
+Occurrence count: 19
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 19 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt38951-00_20251027_222854)...
+
+  📦 Exporting batch: AngMaMyMyRt38951-00_20251027_222854
+     Points: 19, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt38951-00_20251027_222854_chunk000 (19 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 93/100 (93.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 2
+⏳ Remaining: 7/100
+⏱️  Elapsed: 1:16:34.346922
+🕐 ETA: 0:05:45
+======================================================================
+
+
+
+[96/100] 
+======================================================================
+Processing: Acacia trinervata Sieber ex DC. (AngMaFaFbCx09478-00)
+Occurrence count: 18
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 18 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09478-00_20251027_222928)...
+
+  📦 Exporting batch: AngMaFaFbCx09478-00_20251027_222928
+     Points: 18, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09478-00_20251027_222928_chunk000 (18 pts, years: [2017, 2019, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[97/100] 
+======================================================================
+Processing: Albizia arenicola R.Vig. (AngMaFaFbCx09556-00)
+Occurrence count: 17
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 17 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09556-00_20251027_222959)...
+
+  📦 Exporting batch: AngMaFaFbCx09556-00_20251027_222959
+     Points: 17, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09556-00_20251027_222959_chunk000 (17 pts, years: [2017, 2018, 2019, 2020, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[98/100] 
+======================================================================
+Processing: Acacia kempeana F.Muell. (AngMaFaFbCx09278-00)
+Occurrence count: 17
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 17 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFbCx09278-00_20251027_223030)...
+
+  📦 Exporting batch: AngMaFaFbCx09278-00_20251027_223030
+     Points: 17, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFbCx09278-00_20251027_223030_chunk000 (17 pts, years: [2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ⏳ 1 tasks still pending (next check in 30s)...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+
+[99/100] 
+======================================================================
+Processing: Eucalyptus placita L.A.S.Johnson & K.D.Hill (AngMaMyMyRt37950-00)
+Occurrence count: 17
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 17 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37950-00_20251027_223131)...
+
+  📦 Exporting batch: AngMaMyMyRt37950-00_20251027_223131
+     Points: 17, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37950-00_20251027_223131_chunk000 (17 pts, years: [2017, 2019, 2020])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ❌ Task failed: Feature [2_16_0] has value of incompatible type for property [latitude].
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 1/3)
+
+
+[100/100] 
+======================================================================
+Processing: Quercus segoviensis Liebm. (AngMaFaFgCx14905-00)
+Occurrence count: 16
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 16 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14905-00_20251027_223204)...
+
+  📦 Exporting batch: AngMaFaFgCx14905-00_20251027_223204
+     Points: 16, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaFaFgCx14905-00_20251027_223204_chunk000 (16 pts, years: [2017, 2018, 2019, 2021, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ✅ Task completed (1/1)
+
+  ✅ All tasks completed successfully!
+
+======================================================================
+PROGRESS SUMMARY
+======================================================================
+✅ Completed: 97/100 (97.0%)
+❌ Failed: 0/100
+🔄 In retry queue: 3
+⏳ Remaining: 3/100
+⏱️  Elapsed: 1:19:40.300202
+🕐 ETA: 0:02:27
+======================================================================
+
+
+
+======================================================================
+PROCESSING RETRY QUEUE (3 species)
+======================================================================
+
+⏰ Waiting 60s before retry...
+
+======================================================================
+Processing: Quercus rotundifolia Lam. (AngMaFaFgCx14890-00)
+Occurrence count: 2,390
+🔄 Retry attempt 1/3
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 2,390 occurrence points
+  🚀 Submitting to GEE (batch: AngMaFaFgCx14890-00_20251027_223334)...
+
+  📦 Exporting batch: AngMaFaFgCx14890-00_20251027_223334
+     Points: 2390, Tasks: ~2
+     ✓ Task 1/2: ae_AngMaFaFgCx14890-00_20251027_223334_chunk000 (2000 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+     ✓ Task 2/2: ae_AngMaFaFgCx14890-00_20251027_223334_chunk001 (390 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 2 GEE tasks...
+
+  ⏳ Monitoring 2 GEE tasks...
+     ✅ Task completed (1/2)
+     ❌ Task failed: Feature [1_1_1_1_1_1_2_63_0] has value of incompatible type for property [longitude].
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 2/3)
+
+⏰ Waiting 60s before retry...
+
+======================================================================
+Processing: Eucalyptus caliginosa Blakely & Mc Kie (AngMaMyMyRt37558-00)
+Occurrence count: 360
+🔄 Retry attempt 1/3
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 360 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37558-00_20251027_223507)...
+
+  📦 Exporting batch: AngMaMyMyRt37558-00_20251027_223507
+     Points: 360, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37558-00_20251027_223507_chunk000 (360 pts, years: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ❌ Task failed: Feature [1_1_1_1_1_1_2_290_0] has value of incompatible type for property [longitude].
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 2/3)
+
+⏰ Waiting 60s before retry...
+
+======================================================================
+Processing: Eucalyptus placita L.A.S.Johnson & K.D.Hill (AngMaMyMyRt37950-00)
+Occurrence count: 17
+🔄 Retry attempt 1/3
+======================================================================
+  📊 Fetching occurrences from GBIF data...
+  ✅ Found 17 occurrence points
+  🚀 Submitting to GEE (batch: AngMaMyMyRt37950-00_20251027_223638)...
+
+  📦 Exporting batch: AngMaMyMyRt37950-00_20251027_223638
+     Points: 17, Tasks: ~1
+     ✓ Task 1/1: ae_AngMaMyMyRt37950-00_20251027_223638_chunk000 (17 pts, years: [2017, 2019, 2020])
+
+  ⏳ Waiting for 1 GEE tasks...
+
+  ⏳ Monitoring 1 GEE tasks...
+     ❌ Task failed: Feature [2_16_0] has value of incompatible type for property [latitude].
+
+  ❌ 1 tasks failed
+  🔄 Will retry (attempt 2/3)
+
+
+======================================================================
+PILOT COMPLETE
+======================================================================
+✅ Success: 97/100 (97.0%)
+❌ Failed: 0/100
+⏱️  Total time: 1:24:14.315255
+
+Checkpoint saved to: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/checkpoints.json
+======================================================================

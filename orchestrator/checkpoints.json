@@ -1,0 +1,917 @@
+{
+  "pilot_start": "2025-10-27T21:25:00",
+  "completed": [
+    {
+      "taxon_id": "AngMaFaFgCx14165-00",
+      "species": "Castanea sativa Mill.",
+      "batch_id": "AngMaFaFgCx14165-00_20251027_211255",
+      "n_occurrences": 69651,
+      "n_tasks": 35,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:38:19.999754"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09400-00",
+      "species": "Acacia pycnantha Benth.",
+      "batch_id": "AngMaFaFbCx09400-00_20251027_213820",
+      "n_occurrences": 2853,
+      "n_tasks": 2,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:38:53.131150"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09174-00",
+      "species": "Acacia cyclops A.Cunn. ex G.Don",
+      "batch_id": "AngMaFaFbCx09174-00_20251027_213926",
+      "n_occurrences": 2066,
+      "n_tasks": 2,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:39:58.665195"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37891-00",
+      "species": "Eucalyptus obliqua L'H\u00e9r.",
+      "batch_id": "AngMaMyMyRt37891-00_20251027_213958",
+      "n_occurrences": 1614,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:40:30.493234"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09228-00",
+      "species": "Acacia floribunda (Vent.) Willd.",
+      "batch_id": "AngMaFaFbCx09228-00_20251027_214030",
+      "n_occurrences": 1082,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:41:01.194389"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09182-00",
+      "species": "Acacia decurrens Willd.",
+      "batch_id": "AngMaFaFbCx09182-00_20251027_214101",
+      "n_occurrences": 1011,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:41:32.896253"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37252-00",
+      "species": "Angophora inopina K.D.Hill",
+      "batch_id": "AngMaMyMyRt37252-00_20251027_214132",
+      "n_occurrences": 957,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:42:03.786182"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37968-00",
+      "species": "Eucalyptus propinqua H.Deane & Maiden",
+      "batch_id": "AngMaMyMyRt37968-00_20251027_214203",
+      "n_occurrences": 882,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:42:34.626031"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39985-00",
+      "species": "Syzygium australe (J.C.Wendl. ex Link) B.Hyland",
+      "batch_id": "AngMaMyMyRt39985-00_20251027_214234",
+      "n_occurrences": 844,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:43:05.978282"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13105-00",
+      "species": "Senna didymobotrya (Fresen.) H.S.Irwin & Barneby",
+      "batch_id": "AngMaFaFbCx13105-00_20251027_214306",
+      "n_occurrences": 792,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:43:37.187278"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32585-00",
+      "species": "Salix caroliniana Michx.",
+      "batch_id": "AngMaMaSlCc32585-00_20251027_214337",
+      "n_occurrences": 705,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:44:08.204561"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37255-00",
+      "species": "Angophora robur L.A.S.Johnson & K.D.Hill",
+      "batch_id": "AngMaMyMyRt37255-00_20251027_214408",
+      "n_occurrences": 667,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:44:39.212917"
+    },
+    {
+      "taxon_id": "GymPiPiPnCx50757-00",
+      "species": "Pinus coulteri D.Don",
+      "batch_id": "GymPiPiPnCx50757-00_20251027_214439",
+      "n_occurrences": 634,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:45:40.442793"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13060-00",
+      "species": "Senegalia roemeriana (Scheele) Britton & Rose",
+      "batch_id": "AngMaFaFbCx13060-00_20251027_214540",
+      "n_occurrences": 569,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:46:11.113166"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14757-00",
+      "species": "Quercus hypoleucoides A.Camus",
+      "batch_id": "AngMaFaFgCx14757-00_20251027_214611",
+      "n_occurrences": 524,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:46:42.101208"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13735-00",
+      "species": "Vachellia xanthophloea (Benth.) Banfi & Galasso",
+      "batch_id": "AngMaFaFbCx13735-00_20251027_214642",
+      "n_occurrences": 510,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:47:12.943550"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09695-00",
+      "species": "Anagyris foetida L.",
+      "batch_id": "AngMaFaFbCx09695-00_20251027_214712",
+      "n_occurrences": 444,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:47:44.087516"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37750-00",
+      "species": "Eucalyptus haemastoma Sm.",
+      "batch_id": "AngMaMyMyRt37750-00_20251027_214744",
+      "n_occurrences": 389,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:48:14.892858"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37883-00",
+      "species": "Eucalyptus nortonii (Blakely) L.A.S.Johnson",
+      "batch_id": "AngMaMyMyRt37883-00_20251027_214845",
+      "n_occurrences": 346,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:49:16.185757"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39051-00",
+      "species": "Melaleuca squarrosa Donn",
+      "batch_id": "AngMaMyMyRt39051-00_20251027_214916",
+      "n_occurrences": 325,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:49:46.863455"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09227-00",
+      "species": "Acacia flocktoniae Maiden",
+      "batch_id": "AngMaFaFbCx09227-00_20251027_214946",
+      "n_occurrences": 319,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:50:17.608193"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx12678-00",
+      "species": "Peltophorum africanum Sond.",
+      "batch_id": "AngMaFaFbCx12678-00_20251027_215017",
+      "n_occurrences": 293,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:50:48.147141"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38947-00",
+      "species": "Kunzea ericoides (A.Rich.) J.Thomps.",
+      "batch_id": "AngMaMyMyRt38947-00_20251027_215048",
+      "n_occurrences": 289,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:51:18.716063"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx11183-00",
+      "species": "Erythrina lysistemon Hutch.",
+      "batch_id": "AngMaFaFbCx11183-00_20251027_215118",
+      "n_occurrences": 275,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:51:49.453615"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14838-00",
+      "species": "Quercus oblongifolia Torr.",
+      "batch_id": "AngMaFaFgCx14838-00_20251027_215149",
+      "n_occurrences": 258,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:52:20.024008"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09471-00",
+      "species": "Acacia tetragonophylla F.Muell.",
+      "batch_id": "AngMaFaFbCx09471-00_20251027_215220",
+      "n_occurrences": 229,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:52:51.563328"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09422-00",
+      "species": "Acacia rubida A.Cunn.",
+      "batch_id": "AngMaFaFbCx09422-00_20251027_215251",
+      "n_occurrences": 222,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:53:22.791438"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37962-00",
+      "species": "Eucalyptus porosa Miq.",
+      "batch_id": "AngMaMyMyRt37962-00_20251027_215322",
+      "n_occurrences": 187,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:53:54.129557"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09116-00",
+      "species": "Acacia binervia (J.C.Wendl.) J.F.Macbr.",
+      "batch_id": "AngMaFaFbCx09116-00_20251027_215354",
+      "n_occurrences": 180,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:54:25.652992"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39671-00",
+      "species": "Myrciaria glazioviana (Kiaersk.) G.M.Barroso ex Sobral",
+      "batch_id": "AngMaMyMyRt39671-00_20251027_215425",
+      "n_occurrences": 177,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:54:56.288953"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39713-00",
+      "species": "Pilidiostigma glabrum Burret",
+      "batch_id": "AngMaMyMyRt39713-00_20251027_215456",
+      "n_occurrences": 166,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:55:27.583338"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39736-00",
+      "species": "Plinia cauliflora (DC.) Kausel",
+      "batch_id": "AngMaMyMyRt39736-00_20251027_215527",
+      "n_occurrences": 159,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:55:58.246791"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32521-00",
+      "species": "Populus laurifolia Ledeb.",
+      "batch_id": "AngMaMaSlCc32521-00_20251027_215558",
+      "n_occurrences": 144,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:56:29.698597"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09144-00",
+      "species": "Acacia chrysotricha Tindale",
+      "batch_id": "AngMaFaFbCx09144-00_20251027_215629",
+      "n_occurrences": 136,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:57:01.687418"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx11214-00",
+      "species": "Erythrina speciosa Andrews",
+      "batch_id": "AngMaFaFbCx11214-00_20251027_215701",
+      "n_occurrences": 125,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:57:32.175195"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13681-00",
+      "species": "Vachellia macracantha (Humb. & Bonpl. ex Willd.) Seigler & Ebinger",
+      "batch_id": "AngMaFaFbCx13681-00_20251027_215732",
+      "n_occurrences": 120,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:58:02.778989"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37978-00",
+      "species": "Eucalyptus pumila Cambage",
+      "batch_id": "AngMaMyMyRt37978-00_20251027_215802",
+      "n_occurrences": 120,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:58:33.303795"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt40824-00",
+      "species": "Tristaniopsis collina Peter G.Wilson & J.T.Waterh.",
+      "batch_id": "AngMaMyMyRt40824-00_20251027_215833",
+      "n_occurrences": 116,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:59:03.748536"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32741-00",
+      "species": "Scolopia zeyheri (Nees) Szyszyl.",
+      "batch_id": "AngMaMaSlCc32741-00_20251027_215903",
+      "n_occurrences": 106,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T21:59:34.426646"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10099-00",
+      "species": "Bolusanthus speciosus (Bolus) Harms",
+      "batch_id": "AngMaFaFbCx10099-00_20251027_215934",
+      "n_occurrences": 100,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:00:04.949005"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14755-00",
+      "species": "Quercus humboldtii Bonpl.",
+      "batch_id": "AngMaFaFgCx14755-00_20251027_220004",
+      "n_occurrences": 97,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:00:35.708787"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09246-00",
+      "species": "Acacia hakeoides A.Cunn. ex Benth.",
+      "batch_id": "AngMaFaFbCx09246-00_20251027_220035",
+      "n_occurrences": 92,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:01:06.114154"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38084-00",
+      "species": "Eucalyptus tectifica F.Muell.",
+      "batch_id": "AngMaMyMyRt38084-00_20251027_220106",
+      "n_occurrences": 85,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:01:36.662277"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37983-00",
+      "species": "Eucalyptus pyrocarpa L.A.S Johnson & Blaxell",
+      "batch_id": "AngMaMyMyRt37983-00_20251027_220136",
+      "n_occurrences": 83,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:02:07.091562"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37761-00",
+      "species": "Eucalyptus hypostomatica L.A.S.Johnson & K.D.Hill",
+      "batch_id": "AngMaMyMyRt37761-00_20251027_220207",
+      "n_occurrences": 77,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:02:37.530270"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32773-00",
+      "species": "Xylosma flexuosa (Kunth) Hemsl.",
+      "batch_id": "AngMaMaSlCc32773-00_20251027_220237",
+      "n_occurrences": 77,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:03:38.151927"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37886-00",
+      "species": "Eucalyptus nova-anglica H.Deane & Maiden",
+      "batch_id": "AngMaMyMyRt37886-00_20251027_220338",
+      "n_occurrences": 76,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:04:08.610244"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39646-00",
+      "species": "Myrcianthes leucoxyla (Ortega) Mc Vaugh",
+      "batch_id": "AngMaMyMyRt39646-00_20251027_220408",
+      "n_occurrences": 75,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:04:39.376076"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32283-00",
+      "species": "Dovyalis rhamnoides Burch. ex Harv. & Sond.",
+      "batch_id": "AngMaMaSlCc32283-00_20251027_220439",
+      "n_occurrences": 70,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:05:10.748862"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09346-00",
+      "species": "Acacia neriifolia A.Cunn. ex Benth.",
+      "batch_id": "AngMaFaFbCx09346-00_20251027_220510",
+      "n_occurrences": 69,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:05:41.255188"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37868-00",
+      "species": "Eucalyptus morrisii R.T.Baker",
+      "batch_id": "AngMaMyMyRt37868-00_20251027_220541",
+      "n_occurrences": 68,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:06:12.159092"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37410-00",
+      "species": "Corymbia polycarpa (F.Muell.) K.D.Hill & L.A.S.Johnson",
+      "batch_id": "AngMaMyMyRt37410-00_20251027_220612",
+      "n_occurrences": 65,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:06:43.005447"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37518-00",
+      "species": "Eucalyptus bancroftii (Maiden) Maiden",
+      "batch_id": "AngMaMyMyRt37518-00_20251027_220643",
+      "n_occurrences": 63,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:07:13.513244"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14765-00",
+      "species": "Quercus inopina Ashe",
+      "batch_id": "AngMaFaFgCx14765-00_20251027_220713",
+      "n_occurrences": 62,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:07:44.602901"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09492-00",
+      "species": "Acacia vestita Ker Gawl.",
+      "batch_id": "AngMaFaFbCx09492-00_20251027_220744",
+      "n_occurrences": 62,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:08:15.493500"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx12974-00",
+      "species": "Senegalia bonariensis (Gillies ex Hook. & Arn.) Seigler & Ebinger",
+      "batch_id": "AngMaFaFbCx12974-00_20251027_220815",
+      "n_occurrences": 59,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:08:46.083439"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37857-00",
+      "species": "Eucalyptus microtheca F.Muell.",
+      "batch_id": "AngMaMyMyRt37857-00_20251027_220846",
+      "n_occurrences": 57,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:09:16.835345"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32170-00",
+      "species": "Casearia guianensis (Aubl.) Urb.",
+      "batch_id": "AngMaMaSlCc32170-00_20251027_220916",
+      "n_occurrences": 54,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:09:47.639064"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38903-00",
+      "species": "Gossia acmenoides (F.Muell.) N.Snow & Guymer",
+      "batch_id": "AngMaMyMyRt38903-00_20251027_220947",
+      "n_occurrences": 54,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:10:18.411999"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09196-00",
+      "species": "Acacia dodonaeifolia (Pers.) Balb.",
+      "batch_id": "AngMaFaFbCx09196-00_20251027_221018",
+      "n_occurrences": 54,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:10:48.959159"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13076-00",
+      "species": "Senegalia wrightii (Benth.) Britton & Rose",
+      "batch_id": "AngMaFaFbCx13076-00_20251027_221048",
+      "n_occurrences": 53,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:11:19.821684"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38118-00",
+      "species": "Eucalyptus utilis Brooker & Hopper",
+      "batch_id": "AngMaMyMyRt38118-00_20251027_221119",
+      "n_occurrences": 51,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:11:50.561813"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09959-00",
+      "species": "Bauhinia acuminata L.",
+      "batch_id": "AngMaFaFbCx09959-00_20251027_221150",
+      "n_occurrences": 50,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:12:21.159959"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37257-00",
+      "species": "Angophora woodsiana F.M.Bailey",
+      "batch_id": "AngMaMyMyRt37257-00_20251027_221221",
+      "n_occurrences": 49,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:12:53.253547"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38083-00",
+      "species": "Eucalyptus taurina A.R.Bean & Brooker",
+      "batch_id": "AngMaMyMyRt38083-00_20251027_221253",
+      "n_occurrences": 48,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:13:23.888834"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37525-00",
+      "species": "Eucalyptus behriana F.Muell.",
+      "batch_id": "AngMaMyMyRt37525-00_20251027_221323",
+      "n_occurrences": 46,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:13:55.241680"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09522-00",
+      "species": "Adenolobus garipensis (E.Mey.) Torre & Hillc.",
+      "batch_id": "AngMaFaFbCx09522-00_20251027_221355",
+      "n_occurrences": 45,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:14:25.881071"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09283-00",
+      "species": "Acacia lamprocarpa O.Schwarz",
+      "batch_id": "AngMaFaFbCx09283-00_20251027_221425",
+      "n_occurrences": 45,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:14:56.394747"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx11506-00",
+      "species": "Inga alba (Sw.) Willd.",
+      "batch_id": "AngMaFaFbCx11506-00_20251027_221456",
+      "n_occurrences": 45,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:15:27.122424"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09133-00",
+      "species": "Acacia cambagei R.T.Baker",
+      "batch_id": "AngMaFaFbCx09133-00_20251027_221527",
+      "n_occurrences": 43,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:15:57.697421"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13688-00",
+      "species": "Vachellia natalitia (E.Mey.) Kyal. & Boatwr.",
+      "batch_id": "AngMaFaFbCx13688-00_20251027_221557",
+      "n_occurrences": 42,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:16:58.609316"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13644-00",
+      "species": "Vachellia drepanolobium (Harms ex Y.Sj\u00f6stedt) P.J.H.Hurter",
+      "batch_id": "AngMaFaFbCx13644-00_20251027_221658",
+      "n_occurrences": 41,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:17:29.447577"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32139-00",
+      "species": "Casearia corymbosa Kunth",
+      "batch_id": "AngMaMaSlCc32139-00_20251027_221729",
+      "n_occurrences": 38,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:18:00.092392"
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32612-00",
+      "species": "Salix geyeriana Andersson",
+      "batch_id": "AngMaMaSlCc32612-00_20251027_221800",
+      "n_occurrences": 38,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:18:30.730303"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10447-00",
+      "species": "Clitoria dendrina Pittier",
+      "batch_id": "AngMaFaFbCx10447-00_20251027_221830",
+      "n_occurrences": 33,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:19:02.514626"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39003-00",
+      "species": "Melaleuca cheelii C.T.White",
+      "batch_id": "AngMaMyMyRt39003-00_20251027_221902",
+      "n_occurrences": 33,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:19:33.977369"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx11524-00",
+      "species": "Inga brachyrhachis Harms",
+      "batch_id": "AngMaFaFbCx11524-00_20251027_221933",
+      "n_occurrences": 29,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:20:04.461419"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38953-00",
+      "species": "Kunzea sulphurea Tovey & P.Morris",
+      "batch_id": "AngMaMyMyRt38953-00_20251027_222004",
+      "n_occurrences": 28,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:20:36.133472"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09349-00",
+      "species": "Acacia nyssophylla F.Muell.",
+      "batch_id": "AngMaFaFbCx09349-00_20251027_222036",
+      "n_occurrences": 28,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:21:07.525951"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt39009-00",
+      "species": "Melaleuca dealbata S.T.Blake",
+      "batch_id": "AngMaMyMyRt39009-00_20251027_222107",
+      "n_occurrences": 28,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:21:38.007236"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10332-00",
+      "species": "Cenostigma eriostachys (Benth.) Gagnon & G.P.Lewis",
+      "batch_id": "AngMaFaFbCx10332-00_20251027_222138",
+      "n_occurrences": 27,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:22:09.601063"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09441-00",
+      "species": "Acacia silvestris Tindale",
+      "batch_id": "AngMaFaFbCx09441-00_20251027_222209",
+      "n_occurrences": 26,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:22:40.184755"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx13660-00",
+      "species": "Vachellia haematoxylon (Willd.) Seigler & Ebinger",
+      "batch_id": "AngMaFaFbCx13660-00_20251027_222240",
+      "n_occurrences": 25,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:23:11.137794"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09154-00",
+      "species": "Acacia conferta A.Cunn. ex Benth.",
+      "batch_id": "AngMaFaFbCx09154-00_20251027_222311",
+      "n_occurrences": 25,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:23:42.651461"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37879-00",
+      "species": "Eucalyptus nitens (H.Deane & Maiden) Maiden",
+      "batch_id": "AngMaMyMyRt37879-00_20251027_222342",
+      "n_occurrences": 25,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:24:13.425891"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37483-00",
+      "species": "Eucalyptus angulosa Schauer",
+      "batch_id": "AngMaMyMyRt37483-00_20251027_222413",
+      "n_occurrences": 25,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:24:44.388660"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37785-00",
+      "species": "Eucalyptus kitsoniana Luehm. ex Maiden",
+      "batch_id": "AngMaMyMyRt37785-00_20251027_222444",
+      "n_occurrences": 24,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:25:15.724099"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37247-00",
+      "species": "Amomyrtus meli (Phil.) D.Legrand & Kausel",
+      "batch_id": "AngMaMyMyRt37247-00_20251027_222515",
+      "n_occurrences": 22,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:25:47.421307"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10730-00",
+      "species": "Dalbergia brownei (Jacq.) Schinz",
+      "batch_id": "AngMaFaFbCx10730-00_20251027_222547",
+      "n_occurrences": 22,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:26:18.300732"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37474-00",
+      "species": "Eucalyptus albopurpurea (Boomsma) D.Nicolle",
+      "batch_id": "AngMaMyMyRt37474-00_20251027_222618",
+      "n_occurrences": 21,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:27:53.003522"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09472-00",
+      "species": "Acacia thomsonii Maslin & M.W.McDonald",
+      "batch_id": "AngMaFaFbCx09472-00_20251027_222753",
+      "n_occurrences": 20,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:28:23.368005"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37347-00",
+      "species": "Corymbia bleeseri (Blakely) K.D.Hill & L.A.S.Johnson",
+      "batch_id": "AngMaMyMyRt37347-00_20251027_222959",
+      "n_occurrences": 20,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:30:30.045555"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt38951-00",
+      "species": "Kunzea serotina de Lange & Toelken",
+      "batch_id": "AngMaMyMyRt38951-00_20251027_223030",
+      "n_occurrences": 19,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:31:00.953952"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09478-00",
+      "species": "Acacia trinervata Sieber ex DC.",
+      "batch_id": "AngMaFaFbCx09478-00_20251027_223100",
+      "n_occurrences": 18,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:31:31.446825"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09556-00",
+      "species": "Albizia arenicola R.Vig.",
+      "batch_id": "AngMaFaFbCx09556-00_20251027_223131",
+      "n_occurrences": 17,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:32:01.890054"
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09278-00",
+      "species": "Acacia kempeana F.Muell.",
+      "batch_id": "AngMaFaFbCx09278-00_20251027_223201",
+      "n_occurrences": 17,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:32:32.676275"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14905-00",
+      "species": "Quercus segoviensis Liebm.",
+      "batch_id": "AngMaFaFgCx14905-00_20251027_223303",
+      "n_occurrences": 16,
+      "n_tasks": 1,
+      "retry_count": 0,
+      "completed_at": "2025-10-27T22:33:34.832827"
+    }
+  ],
+  "failed": [],
+  "in_progress": [],
+  "retry_queue": [
+    {
+      "taxon_id": "AngMaFaFgCx14890-00",
+      "species": "Quercus rotundifolia Lam.",
+      "retry_count": 2,
+      "last_error": "Feature [1_1_1_1_1_1_2_63_0] has value of incompatible type for property [longitude].",
+      "failed_at": "2025-10-27T22:35:09.085307"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37558-00",
+      "species": "Eucalyptus caliginosa Blakely & Mc Kie",
+      "retry_count": 2,
+      "last_error": "Feature [1_1_1_1_1_1_2_290_0] has value of incompatible type for property [longitude].",
+      "failed_at": "2025-10-27T22:36:39.772225"
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14890-00",
+      "species": "Quercus rotundifolia Lam.",
+      "retry_count": 2,
+      "last_error": "Feature [1_1_1_1_1_1_2_63_0] has value of incompatible type for property [longitude].",
+      "failed_at": "2025-10-27T22:38:12.640548"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37558-00",
+      "species": "Eucalyptus caliginosa Blakely & Mc Kie",
+      "retry_count": 2,
+      "last_error": "Feature [1_1_1_1_1_1_2_290_0] has value of incompatible type for property [longitude].",
+      "failed_at": "2025-10-27T22:40:15.021921"
+    },
+    {
+      "taxon_id": "AngMaMyMyRt37950-00",
+      "species": "Eucalyptus placita L.A.S.Johnson & K.D.Hill",
+      "retry_count": 2,
+      "last_error": "Feature [2_16_0] has value of incompatible type for property [latitude].",
+      "failed_at": "2025-10-27T22:41:45.492530"
+    }
+  ]
+}

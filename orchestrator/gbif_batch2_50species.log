@@ -1,0 +1,134 @@
+/Users/djimoserodio/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+======================================================================
+GBIF OCCURRENCE DOWNLOADER - BATCH OF 50
+With ≤10m GPS precision for AlphaEarth 10m pixels
+======================================================================
+
+✅ Retrieved 50 candidate species
+
+🔍 Matching 50 species to GBIF...
+  [1/50] Lithocarpus crassifolius... ✅ EXACT (key: 5332798)
+  [2/50] Quercus lodicosa... ✅ EXACT (key: 2880641)
+  [3/50] Thailentadopsis tenuis... ✅ EXACT (key: 2962795)
+  [4/50] Swartzia multijuga... ✅ EXACT (key: 5352110)
+  [5/50] Castanopsis brevispinula... ✅ EXACT (key: 5333048)
+  [6/50] Homalium cauliflorum... ✅ EXACT (key: 7712015)
+  [7/50] Acacia kempeana... ✅ EXACT (key: 2980901)
+  [8/50] Syzygium buettnerianum... ✅ EXACT (key: 3183035)
+  [9/50] Gossia acmenoides... ✅ EXACT (key: 5416222)
+  [10/50] Vachellia barahonensis... ✅ EXACT (key: 3795620)
+  [11/50] Acacia coriacea... ✅ EXACT (key: 2978913)
+  [12/50] Ormosia intermedia... ✅ EXACT (key: 5629990)
+  [13/50] Casearia ripicola... ✅ EXACT (key: 8299008)
+  [14/50] Populus yatungensis... ✅ EXACT (key: 7266419)
+  [15/50] Syzygium petrophilum... ✅ EXACT (key: 3182946)
+  [16/50] Kunzea sulphurea... ✅ EXACT (key: 5420037)
+  [17/50] Quercus vestita... ✅ EXACT (key: 2878414)
+  [18/50] Myrcia bartlettii... ✅ EXACT (key: 10706603)
+  [19/50] Eugenia alaotrensis... ✅ EXACT (key: 5416567)
+  [20/50] Myrcia clavata... ✅ EXACT (key: 8233310)
+  [21/50] Mimosa regnellii... ✅ EXACT (key: 2970099)
+  [22/50] Eugenia lamprophylla... ✅ EXACT (key: 5416680)
+  [23/50] Syzygium lecardii... ✅ EXACT (key: 3183783)
+  [24/50] Senegalia rovumae... ✅ EXACT (key: 8244042)
+  [25/50] Eugenia brownsbergii... ✅ EXACT (key: 5416516)
+  [26/50] Acacia desmondii... ✅ EXACT (key: 2978279)
+  [27/50] Eugenia choapamensis... ✅ EXACT (key: 5416820)
+  [28/50] Pterocarpus santalinoides... ✅ EXACT (key: 5349244)
+  [29/50] Erythrina elenae... ✅ EXACT (key: 5349545)
+  [30/50] Zygia trunciflora... ✅ EXACT (key: 5347396)
+  [31/50] Castanopsis acuminatissima... ✅ EXACT (key: 5333166)
+  [32/50] Acacia chrysotricha... ✅ EXACT (key: 2978703)
+  [33/50] Inga jimenezii... ✅ EXACT (key: 5357845)
+  [34/50] Myrcianthes leucoxyla... ✅ EXACT (key: 10381776)
+  [35/50] Dahlstedtia pentaphylla... ✅ EXACT (key: 2960232)
+  [36/50] Zollernia cowanii... ✅ EXACT (key: 3931552)
+  [37/50] Neosprucea grandiflora... ✅ EXACT (key: 8586425)
+  [38/50] Millettia stenopetala... ✅ EXACT (key: 5355708)
+  [39/50] Syzygium skiophilum... ✅ EXACT (key: 3184527)
+  [40/50] Vouacapoua macropetala... ✅ EXACT (key: 2940386)
+  [41/50] Acacia lamprocarpa... ✅ EXACT (key: 2979458)
+  [42/50] Eligmocarpus cynometroides... ✅ EXACT (key: 2960219)
+  [43/50] Dussia atropurpurea... ✅ EXACT (key: 3912540)
+  [44/50] Dalbergia chontalensis... ✅ EXACT (key: 2968838)
+  [45/50] Craibia grandiflora... ✅ EXACT (key: 2944955)
+  [46/50] Salix pellita... ✅ EXACT (key: 5372688)
+  [47/50] Lithocarpus skanianus... ✅ EXACT (key: 5332722)
+  [48/50] Erythrina pudica... ✅ EXACT (key: 5349521)
+  [49/50] Piparea spruceana... ✅ EXACT (key: 10847894)
+  [50/50] Parkia speciosa... ✅ EXACT (key: 5348811)
+
+✅ Matched: 50
+❌ Failed: 0
+
+💾 Saved to: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/gbif_matches.json
+
+📥 Downloading ALL 50 species...
+  (Selection of top 100 will happen AFTER download based on actual data)
+
+📥 Requesting GBIF occurrence download...
+  Species: 50 (all matched)
+  Species: 50
+  GBIF keys: [5332798, 2880641, 2962795, 5352110, 5333048]... (showing first 5)
+
+  Filters:
+    ✓ Has coordinates
+    ✓ No geospatial issues
+    ✓ Years: 2017-2024 (AlphaEarth window)
+    ✓ Coordinate uncertainty ≤ 10m (GPS-level accuracy for 10m AlphaEarth pixels)
+
+✅ Download requested!
+  Download key: 0002121-251025141854904
+  Status URL: https://www.gbif.org/occurrence/download/0002121-251025141854904
+
+⏳ Waiting for download to complete...
+  Download key: 0002121-251025141854904
+  Polling every 60s
+
+  Status: PREPARING
+  Records: 435
+  Waiting 60s...
+
+  Status: RUNNING
+  Records: 435
+  Waiting 60s...
+
+  Status: SUCCEEDED
+  Records: 435
+  Size: 0.0 MB
+
+✅ Download complete!
+
+📥 Downloading to: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/0002121-251025141854904.zip
+INFO:Download file size: 35556 bytes
+INFO:On disk at /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/0002121-251025141854904.zip
+
+📊 Parsing GBIF data...
+  Total records: 435
+  After cleaning: 415
+  Species: 16
+
+  Year distribution:
+year
+2017    150
+2018     41
+2019     19
+2020     20
+2021     72
+2022     37
+2023     37
+2024     39
+Name: count, dtype: int64
+
+💾 Saved to: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/gbif_occurrences.parquet
+
+======================================================================
+✅ GBIF DOWNLOAD COMPLETE
+======================================================================
+Records: 415
+Species: 16
+Output: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/gbif_occurrences.parquet
+
+Next: Update run_pilot.py to use this data instead of geohash tiles
+======================================================================

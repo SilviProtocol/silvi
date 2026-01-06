@@ -1,0 +1,13 @@
+{
+  "total_embeddings": 45677,
+  "total_species": 100,
+  "total_centroids": 500,
+  "centroids_per_species_avg": 5.0,
+  "clustering_methods": {
+    "kmeans": 500
+  },
+  "parameters": {
+    "k_clusters": 5,
+    "min_occurrences": 5
+  }
+}
