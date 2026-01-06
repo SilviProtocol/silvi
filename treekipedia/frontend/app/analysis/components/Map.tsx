@@ -26,7 +26,6 @@ interface MapProps {
   onLoadingChange: (loading: boolean) => void;
   onHeatmapLoadingChange: (loading: boolean) => void;
   onClear: () => void;
-  enableHeatmap?: boolean;
   isAnalysisLoading?: boolean;
   onShowKMLPanel?: () => void;
 }
@@ -824,25 +823,11 @@ const BASE_LAYERS = [
     maxZoom: 20
   },
   {
-    id: 'stamen-toner-lite',
-    name: 'Toner Lite (B&W)',
-    url: 'https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png',
-    attribution: '© Stamen Design © OpenStreetMap',
-    maxZoom: 20
-  },
-  {
     id: 'esri-imagery',
     name: 'Satellite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: '© ESRI',
     maxZoom: 19
-  },
-  {
-    id: 'stamen-terrain',
-    name: 'Terrain (Colorful)',
-    url: 'https://tiles.stadiamaps.com/tiles/stamen_terrain/{z}/{x}/{y}{r}.png',
-    attribution: '© Stamen Design © OpenStreetMap',
-    maxZoom: 18
   },
   {
     id: 'opentopo',
@@ -891,7 +876,7 @@ function DynamicTileLayer({ baseLayerId }: { baseLayerId: string }) {
   return null;
 }
 
-export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, enableHeatmap, isAnalysisLoading, onShowKMLPanel }: MapProps) {
+export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, isAnalysisLoading, onShowKMLPanel }: MapProps) {
   const [externalGeometry, setExternalGeometry] = useState<GeoJSONPolygon | null>(null);
   const [drawnPolygon, setDrawnPolygon] = useState<GeoJSONPolygon | null>(null);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
@@ -900,12 +885,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests'>('none');
   const [layerOpacity, setLayerOpacity] = useState(0.6);
 
-  // Auto-enable heatmap when enableHeatmap prop is true
-  useEffect(() => {
-    if (enableHeatmap) {
-      setOverlayLayer('heatmap');
-    }
-  }, [enableHeatmap]);
+  // Note: Removed auto-enable heatmap - user must manually select overlay layer from dropdown
 
   // Handle polygon changes from drawing
   const handlePolygonChange = (polygon: GeoJSONPolygon | null) => {
@@ -942,6 +922,9 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
       <MapContainer
         center={[20, 0]} // Global view center
         zoom={2} // World-level zoom
+        minZoom={2} // Prevent zooming out too far
+        maxBounds={[[-85, -180], [85, 180]]} // Restrict to world boundaries
+        maxBoundsViscosity={1.0} // Make bounds completely rigid
         style={{ height: '100%', width: '100%', cursor: 'crosshair' }}
         className="z-0"
       >
@@ -983,21 +966,6 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         </div>
       )}
 
-      {/* KML Upload Button - Show when no polygon is drawn */}
-      {!drawnPolygon && !isAnalysisLoading && (
-        <div className="absolute top-4 left-4 z-[1000]">
-          <button
-            onClick={onShowKMLPanel}
-            className="bg-black/80 backdrop-blur-md border border-white/20 rounded-lg px-4 py-2 text-white text-sm hover:bg-black/90 transition-colors flex items-center gap-2"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            Upload KML
-          </button>
-        </div>
-      )}
-
       {/* Heatmap Buffering Indicator */}
       {isHeatmapLoading && (
         <div className="absolute bottom-4 right-4 z-[1000]">
@@ -1008,8 +976,22 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         </div>
       )}
 
-      {/* Layer control panel */}
-      <div className="absolute top-4 right-4 z-10 space-y-2">
+      {/* KML Upload Button and Layer control panel */}
+      <div className="absolute top-4 right-4 z-10 flex items-start gap-3">
+        {/* KML Upload Button - Show when no polygon is drawn */}
+        {!drawnPolygon && !isAnalysisLoading && (
+          <button
+            onClick={onShowKMLPanel}
+            className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg px-4 py-3 text-white text-sm hover:bg-black/90 transition-colors flex items-center gap-2"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            Upload KML
+          </button>
+        )}
+
+        {/* Layer control panel */}
         <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg p-3 min-w-[200px]">
           <div className="flex items-center gap-2 mb-3">
             <Layers className="w-5 h-5 text-emerald-300" />

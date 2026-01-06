@@ -33,8 +33,8 @@ export function useFieldDefinitions() {
   // Geographic tab fields
   const geographicFields: FieldDefinition[] = [
     { label: "Biomes", key: "biomes" },
-    { label: "Countries Native", key: "countries_native" },
-    { label: "Countries Introduced", key: "countries_introduced" },
+    { label: "Native Regions", key: "wcvp_native" },
+    { label: "Introduced Regions", key: "wcvp_introduced" },
     { label: "Countries Invasive", key: "countries_invasive" },
     { label: "Common Countries", key: "common_countries" },
     { label: "Ecoregions", key: "ecoregions" },

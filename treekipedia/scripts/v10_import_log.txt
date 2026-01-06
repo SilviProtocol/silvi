@@ -1,0 +1,23 @@
+🌳 Treekipedia v10 Species Import
+=====================================
+CSV File: Treekipedia_V10_Final_Climate_October_21d.csv
+Batch Size: 1000
+Dry Run: NO (database will be updated)
+
+📁 File size: 1.34 GB
+
+📋 Loaded 19 species with NFT data to preserve
+
+📊 Progress: 5,000 rows | 874 updated | 3,126 new | 581 rows/sec
+📊 Progress: 10,000 rows | 874 updated | 8,126 new | 628 rows/sec
+📊 Progress: 15,000 rows | 874 updated | 13,126 new | 677 rows/sec
+📊 Progress: 20,000 rows | 874 updated | 18,126 new | 525 rows/sec
+📊 Progress: 25,000 rows | 874 updated | 23,126 new | 560 rows/sec
+📊 Progress: 30,000 rows | 874 updated | 28,126 new | 582 rows/sec
+📊 Progress: 35,000 rows | 874 updated | 33,126 new | 610 rows/sec
+📊 Progress: 40,000 rows | 874 updated | 38,126 new | 599 rows/sec
+📊 Progress: 45,000 rows | 874 updated | 43,126 new | 613 rows/sec
+📊 Progress: 50,000 rows | 874 updated | 48,126 new | 632 rows/sec
+📊 Progress: 55,000 rows | 874 updated | 53,126 new | 596 rows/sec
+📊 Progress: 60,000 rows | 874 updated | 58,126 new | 575 rows/sec
+📊 Progress: 65,000 rows | 879 updated | 63,121 new | 481 rows/sec

@@ -1,0 +1,98 @@
+{
+  "metadata": {
+    "species_scientific_name": "Ginkgo biloba",
+    "common_names": "Ginkgo, maidenhair tree",
+    "taxon_id": "AngGiGiGN21141-00",
+    "timestamp": "2026-01-05T06:39:13.997Z",
+    "strategy": "single",
+    "model": "grok-4-1-fast-reasoning"
+  },
+  "strategy": "single_call",
+  "model": "grok-4-1-fast-reasoning",
+  "api_calls": 1,
+  "success": true,
+  "data": {
+    "popular_common_name_ai": "Ginkgo",
+    "habitat_ai": "Warm-temperate deciduous and evergreen mixed broadleaved forests, along flood-disturbed streamsides, steep slopes, ravines, rocky outcrops, and cliff edges in mountainous regions",
+    "elevation_ranges_ai": "300-1250",
+    "ecological_function_ai": "Disturbance-adapted pioneer in streamside and slope environments; supports clonal persistence via basal and aerial sprouting; provides shade and habitat; seeds dispersed by animals and gravity; highly resilient to fire, drought, pollution, and harsh conditions",
+    "native_adapted_habitats_ai": "Refugial populations in eastern (Mt. Tianmu), southern, and southwestern China (Mt. Dalou, Mt. Jinfo); adapted to urban pollution, compacted soils, drought, salt, and temperate to subtropical climates worldwide",
+    "agroforestry_use_cases_ai": "Urban street and shade trees, park plantings, windbreaks, fruit/nut plantations in China, leaf harvest for medicine, ornamental landscapes, leaf mulch",
+    "conservation_status_ai": "Endangered (IUCN)",
+    "general_description_ai": "Sole extant species of ancient Ginkgoales gymnosperm; deciduous dioecious tree with distinctive fan-shaped leaves on long and short shoots; 20-35 m tall (up to 50+ m); living fossil with unchanged form for 170+ million years; brilliant yellow fall foliage; highly disease- and pest-resistant; extreme longevity",
+    "compatible_soil_types_ai": "Deep, well-drained sandy loams, tolerant of sand, silt, clay, poor/infertile soils, urban compaction, salt; pH 4.5-8.5 (prefers 6.0-8.0); intolerant of waterlogging",
+    "growth_form_ai": "Pyramidal to conical when young, broadening to oval or rounded crown with age; single straight trunk, ascending branches at 45 degrees",
+    "leaf_type_ai": "Alternate, fan-shaped, 5-10 cm wide, bilobed or notched with dichotomous parallel venation; thicker on long shoots, clustered on short shoots; bright green turning deep golden-yellow in autumn",
+    "deciduous_evergreen_ai": "deciduous",
+    "flower_color_ai": "Inconspicuous greenish-yellow",
+    "fruit_type_ai": "Dioecious; females produce 1.5-2 cm apricot-like naked seeds with yellow-brown fleshy sarcotesta (foul-smelling butyric acid when rotting), hard inner shell",
+    "bark_characteristics_ai": "Light gray to grayish-brown; shallow ridges/furrows when young, deeply furrowed, corky, and longitudinally fissured with age",
+    "maximum_height_ai": 50,
+    "maximum_diameter_ai": 5,
+    "lifespan_ai": "Extremely long-lived, exceeding 1000 years commonly; no senescence evident up to 667+ years",
+    "maximum_tree_age_ai": 3500,
+    "stewardship_best_practices_ai": "Full sun, well-drained sites; male cultivars to avoid messy fruit; low maintenance; drought tolerant once established; tolerant of pollution, salt, compaction",
+    "planting_recipes_ai": "Plant spring or fall in full sun; well-drained soil; space 10-15 m apart; propagate by seed or grafting (males); avoid wet sites",
+    "pruning_maintenance_ai": "Prune young trees to establish single central leader; minimal pruning required later; best in dormant season",
+    "disease_pest_management_ai": "Highly resistant; rare issues include leaf blight (Alternaria, Pestalotiopsis), stem rot (Macrophomina on seedlings); manage with fungicides (carbendazim, thiophanate-methyl), shading, fertilization; few insect pests (e.g., defoliators)",
+    "fire_management_ai": "Highly fire-resistant (low flammability, thick bark); survives crown fires via basal chichi/lignotubers sprouting; second lowest flammability among deciduous trees",
+    "cultural_significance_ai": "Symbol of longevity, resilience, peace in China/Japan (temple plantings, Hiroshima survivors); traditional medicine (leaves for cognition/circulation, seeds edible); city tree (Tokyo, Seoul); featured in logos, ceremonies, cuisine"
+  },
+  "raw_response": "{\n  \"popular_common_name_ai\": \"Ginkgo\",\n  \"habitat_ai\": \"Warm-temperate deciduous and evergreen mixed broadleaved forests, along flood-disturbed streamsides, steep slopes, ravines, rocky outcrops, and cliff edges in mountainous regions\",\n  \"elevation_ranges_ai\": \"300-1250\",\n  \"ecological_function_ai\": \"Disturbance-adapted pioneer in streamside and slope environments; supports clonal persistence via basal and aerial sprouting; provides shade and habitat; seeds dispersed by animals and gravity; highly resilient to fire, drought, pollution, and harsh conditions\",\n  \"native_adapted_habitats_ai\": \"Refugial populations in eastern (Mt. Tianmu), southern, and southwestern China (Mt. Dalou, Mt. Jinfo); adapted to urban pollution, compacted soils, drought, salt, and temperate to subtropical climates worldwide\",\n  \"agroforestry_use_cases_ai\": \"Urban street and shade trees, park plantings, windbreaks, fruit/nut plantations in China, leaf harvest for medicine, ornamental landscapes, leaf mulch\",\n  \"conservation_status_ai\": \"Endangered (IUCN)\",\n  \"general_description_ai\": \"Sole extant species of ancient Ginkgoales gymnosperm; deciduous dioecious tree with distinctive fan-shaped leaves on long and short shoots; 20-35 m tall (up to 50+ m); living fossil with unchanged form for 170+ million years; brilliant yellow fall foliage; highly disease- and pest-resistant; extreme longevity\",\n  \"compatible_soil_types_ai\": \"Deep, well-drained sandy loams, tolerant of sand, silt, clay, poor/infertile soils, urban compaction, salt; pH 4.5-8.5 (prefers 6.0-8.0); intolerant of waterlogging\",\n  \"growth_form_ai\": \"Pyramidal to conical when young, broadening to oval or rounded crown with age; single straight trunk, ascending branches at 45 degrees\",\n  \"leaf_type_ai\": \"Alternate, fan-shaped, 5-10 cm wide, bilobed or notched with dichotomous parallel venation; thicker on long shoots, clustered on short shoots; bright green turning deep golden-yellow in autumn\",\n  \"deciduous_evergreen_ai\": \"deciduous\",\n  \"flower_color_ai\": \"Inconspicuous greenish-yellow\",\n  \"fruit_type_ai\": \"Dioecious; females produce 1.5-2 cm apricot-like naked seeds with yellow-brown fleshy sarcotesta (foul-smelling butyric acid when rotting), hard inner shell\",\n  \"bark_characteristics_ai\": \"Light gray to grayish-brown; shallow ridges/furrows when young, deeply furrowed, corky, and longitudinally fissured with age\",\n  \"maximum_height_ai\": 50,\n  \"maximum_diameter_ai\": 5,\n  \"lifespan_ai\": \"Extremely long-lived, exceeding 1000 years commonly; no senescence evident up to 667+ years\",\n  \"maximum_tree_age_ai\": 3500,\n  \"stewardship_best_practices_ai\": \"Full sun, well-drained sites; male cultivars to avoid messy fruit; low maintenance; drought tolerant once established; tolerant of pollution, salt, compaction\",\n  \"planting_recipes_ai\": \"Plant spring or fall in full sun; well-drained soil; space 10-15 m apart; propagate by seed or grafting (males); avoid wet sites\",\n  \"pruning_maintenance_ai\": \"Prune young trees to establish single central leader; minimal pruning required later; best in dormant season\",\n  \"disease_pest_management_ai\": \"Highly resistant; rare issues include leaf blight (Alternaria, Pestalotiopsis), stem rot (Macrophomina on seedlings); manage with fungicides (carbendazim, thiophanate-methyl), shading, fertilization; few insect pests (e.g., defoliators)\",\n  \"fire_management_ai\": \"Highly fire-resistant (low flammability, thick bark); survives crown fires via basal chichi/lignotubers sprouting; second lowest flammability among deciduous trees\",\n  \"cultural_significance_ai\": \"Symbol of longevity, resilience, peace in China/Japan (temple plantings, Hiroshima survivors); traditional medicine (leaves for cognition/circulation, seeds edible); city tree (Tokyo, Seoul); featured in logos, ceremonies, cuisine\"\n}",
+  "usage": {
+    "input_tokens": 38852,
+    "input_tokens_details": {
+      "cached_tokens": 11928
+    },
+    "output_tokens": 5440,
+    "output_tokens_details": {
+      "reasoning_tokens": 3496
+    },
+    "total_tokens": 44292,
+    "num_sources_used": 0,
+    "num_server_side_tools_used": 22,
+    "cost_in_usd_ticks": 1187012000,
+    "server_side_tool_usage_details": {
+      "web_search_calls": 22,
+      "x_search_calls": 0,
+      "code_interpreter_calls": 0,
+      "file_search_calls": 0,
+      "mcp_calls": 0,
+      "document_search_calls": 0
+    }
+  },
+  "duration_ms": 59310,
+  "citations": [],
+  "completion": {
+    "filled": 25,
+    "total": 25,
+    "percentage": 100,
+    "fieldStatus": {
+      "popular_common_name_ai": true,
+      "habitat_ai": true,
+      "elevation_ranges_ai": true,
+      "ecological_function_ai": true,
+      "native_adapted_habitats_ai": true,
+      "agroforestry_use_cases_ai": true,
+      "conservation_status_ai": true,
+      "general_description_ai": true,
+      "compatible_soil_types_ai": true,
+      "growth_form_ai": true,
+      "leaf_type_ai": true,
+      "deciduous_evergreen_ai": true,
+      "flower_color_ai": true,
+      "fruit_type_ai": true,
+      "bark_characteristics_ai": true,
+      "maximum_height_ai": true,
+      "maximum_diameter_ai": true,
+      "lifespan_ai": true,
+      "maximum_tree_age_ai": true,
+      "stewardship_best_practices_ai": true,
+      "planting_recipes_ai": true,
+      "pruning_maintenance_ai": true,
+      "disease_pest_management_ai": true,
+      "fire_management_ai": true,
+      "cultural_significance_ai": true
+    }
+  }
+}

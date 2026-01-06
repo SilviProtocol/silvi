@@ -9,7 +9,7 @@ interface SpeciesHeaderProps {
 
 export function SpeciesHeader({ species }: SpeciesHeaderProps) {
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       <h1 className="text-4xl font-bold mb-2 italic text-white">
         {species?.species_scientific_name || species?.species}
       </h1>

@@ -1,0 +1,530 @@
+{
+  "created_at": 1767522150,
+  "id": "67ce8250-a4d5-0131-f064-c540b5fa1721",
+  "max_output_tokens": null,
+  "model": "grok-4-1-fast-reasoning",
+  "object": "response",
+  "output": [
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_13053430",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba habitat ecosystem elevation range native range ecological role",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_46704039",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba soil types pH preferences compatible soils",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_96267500",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba growth form leaf morphology deciduous evergreen flower color fruit type bark characteristics maximum height diameter lifespan age",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_16518438",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba agroforestry uses conservation status IUCN",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_72026627",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba cultivation best practices planting pruning maintenance diseases pests fire tolerance cultural significance",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_35465216",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "\"Ginkgo biloba\" maximum height trunk diameter maximum age years",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_59302144",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba general botanical description",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_45113671",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "open_page",
+        "url": "https://en.wikipedia.org/wiki/Ginkgo_biloba"
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_69433303",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "open_page",
+        "url": "https://besjournals.onlinelibrary.wiley.com/doi/10.1111/1365-2745.13856"
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_76585304",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "open_page",
+        "url": "https://www.conifers.org/gi/Ginkgo_biloba.php"
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_80763044",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "open_page",
+        "url": "https://en.wikipedia.org/wiki/Ginkgo_biloba#Conservation"
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_98351592",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba maximum trunk diameter dbh girth record",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_83700366",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba fire tolerance ecology",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_74856817",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba agroforestry applications uses",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_04171466",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "search",
+        "query": "Ginkgo biloba oldest tree age record",
+        "sources": []
+      }
+    },
+    {
+      "id": "ws_67ce8250-a4d5-0131-f064-c540b5fa1721_call_74700282",
+      "type": "web_search_call",
+      "status": "completed",
+      "action": {
+        "type": "open_page",
+        "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:262125-1"
+      }
+    },
+    {
+      "content": [
+        {
+          "type": "output_text",
+          "text": "{\n  \"habitat_ai\": \"Infrequently in deciduous and mixed forests, valleys, stream banks, rocky slopes, and cliff edges in temperate mountainous regions; prefers disturbed sites with good drainage.\",\n  \"elevation_ranges_ai\": \"300-1250\",\n  \"ecological_function_ai\": \"Persists in disturbed ecosystems through clonal reproduction, basal sprouting, and aerial roots; provides shade, stabilizes soil, supports biodiversity in remnant habitats; historically dominant in streamside environments.\",\n  \"native_adapted_habitats_ai\": \"Southwestern China (e.g., Zhejiang, Tianmu Mountains, eastern Tibetan Plateau); temperate deciduous forests on acidic loess soils.\",\n  \"agroforestry_use_cases_ai\": \"Urban and street tree plantings for shade and pollution tolerance; fruit production for edible seeds; soil stabilization and erosion control; windbreaks in plantations.\",\n  \"conservation_status_ai\": \"Endangered (IUCN 3.1)\",\n  \"general_description_ai\": \"Ginkgo biloba is a large, long-lived, dioecious deciduous gymnosperm tree, the sole extant species of Ginkgophyta, known as a 'living fossil' unchanged for millions of years; features unique fan-shaped leaves turning bright yellow in autumn, foul-smelling seeds on females, highly resilient to urban stresses.\",\n  \"compatible_soil_types_ai\": \"Well-drained sandy, loamy, or loess soils; tolerant of compacted, clay, poor, acidic to alkaline (pH 4.5-8.5), prefers pH 5.0-8.0.\",\n  \"growth_form_ai\": \"Pyramidal to slender when young, developing broad, irregular oval crown with age; deep-rooted, angular branching, capable of multi-stemmed growth from sprouts.\",\n  \"leaf_type_ai\": \"Fan-shaped, 5-15 cm long, dichotomously branched veins, green on both sides, alternate on long shoots or clustered on short spur shoots; heterophyllous with long-shoot leaves larger and lobed.\",\n  \"deciduous_evergreen_ai\": \"deciduous\",\n  \"flower_color_ai\": \"Inconspicuous; male pollen cones pale green to yellow-green\",\n  \"fruit_type_ai\": \"Fleshy-coated seeds (sarcotesta yellow-brown, 1.5-2 cm, foul-smelling like rancid butter) on female trees; hard-shelled nut inside.\",\n  \"bark_characteristics_ai\": \"Light gray, with shallow furrows and ridges, slightly corky texture.\",\n  \"maximum_height_ai\": 40,\n  \"maximum_diameter_ai\": 5,\n  \"lifespan_ai\": \"Extremely long-lived, typically over 1,000 years, with continuous growth and no senescence.\",\n  \"maximum_tree_age_ai\": 3500,\n  \"stewardship_best_practices_ai\": \"Full sun exposure, well-drained sites; water regularly until established; select male cultivars to avoid fruit litter; low maintenance once mature.\",\n  \"planting_recipes_ai\": \"Plant in spring or fall in full sun, amend heavy soils for drainage; space 10-15 m apart; propagate by seed or graft males onto rootstock; mulch to retain moisture.\",\n  \"pruning_maintenance_ai\": \"Minimal pruning needed; structural prune young trees in spring to develop strong form; remove co-dominant leaders; avoid heavy pruning on mature trees.\",\n  \"disease_pest_management_ai\": \"Highly resistant to diseases and pests; rare issues include aphids, scale, leaf spot; use horticultural oil or insecticidal soap if needed; monitor for canker in stressed trees.\",\n  \"fire_management_ai\": \"Fire-resistant with low flammability, thick bark, and resprouting ability; tolerates low to moderate fires; wood slow to decay.\",\n  \"cultural_significance_ai\": \"Symbol of longevity and resilience in Chinese, Japanese, Korean cultures; planted in temples for millennia; medicinal uses (leaves for extracts, seeds edible); official tree of Tokyo and Seoul; survived Hiroshima bombing; used in bonsai, tea ceremonies, and folklore.\"\n}",
+          "logprobs": [],
+          "annotations": [
+            {
+              "type": "url_citation",
+              "url": "http://libraryexhibits.uvm.edu/omeka/exhibits/show/uvmtrees/ginkgo/physpropetiesginkgo"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://johnshopkinshealthcare.staywellsolutionsonline.com/BreatheEasy/19%2CGinkgoBiloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.gardenia.net/genus/ginkgo-biloba-all-you-need-to-know"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.mdpi.com/1999-4907/15/12/2260"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/SDBotanicGarden/posts/the-ginkgo-tree-is-an-ancient-species-that-dates-back-270-million-years-and-is-o/841195128041958/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://plants.usda.gov/DocumentLibrary/plantguide/pdf/pg_ginkg.pdf"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.researchgate.net/publication/263730643_The_Growth_Characteristics_of_Multi-trunk_Ginkgo_in_Shengsheng_Garden_of_Linyi"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://lakeside.co.uk/bloginfo.asp?id=14"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://explorer.natureserve.org/Taxon/ELEMENT_GLOBAL.2.158473/Ginkgo_biloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://gardenerspath.com/plants/landscape-trees/grow-ginkgo-trees/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.monumentaltrees.com/en/trees/ginkgo/records/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://research.fs.usda.gov/treesearch/32646"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.reddit.com/r/arborists/comments/1ith1id/the_ginkgo_tree_essentially_unchanged_for_more/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://en.wikipedia.org/wiki/Ginkgo_biloba#Conservation"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://edis.ifas.ufl.edu/publication/ST273"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/groups/BigTreeSeekers/posts/4139988379651711/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.researchgate.net/publication/297647067_Status_of_Maiden_Hair_Tree-Ginkgo_biloba_Living_Fossils_Becoming_Endangered"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://holdenfg.org/nature-profiles/ginko-biloba/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://e360.yale.edu/features/peter_crane_history_of_ginkgo_earths_oldest_tree"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://hort.ifas.ufl.edu/database/documents/pdf/tree_fact_sheets/ginbila.pdf"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.conifers.org/gi/Ginkgo_biloba.php"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://mortonarb.org/plant-and-protect/trees-and-plants/ginkgo/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC4557237/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://plants.ces.ncsu.edu/plants/ginkgo-biloba/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://hgic.clemson.edu/factsheet/ginkgo-maidenhair-tree-care-growing-guide/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.gardendesign.com/trees/ginkgo.html"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://arboretum.harvard.edu/arnoldia-stories/wake-up-and-smell-the-ginkgos/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.gardenia.net/plant/ginkgo-biloba-maidenhair-tree"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://a-z-animals.com/blog/discover-the-oldest-ginkgo-tree-in-the-world-with-pictures/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://landscapeplants.oregonstate.edu/plants/ginkgo-biloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://plantura.garden/uk/trees-shrubs/ginkgo/ginkgo-overview"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.kew.org/read-and-watch/ginkgo-biloba-maidenhair-tree-kew-gardens"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.sciencedirect.com/science/article/abs/pii/S1872203221001177"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://en.wikipedia.org/wiki/Ginkgo_biloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/TheFdLReporter/posts/tim-hoelter-always-thought-his-ginkgo-tree-was-the-second-tallest-in-the-state-b/1198966382244739/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.missouribotanicalgarden.org/PlantFinder/PlantFinderDetails.aspx?kempercode=z990"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://woodyplants.cals.cornell.edu/plant/102"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://warnell.uga.edu/sites/default/files/inline-files/Ginkgo%2520pub%25202011%2520-%2520Ginkgo%2520Ginkgo%2520biloba%2520Eldest%2520%2526%2520Last%2520ARBOR-21_1.pdf"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://plantdetectives.com/pages/the-ginkgo-guide?srsltid=AfmBOopdHRw8IT6NFkNNU_uyKrkiw7282yCPzChCwDwhgKgZMjcIqbPu"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/groups/856354055026810/posts/1021254765203404/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:262125-1/general-information"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.rbg.ca/botanical-oddities-gingko-biloba-thelma/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.mofga.org/resources/herbs/ginkgo/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11097006/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://pfaf.org/native/ginkgo-biloba/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://urbanforestrysouth.org/resources/library/citations/ginkgo-eldest-tree-survivor/fss_get/file"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.chicagobotanic.org/plant-collections/plant-finder/ginkgo-biloba-ginkgo"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://farmonaut.com/blogs/ginkgo-tree-7-powerful-benefits-of-planting-in-2026"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://barelyrooted.com/products/ginkgo-biloba-bare-root?srsltid=AfmBOors5FvldmHeTL-uPxdhKLD57E_v76J6RPEUX8dOvkvQ3cANeHa4"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://onlinelibrary.wiley.com/doi/10.1002/cbdv.202500485"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://pfaf.org/user/plant.aspx?LatinName=Ginkgo%2Bbiloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://portals.iucn.org/library/sites/library/files/documents/2010-045.pdf"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://caseytrees.org/2014/10/tree-month-ginkgo-biloba/"
+            },
+            {
+              "type": "url_citation",
+              "url": "http://libraryexhibits.uvm.edu/omeka/exhibits/show/uvmtrees/ginkgo/introduction"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://naturewalk.yale.edu/trees/ginkgoaceae/ginkgo-biloba/ginkgo-41"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://research.unt.edu/news/secret-longevity-ginkgo-biloba-trees.html"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://blog.anawaltlumber.com/ginkgo-biloba-care/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.thespruce.com/ginkgo-biloba-trees-fall-foliage-champ-4119900"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://trees.umn.edu/ginkgo-ginkgo-biloba"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://clarkbrothersnursery.com/ginkgo-biloba/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.sciencedirect.com/science/article/pii/S0378112723000944"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.conifers.org/gi/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://kwanten.home.xs4all.nl/thetree.htm"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.monticello.org/research-education/thomas-jefferson-encyclopedia/ginkgo/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:262125-1"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://ucmp.berkeley.edu/seedplants/ginkgoales/ginkgofr.html"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8901348/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/groups/PlanetGinkgo/posts/5814822135256608/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/1365-2745.13856"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/koreatourism/posts/a-gigantic-ginkgo-tree-that-is-nearly-800-years-oldstanding-345m-tall-this-ginkg/873006257951378/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://ethnobiology.org/forage/blog/how-saving-ginkgo-biloba-could-save-humankind-paleobotanical-future"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.facebook.com/groups/1870247999723559/posts/4154089081339428/"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.britannica.com/plant/ginkgo-tree"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.sciencedirect.com/topics/agricultural-and-biological-sciences/ginkgo"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://besjournals.onlinelibrary.wiley.com/doi/10.1111/1365-2745.13856"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.reddit.com/r/NativePlantGardening/comments/1hvrvak/how_bad_are_ginko_trees_illinois_based/"
+            }
+          ]
+        }
+      ],
+      "id": "msg_67ce8250-a4d5-0131-f064-c540b5fa1721",
+      "role": "assistant",
+      "type": "message",
+      "status": "completed"
+    }
+  ],
+  "parallel_tool_calls": true,
+  "previous_response_id": null,
+  "reasoning": {
+    "effort": null,
+    "summary": null
+  },
+  "temperature": null,
+  "text": {
+    "format": {
+      "type": "text"
+    }
+  },
+  "tool_choice": "auto",
+  "tools": [
+    {
+      "type": "web_search",
+      "search_context_size": "medium"
+    }
+  ],
+  "top_p": null,
+  "usage": {
+    "input_tokens": 25397,
+    "input_tokens_details": {
+      "cached_tokens": 3025
+    },
+    "output_tokens": 4187,
+    "output_tokens_details": {
+      "reasoning_tokens": 2396
+    },
+    "total_tokens": 29584,
+    "num_sources_used": 0,
+    "num_server_side_tools_used": 16,
+    "cost_in_usd_ticks": 867191500,
+    "server_side_tool_usage_details": {
+      "web_search_calls": 16,
+      "x_search_calls": 0,
+      "code_interpreter_calls": 0,
+      "file_search_calls": 0,
+      "mcp_calls": 0,
+      "document_search_calls": 0
+    }
+  },
+  "user": null,
+  "incomplete_details": null,
+  "status": "completed",
+  "store": true,
+  "metadata": {}
+}

@@ -9,7 +9,7 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Treekipedia</h3>
             <p className="text-sm text-white/70">
-              The open encyclopedia of trees, powered by community research and blockchain technology.
+              The open encyclopedia of trees, powered by community research and AI.
             </p>
             <div className="flex items-center space-x-4">
               <a 
@@ -36,29 +36,23 @@ export function Footer() {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Quick Links</h3>
             <nav className="flex flex-col space-y-2">
-              <Link 
-                href="/search" 
+              <Link
+                href="/search"
                 className="text-white/70 hover:text-white transition-colors text-sm"
               >
                 Search
               </Link>
-              <Link 
-                href="/treederboard" 
+              <Link
+                href="/analysis"
                 className="text-white/70 hover:text-white transition-colors text-sm"
               >
-                Treederboard
+                Analysis
               </Link>
-              <Link 
-                href="/about" 
+              <Link
+                href="/about"
                 className="text-white/70 hover:text-white transition-colors text-sm"
               >
                 About
-              </Link>
-              <Link 
-                href="/profile" 
-                className="text-white/70 hover:text-white transition-colors text-sm"
-              >
-                My Profile
               </Link>
             </nav>
           </div>
@@ -170,15 +164,6 @@ export function Footer() {
         </div>
         
         <div className="mt-6 pt-4 border-t border-white/10">
-          <div className="flex flex-wrap gap-2 mb-4">
-            <span className="text-xs text-white/60">Powered by:</span>
-            <a href="https://base.org" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">Base</a>
-            <a href="https://celo.org" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">Celo</a>
-            <a href="https://optimism.io" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">Optimism</a>
-            <a href="https://arbitrum.io" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">Arbitrum</a>
-            <a href="https://attestationstation.xyz" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">EAS</a>
-            <a href="https://ipfs.tech" target="_blank" rel="noopener noreferrer" className="px-2 py-1 text-xs rounded bg-black/30 hover:bg-black/40 transition-colors">IPFS</a>
-          </div>
           <div className="flex flex-col md:flex-row justify-between items-center text-sm text-white/50">
             <p>© {new Date().getFullYear()} Silvi Earth. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">

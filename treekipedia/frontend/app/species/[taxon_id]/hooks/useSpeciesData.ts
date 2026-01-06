@@ -47,42 +47,46 @@ export function useSpeciesData(taxonId: string) {
     return hasResearchedFlag;
   }, [speciesQuery.data, researchQuery.status, taxonId]);
 
+  // Helper to check if a value is valid (not null, not empty, not "NA")
+  const isValidValue = (val: any): boolean => {
+    if (val === null || val === undefined) return false;
+    if (typeof val === 'string') {
+      const trimmed = val.trim();
+      return trimmed !== '' && trimmed.toUpperCase() !== 'NA';
+    }
+    return true;
+  };
+
   // Helper for accessing field values with precedence:
-  // 1. Human data (if available)
-  // 2. AI data (if available)
-  // 3. Legacy data (if available)
+  // 1. Human data (if available and valid)
+  // 2. AI data (if available and valid)
+  // 3. Legacy data (if available and valid)
   const getFieldValue = useCallback(
     (fieldName: string): { value: any; source: "human" | "ai" | "legacy" | null } => {
       const humanField = `${fieldName}_human`;
       const aiField = `${fieldName}_ai`;
-      let value = null;
-      let source = null;
 
       // Check human data first (highest priority)
-      if (
-        speciesQuery.data?.[humanField as keyof TreeSpecies] ||
-        researchQuery.data?.[humanField as keyof ResearchData]
-      ) {
-        value = speciesQuery.data?.[humanField as keyof TreeSpecies] || 
-                researchQuery.data?.[humanField as keyof ResearchData];
-        source = "human";
-      }
-      // Then check AI data
-      else if (
-        speciesQuery.data?.[aiField as keyof TreeSpecies] ||
-        researchQuery.data?.[aiField as keyof ResearchData]
-      ) {
-        value = speciesQuery.data?.[aiField as keyof TreeSpecies] || 
-                researchQuery.data?.[aiField as keyof ResearchData];
-        source = "ai";
-      }
-      // Finally check legacy data (lowest priority)
-      else if (speciesQuery.data?.[fieldName as keyof TreeSpecies]) {
-        value = speciesQuery.data[fieldName as keyof TreeSpecies];
-        source = "legacy";
+      const humanValue = speciesQuery.data?.[humanField as keyof TreeSpecies] ??
+                         researchQuery.data?.[humanField as keyof ResearchData];
+      if (isValidValue(humanValue)) {
+        return { value: humanValue, source: "human" };
       }
 
-      return { value, source };
+      // Then check AI data
+      const aiValue = speciesQuery.data?.[aiField as keyof TreeSpecies] ??
+                      researchQuery.data?.[aiField as keyof ResearchData];
+      if (isValidValue(aiValue)) {
+        return { value: aiValue, source: "ai" };
+      }
+
+      // Finally check legacy data (lowest priority)
+      const legacyValue = speciesQuery.data?.[fieldName as keyof TreeSpecies];
+      if (isValidValue(legacyValue)) {
+        return { value: legacyValue, source: "legacy" };
+      }
+
+      return { value: null, source: null };
     },
     [speciesQuery.data, researchQuery.data]
   );
@@ -93,38 +97,13 @@ export function useSpeciesData(taxonId: string) {
       const aiField = `${fieldName}_ai`;
       const humanField = `${fieldName}_human`;
 
-      // Check if either AI or human data exists for this field
-      const hasAiData = !!(
-        (speciesQuery.data &&
-          speciesQuery.data[aiField as keyof TreeSpecies] !== undefined &&
-          speciesQuery.data[aiField as keyof TreeSpecies] !== null &&
-          speciesQuery.data[aiField as keyof TreeSpecies] !== "" &&
-          typeof speciesQuery.data[aiField as keyof TreeSpecies] === "string" &&
-          (speciesQuery.data[aiField as keyof TreeSpecies] as string).trim() !== "") ||
-        (researchQuery.data &&
-          researchQuery.data[aiField as keyof ResearchData] !== undefined &&
-          researchQuery.data[aiField as keyof ResearchData] !== null &&
-          researchQuery.data[aiField as keyof ResearchData] !== "" &&
-          typeof researchQuery.data[aiField as keyof ResearchData] === "string" &&
-          (researchQuery.data[aiField as keyof ResearchData] as string).trim() !== "")
-      );
+      // Check if either AI or human data exists and is valid for this field
+      const aiValue = speciesQuery.data?.[aiField as keyof TreeSpecies] ??
+                      researchQuery.data?.[aiField as keyof ResearchData];
+      const humanValue = speciesQuery.data?.[humanField as keyof TreeSpecies] ??
+                         researchQuery.data?.[humanField as keyof ResearchData];
 
-      const hasHumanData = !!(
-        (speciesQuery.data &&
-          speciesQuery.data[humanField as keyof TreeSpecies] !== undefined &&
-          speciesQuery.data[humanField as keyof TreeSpecies] !== null &&
-          speciesQuery.data[humanField as keyof TreeSpecies] !== "" &&
-          typeof speciesQuery.data[humanField as keyof TreeSpecies] === "string" &&
-          (speciesQuery.data[humanField as keyof TreeSpecies] as string).trim() !== "") ||
-        (researchQuery.data &&
-          researchQuery.data[humanField as keyof ResearchData] !== undefined &&
-          researchQuery.data[humanField as keyof ResearchData] !== null &&
-          researchQuery.data[humanField as keyof ResearchData] !== "" &&
-          typeof researchQuery.data[humanField as keyof ResearchData] === "string" &&
-          (researchQuery.data[humanField as keyof ResearchData] as string).trim() !== "")
-      );
-
-      return hasAiData || hasHumanData;
+      return isValidValue(aiValue) || isValidValue(humanValue);
     },
     [speciesQuery.data, researchQuery.data]
   );

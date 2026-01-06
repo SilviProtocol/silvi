@@ -1,0 +1,23 @@
+{
+  "metadata": {
+    "species_scientific_name": "Ginkgo biloba",
+    "common_names": "Ginkgo, maidenhair tree",
+    "taxon_id": "AngGiGiGN21141-00",
+    "timestamp": "2026-01-04T10:16:13.700Z",
+    "strategy": "single",
+    "model": "grok-4-1-fast-reasoning"
+  },
+  "strategy": "single_call",
+  "model": "grok-4-1-fast-reasoning",
+  "api_calls": 1,
+  "success": false,
+  "error": "No JSON found in response",
+  "raw_response": "",
+  "duration_ms": 51171,
+  "completion": {
+    "filled": 0,
+    "total": 24,
+    "percentage": 0,
+    "fieldStatus": {}
+  }
+}
