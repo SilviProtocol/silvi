@@ -1,5 +1,6 @@
 import React from "react";
 import { TreeSpecies } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { ConservationStatus } from "../display/ConservationStatus";
@@ -9,10 +10,12 @@ interface EcologicalTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[];
   fields: FieldDefinition[];
 }
 
-export function EcologicalTab({ species, isResearched, getFieldValue, fields }: EcologicalTabProps) {
+export function EcologicalTab({ species, isResearched, getFieldValue, getInsightForField, getInsightsForField, fields }: EcologicalTabProps) {
   // Find conservation status field for special treatment
   const conservationStatusField = fields.find(f => f.key === "conservation_status");
   const { value: conservationStatus, source: conservationSource } =
@@ -44,6 +47,8 @@ export function EcologicalTab({ species, isResearched, getFieldValue, fields }: 
                 const { value } = getFieldValue(fieldName);
                 return !!value;
               }}
+              insight={getInsightForField(field.key)}
+              insights={getInsightsForField(field.key)}
             />
           ))}
         </div>

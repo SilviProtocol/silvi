@@ -44,3 +44,40 @@ ai-agent/server.log
 *.tsbuildinfo
 next-env.d.ts
 server.log
+
+# Data files (large datasets - not for version control)
+*.csv
+*.parquet
+*.gpkg
+*.dump
+*.zip
+*.pdf
+*.db
+
+# Python virtual environments
+.venv*/
+venv/
+__pycache__/
+*.pyc
+
+# Temp/log files
+*.log
+restore.log
+
+# Local test scripts
+test_ee*.py
+authenticate_*.py
+register_ee_project.py
+setup_gcloud.sh
+
+# Extracted archives
+graphflow-extracted/
+silvi-open-gee-temporal-extraction/
+griis_data/
+
+# Meeting notes and docs (not code)
+*Notes by Gemini*.md
+species predictor discussions.md
+
+# Research tracking (local SQLite)
+research_tracking.db

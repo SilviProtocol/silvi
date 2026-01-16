@@ -1,54 +1,32 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
-import { useChainId } from "wagmi";
-import { fundResearch } from "@/lib/api";
+import { triggerResearch } from "@/lib/api";
 import { TreeSpecies } from "@/lib/types";
-import { base, baseSepolia, celo, celoAlfajores, optimism, optimismSepolia, arbitrum, arbitrumSepolia } from 'wagmi/chains';
+
+// NOTE: NFT minting and blockchain features are disabled (Jan 2026)
+// Research now uses queue-based Claude Code CLI workflow
+// The old payment/NFT code is preserved in archive/ for future reference
 
 /**
- * Helper function to convert chain ID to chain name for the backend API
- */
-function getChainNameForBackend(chainId?: number): string {
-  // Default to celo if no chainId provided
-  if (!chainId) return "celo";
-  
-  // Map chain IDs to expected backend names
-  switch (chainId) {
-    case base.id:
-      return "base";
-    case baseSepolia.id:
-      return "base-sepolia";
-    case celo.id:
-      return "celo";
-    case celoAlfajores.id:
-      return "celo-alfajores";
-    case optimism.id:
-      return "optimism";
-    case optimismSepolia.id:
-      return "optimism-sepolia";
-    case arbitrum.id:
-      return "arbitrum";
-    case arbitrumSepolia.id:
-      return "arbitrum-sepolia";
-    default:
-      return "celo"; // Default fallback
-  }
-}
-
-/**
- * Custom hook for managing the research funding process
+ * Custom hook for managing the research request process
+ *
+ * NEW WORKFLOW (Jan 2026):
+ * 1. User clicks "Research" button
+ * 2. Species added to research_queue
+ * 3. Claude Code CLI processes queue via scripts/research_species.py
+ * 4. Insights saved to database
+ * 5. Frontend polls for completion
  */
 export function useResearchProcess(
   taxonId: string,
   species: TreeSpecies | undefined,
-  address: string | undefined,
+  _address: string | undefined, // Kept for API compatibility but not used
   refetchSpecies: () => Promise<any>,
   refetchResearch: () => Promise<any>
 ) {
-  const chainId = useChainId(); // Get the current chain ID from wagmi
   const [isResearching, setIsResearching] = useState(false);
   const [researchStatus, setResearchStatus] = useState<
-    "idle" | "starting" | "processing" | "complete" | "error" | "timeout"
+    "idle" | "starting" | "queued" | "processing" | "complete" | "error" | "timeout"
   >("idle");
   const [progressMessage, setProgressMessage] = useState("");
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -56,75 +34,84 @@ export function useResearchProcess(
 
   // Cycling research messages
   const researchMessages = [
-    "Scanning the forest canopy...",
-    "Consulting botanical references...",
-    "Exploring native habitats...",
-    "Analyzing growth patterns...",
-    "Documenting ecological relationships...",
-    "Examining soil preferences...",
-    "Cataloging cultural significance...",
-    "Mapping geographical distribution...",
-    "Calculating conservation status...",
-    "Determining stewardship practices..."
+    "Adding to research queue...",
+    "Scanning global databases...",
+    "Consulting POWO and WCVP...",
+    "Checking IUCN Red List...",
+    "Exploring GBIF occurrences...",
+    "Mining grey literature...",
+    "Analyzing ecological data...",
+    "Documenting traditional uses...",
+    "Compiling research findings...",
+    "Verifying source credibility..."
   ];
 
   // Start the research process
   const startResearch = useCallback(async () => {
-    if (!species || !address || isResearching) return;
+    if (!species || isResearching) return;
 
     setIsResearching(true);
     setResearchStatus("starting");
+    setProgressMessage("Adding to research queue...");
 
     try {
-      // In production, this should be a real transaction hash from the blockchain transaction
-      // Future improvement: Use a real transaction from wallet connection
-      const transactionHash = `0x${Math.random().toString(16).substring(2, 42)}`;
-      const scientificName = species.species_scientific_name || species.species;
-      
-      // Get the chain name based on the current chain ID
-      const chainName = getChainNameForBackend(chainId);
-      console.log(`Using chain: ${chainName} (Chain ID: ${chainId})`);
+      // Call triggerResearch which adds to queue
+      const response = await triggerResearch(taxonId);
 
-      setResearchStatus("processing");
-      // Start cycling through messages
-      let messageIndex = 0;
-      messageIntervalRef.current = setInterval(() => {
-        setProgressMessage(researchMessages[messageIndex % researchMessages.length]);
-        messageIndex++;
-      }, 3000);
+      if (response.success) {
+        if (response.queued) {
+          // Species added to queue
+          setResearchStatus("queued");
+          setProgressMessage(`Research queued. Status: ${response.queue_status}`);
 
-      // Call the fundResearch API with the current chain name
-      const response = await fundResearch(
-        taxonId,
-        address,
-        chainName, // Use the current chain instead of hardcoded "celo"
-        transactionHash,
-        "", // Empty ipfs_cid - backend will generate it
-        scientificName
-      );
+          if (response.queue_status === 'pending') {
+            toast.success("Added to research queue! Research will be processed soon.");
+          } else if (response.queue_status === 'processing') {
+            toast.info("Research is currently in progress...");
+            // Start polling for completion
+            startPollingForResearch();
+          }
 
-      // Start polling for research completion
-      startPollingForResearch();
+          // Start cycling through messages while waiting
+          let messageIndex = 0;
+          messageIntervalRef.current = setInterval(() => {
+            setProgressMessage(researchMessages[messageIndex % researchMessages.length]);
+            messageIndex++;
+          }, 3000);
+
+          // Start polling for completion
+          startPollingForResearch();
+        } else {
+          // Research data already exists and was synced
+          setResearchStatus("complete");
+          toast.success(`Research synced! ${response.insights_count || 0} insights loaded.`);
+
+          // Refetch data
+          await Promise.all([refetchSpecies(), refetchResearch()]);
+          setIsResearching(false);
+        }
+      } else {
+        throw new Error(response.error || response.message || "Failed to queue research");
+      }
     } catch (error: any) {
       setResearchStatus("error");
       console.error("Research error:", error);
-      
+
       // Clear message interval
       if (messageIntervalRef.current) {
         clearInterval(messageIntervalRef.current);
       }
-      
-      // Show error to user
+
       toast.error(error.message || "Failed to start research");
       setIsResearching(false);
     }
-  }, [taxonId, species, address, isResearching, chainId]);
+  }, [taxonId, species, isResearching]);
 
   // Polling implementation with exponential backoff
   const startPollingForResearch = useCallback(() => {
     let attempts = 0;
-    const maxAttempts = 30; // Increased from 20 to 30 attempts
-    const baseInterval = 3000; // Start with 3 seconds
+    const maxAttempts = 60; // Check for up to 3 minutes (60 * 3s)
+    const baseInterval = 3000;
 
     const pollForData = async () => {
       if (attempts >= maxAttempts) {
@@ -132,15 +119,16 @@ export function useResearchProcess(
         if (messageIntervalRef.current) {
           clearInterval(messageIntervalRef.current);
         }
-        
+
         setResearchStatus("timeout");
         setIsResearching(false);
-        toast.error("Research is taking longer than expected. Please check back later.");
+        // Don't show error - research is queued and will complete later
+        toast.info("Research is queued. Check back later for results.");
         return;
       }
 
       attempts++;
-      const backoffFactor = Math.min(1.5, 1 + attempts / 10); // Gradual backoff
+      const backoffFactor = Math.min(2, 1 + attempts / 20);
       const nextInterval = baseInterval * backoffFactor;
 
       try {
@@ -151,13 +139,7 @@ export function useResearchProcess(
         ]);
 
         // Check if research completed
-        // Log what data we're getting from API for debugging
-        console.log(`Poll attempt ${attempts}: Research data:`, {
-          hasResearchData: !!researchResult.data,
-          researchedFlag: speciesResult.data?.researched === true,
-          hasSpeciesAiFields: !!speciesResult.data?.general_description_ai,
-          hasResearchAiFields: !!researchResult.data?.general_description_ai
-        });
+        console.log(`Poll attempt ${attempts}: Checking for research data...`);
 
         const researchedFlag = speciesResult.data?.researched === true;
         const hasAiData = !!(
@@ -170,23 +152,23 @@ export function useResearchProcess(
           if (messageIntervalRef.current) {
             clearInterval(messageIntervalRef.current);
           }
-          
-          console.log("Research complete detection - data found!");
-          
+
+          console.log("Research complete - data found!");
+
           setResearchStatus("complete");
           setIsResearching(false);
           toast.success("Research completed successfully!");
-          
-          // Force refetch one more time to ensure UI reflects new data
+
+          // Force refetch to ensure UI reflects new data
           setTimeout(() => {
             refetchSpecies();
             refetchResearch();
           }, 1000);
-          
+
           return;
         }
 
-        // Schedule next poll with increasing interval
+        // Schedule next poll
         pollIntervalRef.current = setTimeout(pollForData, nextInterval);
       } catch (error) {
         console.error("Polling error:", error);

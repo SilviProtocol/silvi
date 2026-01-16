@@ -113,16 +113,16 @@ export default function AboutPage() {
                     </div>
                     
                     <div className="p-4 rounded-lg bg-black/30 border border-white/10">
-                      <h3 className="text-lg font-bold text-white mb-2">3. Fund Research with NFTs</h3>
+                      <h3 className="text-lg font-bold text-white mb-2">3. Request Research</h3>
                       <p className="text-base text-white/80">
-                        Mint a Contreebution NFT for $0.01 to fund AI-powered research for a species missing data.
+                        Click the Research button on any unresearched species to add it to the research queue for AI-powered data enrichment.
                       </p>
                     </div>
-                    
+
                     <div className="p-4 rounded-lg bg-black/30 border border-white/10">
-                      <h3 className="text-lg font-bold text-white mb-2">4. Verify and Store Research</h3>
+                      <h3 className="text-lg font-bold text-white mb-2">4. Deep Research Process</h3>
                       <p className="text-base text-white/80">
-                        Research data is pinned to IPFS and cryptographically attested using Ethereum Attestation Service for transparency.
+                        Our AI conducts comprehensive research across global databases (IUCN, GBIF, POWO) and grey literature in multiple languages.
                       </p>
                     </div>
                     
@@ -144,23 +144,23 @@ export default function AboutPage() {
                     <h3 className="text-xl font-bold text-emerald-300">Technical Infrastructure</h3>
                   </div>
                   <p className="text-white text-lg leading-relaxed mb-4">
-                    Treekipedia leverages blockchain technology and decentralized infrastructure:
+                    Treekipedia leverages modern AI and database infrastructure:
                   </p>
                   <ul className="list-disc list-inside space-y-3 text-white/80 text-base pl-2">
                     <li>
-                      <strong className="text-emerald-300">Multi-Chain Support:</strong> Deploy on your preferred network (Base, Celo, Optimism, or Arbitrum)
+                      <strong className="text-emerald-300">AI-Powered Research:</strong> Deep research using Claude AI across global botanical databases
                     </li>
                     <li>
-                      <strong className="text-emerald-300">Contreebution NFTs:</strong> Each contribution is recorded as a unique NFT representing your support
+                      <strong className="text-emerald-300">Multilingual Sources:</strong> Research spans English, Spanish, Portuguese, French, German and more
                     </li>
                     <li>
-                      <strong className="text-emerald-300">Ethereum Attestation Service:</strong> Research data is attested on-chain for permanence and verification
+                      <strong className="text-emerald-300">Grey Literature Mining:</strong> Dissertations, FAO reports, and government forestry documents
                     </li>
                     <li>
-                      <strong className="text-emerald-300">IPFS Storage:</strong> Complete research data is stored on IPFS for decentralized access
+                      <strong className="text-emerald-300">PostgreSQL + PostGIS:</strong> Geospatial database with 5.7M occurrence tiles
                     </li>
                     <li>
-                      <strong className="text-emerald-300">Blazegraph Database:</strong> Structured querying for advanced ecological insights
+                      <strong className="text-emerald-300">FAIR-Compliant Insights:</strong> Structured provenance tracking for all research data
                     </li>
                   </ul>
                 </div>
@@ -210,7 +210,7 @@ export default function AboutPage() {
                     <div className="p-4 rounded-lg bg-black/30 border border-white/10">
                       <h3 className="text-lg font-bold text-white mb-2">Phase 1: v1.0 Launch (Earth Day)</h3>
                       <p className="text-base text-white/80">
-                        Tree species database, AI research, NFT funding mechanism, blockchain verification.
+                        Tree species database, AI-powered deep research, queue-based research workflow, insights provenance tracking.
                       </p>
                     </div>
                     

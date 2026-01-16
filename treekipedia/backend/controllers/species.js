@@ -20,12 +20,19 @@ module.exports = (pool) => {
       console.log(`GET /species search query: "${search}"`);
       
       const query = `
-        SELECT * FROM species 
-        WHERE common_name ILIKE $1 
-        OR species ILIKE $1
+        SELECT * FROM species
+        WHERE common_name ILIKE $1
         OR species_scientific_name ILIKE $1
         OR accepted_scientific_name ILIKE $1
-        ORDER BY common_name
+        OR popular_common_name_ai ILIKE $1
+        ORDER BY
+          CASE
+            WHEN species_scientific_name ILIKE $1 THEN 1
+            WHEN common_name ILIKE $1 THEN 2
+            WHEN accepted_scientific_name ILIKE $1 THEN 3
+            ELSE 4
+          END,
+          species_scientific_name
         LIMIT 50
       `;
       
@@ -275,19 +282,127 @@ module.exports = (pool) => {
   });
 
   /**
-   * POST /:taxon_id/research
-   * Trigger AI research for a species and update the database
+   * GET /:taxon_id/insights
+   * Get research metadata and insights summary for a species
+   * Query params: full=true to include all insight details with sources
    * Route params: taxon_id - The unique identifier for the species
+   */
+  router.get('/:taxon_id/insights', async (req, res) => {
+    try {
+      const { taxon_id } = req.params;
+      const includeFull = req.query.full === 'true';
+
+      // Get aggregate metadata from insights table
+      // Returns both total insights and unique fields for atomic model
+      const metadataQuery = `
+        SELECT
+          COUNT(*) as insight_count,
+          COUNT(DISTINCT claim_type) as field_count,
+          AVG(confidence) as avg_confidence,
+          MAX(version) as version,
+          MAX(created_at) as research_date,
+          MAX(model_version) as model,
+          research_session_id
+        FROM insights
+        WHERE taxon_id = $1 AND is_current = TRUE
+        GROUP BY research_session_id
+        ORDER BY MAX(created_at) DESC
+        LIMIT 1
+      `;
+      const metadataResult = await pool.query(metadataQuery, [taxon_id]);
+
+      if (metadataResult.rows.length === 0) {
+        return res.json({
+          taxon_id,
+          has_insights: false,
+          metadata: null,
+          insights: []
+        });
+      }
+
+      const meta = metadataResult.rows[0];
+
+      // Count unique sources across all insights
+      const sourcesQuery = `
+        SELECT COUNT(DISTINCT s.value->>'url') as source_count
+        FROM insights i,
+        LATERAL jsonb_array_elements(COALESCE(i.sources, '[]'::jsonb)) as s(value)
+        WHERE i.taxon_id = $1 AND i.is_current = TRUE
+      `;
+      const sourcesResult = await pool.query(sourcesQuery, [taxon_id]);
+      const sourceCount = parseInt(sourcesResult.rows[0]?.source_count || 0);
+
+      // If full details requested, fetch all insights with confidence breakdown
+      let insights = [];
+      if (includeFull) {
+        const insightsQuery = `
+          SELECT
+            claim_type,
+            claim_value,
+            confidence,
+            confidence_breakdown,
+            corroboration,
+            sources,
+            model_version,
+            agent_type,
+            created_at
+          FROM insights
+          WHERE taxon_id = $1 AND is_current = TRUE
+          ORDER BY claim_type
+        `;
+        const insightsResult = await pool.query(insightsQuery, [taxon_id]);
+        insights = insightsResult.rows.map(row => ({
+          claim_type: row.claim_type,
+          claim_value: row.claim_value,
+          confidence: parseFloat(row.confidence) || 0,
+          confidence_breakdown: row.confidence_breakdown || null,
+          corroboration: row.corroboration || null,
+          sources: row.sources || [],
+          model: row.model_version,
+          agent_type: row.agent_type,
+          created_at: row.created_at
+        }));
+      }
+
+      res.json({
+        taxon_id,
+        has_insights: true,
+        metadata: {
+          version: parseInt(meta.version) || 1,
+          research_date: meta.research_date,
+          model: meta.model || 'claude-code-cli',
+          insight_count: parseInt(meta.insight_count),
+          field_count: parseInt(meta.field_count),
+          avg_confidence: parseFloat(meta.avg_confidence) || 0,
+          source_count: sourceCount,
+          session_id: meta.research_session_id
+        },
+        insights: insights
+      });
+    } catch (error) {
+      console.error(`Error fetching insights metadata for species "${req.params.taxon_id}":`, error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
+  /**
+   * POST /:taxon_id/research
+   * Trigger AI research for a species using the Research Orchestrator
+   * Route params: taxon_id - The unique identifier for the species
+   *
+   * New architecture: Checks for insights in the insights table (from Claude Code CLI research).
+   * If insights exist, syncs them to species.*_ai columns.
    */
   router.post('/:taxon_id/research', async (req, res) => {
     const { taxon_id } = req.params;
+    const { force } = req.body || {}; // Allow force re-research via body param
 
     try {
-      console.log(`POST /species/${taxon_id}/research - Starting AI research`);
+      console.log(`POST /species/${taxon_id}/research - body:`, JSON.stringify(req.body), `force=${force}, typeof force=${typeof force}`);
 
       // Get species info
       const speciesQuery = `
-        SELECT taxon_id, species_scientific_name, common_name
+        SELECT taxon_id, species_scientific_name, common_name, research_version
         FROM species
         WHERE taxon_id = $1
       `;
@@ -299,95 +414,188 @@ module.exports = (pool) => {
 
       const species = speciesResult.rows[0];
       const scientificName = species.species_scientific_name;
-      const commonNames = species.common_name || '';
 
-      // Perform AI research
-      const grokResearch = require('../services/grokResearch');
-      const result = await grokResearch.performResearch(scientificName, commonNames);
+      // Check if insights already exist for this species
+      const insightsQuery = `
+        SELECT COUNT(*) as count, AVG(confidence) as avg_confidence, MAX(version) as current_version
+        FROM insights
+        WHERE taxon_id = $1 AND is_current = TRUE
+      `;
+      const insightsResult = await pool.query(insightsQuery, [taxon_id]);
+      const insightCount = parseInt(insightsResult.rows[0].count);
+      const avgConfidence = insightsResult.rows[0].avg_confidence;
+      const currentVersion = insightsResult.rows[0].current_version || 0;
 
-      if (!result.success) {
-        console.error(`Research failed for ${taxon_id}:`, result.error);
-        return res.status(500).json({ success: false, error: result.error });
+      // If insights exist and NOT forcing re-research, sync them and return
+      if (insightCount > 0 && !force) {
+        console.log(`Found ${insightCount} existing insights for ${taxon_id}, syncing to _ai columns`);
+
+        // Sync insights to species._ai columns
+        await syncInsightsToSpecies(pool, taxon_id);
+
+        return res.json({
+          success: true,
+          taxon_id: taxon_id,
+          scientific_name: scientificName,
+          message: 'Research data synced from insights',
+          insights_count: insightCount,
+          avg_confidence: avgConfidence ? parseFloat(avgConfidence).toFixed(3) : null,
+          research_version: species.research_version,
+          current_version: currentVersion,
+          can_reresearch: true // Indicate re-research is available
+        });
       }
 
-      // Update species table with research data
-      const updateQuery = `
-        UPDATE species SET
-          popular_common_name_ai = $1,
-          habitat_ai = $2,
-          elevation_ranges_ai = $3,
-          ecological_function_ai = $4,
-          native_adapted_habitats_ai = $5,
-          agroforestry_use_cases_ai = $6,
-          conservation_status_ai = $7,
-          general_description_ai = $8,
-          compatible_soil_types_ai = $9,
-          growth_form_ai = $10,
-          leaf_type_ai = $11,
-          deciduous_evergreen_ai = $12,
-          flower_color_ai = $13,
-          fruit_type_ai = $14,
-          bark_characteristics_ai = $15,
-          maximum_height_ai = $16,
-          maximum_diameter_ai = $17,
-          lifespan_ai = $18,
-          maximum_tree_age_ai = $19,
-          stewardship_best_practices_ai = $20,
-          planting_recipes_ai = $21,
-          pruning_maintenance_ai = $22,
-          disease_pest_management_ai = $23,
-          fire_management_ai = $24,
-          cultural_significance_ai = $25
-        WHERE taxon_id = $26
-      `;
+      // Determine if we're doing first research or re-research
+      const isReresearch = force && insightCount > 0;
+      if (isReresearch) {
+        console.log(`Re-research requested for ${taxon_id} (current version: ${currentVersion})`);
+      } else {
+        console.log(`First research requested for ${taxon_id}. Adding to research queue.`);
+      }
 
-      const d = result.data;
-      await pool.query(updateQuery, [
-        d.popular_common_name_ai,
-        d.habitat_ai,
-        d.elevation_ranges_ai,
-        d.ecological_function_ai,
-        d.native_adapted_habitats_ai,
-        d.agroforestry_use_cases_ai,
-        d.conservation_status_ai,
-        d.general_description_ai,
-        d.compatible_soil_types_ai,
-        d.growth_form_ai,
-        d.leaf_type_ai,
-        d.deciduous_evergreen_ai,
-        d.flower_color_ai,
-        d.fruit_type_ai,
-        d.bark_characteristics_ai,
-        d.maximum_height_ai,
-        d.maximum_diameter_ai,
-        d.lifespan_ai,
-        d.maximum_tree_age_ai,
-        d.stewardship_best_practices_ai,
-        d.planting_recipes_ai,
-        d.pruning_maintenance_ai,
-        d.disease_pest_management_ai,
-        d.fire_management_ai,
-        d.cultural_significance_ai,
-        taxon_id
-      ]);
+      // Check if already in queue
+      const queueCheck = await pool.query(
+        `SELECT id, status FROM research_queue WHERE taxon_id = $1`,
+        [taxon_id]
+      );
 
-      console.log(`POST /species/${taxon_id}/research - Database updated successfully`);
+      if (queueCheck.rows.length > 0) {
+        const queueStatus = queueCheck.rows[0].status;
+        if (queueStatus === 'pending') {
+          return res.json({
+            success: true,
+            taxon_id: taxon_id,
+            scientific_name: scientificName,
+            message: 'Already in research queue',
+            queue_status: 'pending',
+            queued: true
+          });
+        } else if (queueStatus === 'processing') {
+          return res.json({
+            success: true,
+            taxon_id: taxon_id,
+            scientific_name: scientificName,
+            message: 'Research in progress',
+            queue_status: 'processing',
+            queued: true
+          });
+        }
+        // If failed or completed, allow re-queue by deleting old entry
+        await pool.query(`DELETE FROM research_queue WHERE taxon_id = $1`, [taxon_id]);
+      }
 
-      res.json({
+      // Add to queue
+      await pool.query(
+        `INSERT INTO research_queue (taxon_id, species_name, status, priority)
+         VALUES ($1, $2, 'pending', 50)`,
+        [taxon_id, scientificName]
+      );
+
+      console.log(`Added ${taxon_id} (${scientificName}) to research queue (re-research: ${isReresearch})`);
+
+      return res.json({
         success: true,
         taxon_id: taxon_id,
         scientific_name: scientificName,
-        fields_filled: result.fields_filled,
-        fields_total: result.fields_total,
-        duration_ms: result.duration_ms,
-        data: result.data
+        message: isReresearch
+          ? `Queued for re-research (will create version ${currentVersion + 1})`
+          : 'Added to research queue',
+        queue_status: 'pending',
+        queued: true,
+        is_reresearch: isReresearch,
+        current_version: currentVersion
       });
 
     } catch (error) {
       console.error(`Error in research for species "${taxon_id}":`, error);
-      res.status(500).json({ success: false, error: 'Internal server error' });
+      res.status(500).json({ success: false, error: error.message || 'Internal server error' });
     }
   });
+
+  /**
+   * Sync insights from insights table to species.*_ai columns
+   * This maintains backward compatibility with the frontend
+   */
+  async function syncInsightsToSpecies(pool, taxon_id) {
+    // Map claim_type to species column name (only columns that exist in species table)
+    const claimToColumn = {
+      // Existing columns in species table (24 _ai columns)
+      'general_description': 'general_description_ai',
+      'habitat': 'habitat_ai',
+      'elevation_ranges': 'elevation_ranges_ai',
+      'ecological_function': 'ecological_function_ai',
+      'native_adapted_habitats': 'native_adapted_habitats_ai',
+      'conservation_status': 'conservation_status_ai',
+      'compatible_soil_types': 'compatible_soil_types_ai',
+      'growth_form': 'growth_form_ai',
+      'leaf_type': 'leaf_type_ai',
+      'deciduous_evergreen': 'deciduous_evergreen_ai',
+      'flower_color': 'flower_color_ai',
+      'fruit_type': 'fruit_type_ai',
+      'bark_characteristics': 'bark_characteristics_ai',
+      'maximum_height': 'maximum_height_ai',
+      'maximum_diameter': 'maximum_diameter_ai',
+      'lifespan': 'lifespan_ai',
+      'maximum_tree_age': 'maximum_tree_age_ai',
+      'stewardship_best_practices': 'stewardship_best_practices_ai',
+      'planting_recipes': 'planting_recipes_ai',
+      'pruning_maintenance': 'pruning_maintenance_ai',
+      'disease_pest_management': 'disease_pest_management_ai',
+      'fire_management': 'fire_management_ai',
+      'cultural_significance': 'cultural_significance_ai',
+      'agroforestry_use_cases': 'agroforestry_use_cases_ai'
+      // Note: These insight types don't have corresponding _ai columns yet:
+      // - popular_common_name, etymology, synonyms, identification_features (identity)
+      // - climate_tolerance, tolerances, associated_species (ecological)
+      // - propagation_methods (stewardship)
+      // - timber_value, non_timber_products, nutritional_caloric_value (stewardship)
+    };
+
+    // Get all current insights (use DISTINCT ON to handle duplicate claim_types)
+    const insightsQuery = `
+      SELECT DISTINCT ON (claim_type) claim_type, claim_value
+      FROM insights
+      WHERE taxon_id = $1 AND is_current = TRUE
+      ORDER BY claim_type, created_at DESC
+    `;
+    const insightsResult = await pool.query(insightsQuery, [taxon_id]);
+
+    // Build dynamic UPDATE query
+    const updates = [];
+    const values = [];
+    let paramIndex = 1;
+
+    for (const insight of insightsResult.rows) {
+      const column = claimToColumn[insight.claim_type];
+      if (column) {
+        // Extract text from claim_value (handle both {text: "..."} and simple values)
+        let value;
+        if (insight.claim_value && typeof insight.claim_value === 'object') {
+          value = insight.claim_value.text || insight.claim_value.primary ||
+                  insight.claim_value.value || JSON.stringify(insight.claim_value);
+        } else {
+          value = insight.claim_value;
+        }
+
+        updates.push(`${column} = $${paramIndex}`);
+        values.push(value);
+        paramIndex++;
+      }
+    }
+
+    if (updates.length > 0) {
+      values.push(taxon_id);
+      const updateQuery = `
+        UPDATE species
+        SET ${updates.join(', ')}, researched = TRUE
+        WHERE taxon_id = $${paramIndex}
+      `;
+
+      await pool.query(updateQuery, values);
+      console.log(`Synced ${updates.length} fields for ${taxon_id}`);
+    }
+  }
 
   return router;
 };

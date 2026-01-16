@@ -1,6 +1,7 @@
 import React from "react";
 import { Leaf } from "lucide-react";
 import { TreeSpecies } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { SubspeciesSection } from "../SubspeciesSection";
@@ -10,10 +11,12 @@ interface OverviewTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[];
   fields: FieldDefinition[];
 }
 
-export function OverviewTab({ species, isResearched, getFieldValue, fields }: OverviewTabProps) {
+export function OverviewTab({ species, isResearched, getFieldValue, getInsightForField, getInsightsForField, fields }: OverviewTabProps) {
   // Get general description field
   const generalDescriptionField = fields.find(
     (field) => field.key === "general_description"
@@ -75,6 +78,8 @@ export function OverviewTab({ species, isResearched, getFieldValue, fields }: Ov
               getFieldValue={getFieldValue}
               isResearched={isResearched}
               isFieldResearched={() => true} // These fields aren't researched
+              insight={getInsightForField(field.key)}
+              insights={getInsightsForField(field.key)}
             />
           ))}
         </div>

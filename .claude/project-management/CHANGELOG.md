@@ -8,12 +8,75 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ## January 2026
 
+### 2026-01-06 - Evidence-Based Confidence Scoring System
+**FEATURE** - Replaced AI self-assessment with evidence-based confidence calculation
+- Created `confidence_calculator.py` module with transparent scoring algorithm:
+  - Source score (50%): Credibility-weighted average × count multiplier × diversity bonus
+  - Agreement score (25%): Based on source corroboration (3+ sources = 0.95, 2 = 0.85, 1 = 0.70)
+  - Specificity score (25%): Numeric values boost, vague descriptions penalize
+- Added database columns: `corroboration` (JSONB), `confidence_breakdown` (JSONB)
+- Created `recalculate_insight_confidence()` PostgreSQL function for batch recalculation
+- Updated all 4 research agent prompts with evidence-based scoring guidelines
+- Added authoritative source registry (IUCN 0.98, GBIF 0.95, POWO 0.96, etc.)
+- Frontend DataField shows breakdown on source expand (source count, diversity, scores)
+- Schema migration: `08_insights_confidence_schema.sql`
+- Files: orchestrator/confidence_calculator.py, orchestrator/research_prompts.py, database/08_insights_confidence_schema.sql
+
+### 2026-01-06 - Per-Insight Confidence & RDF Export Pipeline
+**FEATURE** - Knowledge architecture Phase 1 + Phase 2 implementation
+- Added per-field confidence bars (color-coded: green ≥85%, amber ≥70%, red <70%)
+- Added expandable source citations per insight with credibility scores
+- Extended `/species/:taxon_id/insights?full=true` endpoint with confidence_breakdown, corroboration
+- Created export_to_rdf.py script supporting 4 formats:
+  - Turtle (.ttl) - For SPARQL endpoints
+  - N-Quads (.nq) - Nanopublication-compatible with provenance graphs
+  - JSONL - For ML training datasets
+  - JSON-LD - For web applications
+- Mapped 35 claim_types to Darwin Core (dwc:), ENVO, PATO ontology terms
+- Updated DataField.tsx with confidence visualization and source expansion
+- Files: frontend/components/DataField.tsx, backend/controllers/species.js, scripts/export_to_rdf.py
+
+### 2026-01-05 - V11 Species Knowledge Import
+**DATA** - Full V11 data import with 23 new columns
+- Created V11 schema migration (06_v11_schema_migration.sql)
+- Added WCVP columns: wcvp_native, wcvp_introduced (critical for LEAF)
+- Added climate columns: climate_type_koppengeiger, precipitation, temperature
+- Added 8 GloBI ecological interaction columns
+- Added SBTN land cover column
+- Imported 67,743 species with 99.99% WCVP coverage
+- Created import_v11_species.js streaming importer (handles 1.3GB CSV)
+- NFT research data preserved during import
+- Duration: ~28 minutes for full import
+- Files: treekipedia/database/06_v11_schema_migration.sql, treekipedia/backend/import_v11_species.js
+
+### 2026-01-05 - Merge origin/latest Branch
+**INTEGRATION** - Merged Sev's latest branch with our work
+- Resolved CORS conflict: combined callback-based config with localhost ports
+- Resolved admin routes: kept both /api/admin (GraphFlow) and /admin-api (monitoring)
+- Unified admin UI: 4 tabs (Dashboard, Server Stats, API Usage, Error Logs)
+- Preserved AlphaEarth habitat prediction features
+- Added LEAF scoring endpoint from Sev's branch
+- Added Grok research infrastructure (requires XAI_API_KEY)
+- Created BRANCH_COMPARISON.md documenting merge strategy
+- Files: treekipedia/backend/server.js, treekipedia/frontend/app/admin/page.tsx
+
+### 2026-01-05 - Sev's Reference Documentation Captured
+**DOCUMENTATION** - Preserved Sev's planning docs as reference
+- SEV_GO.md - Onboarding procedure
+- SEV_TODO.md - Task list
+- SEV_ACTIVE.md - System status
+- SEV_LEAF.md - LEAF scoring algorithm specification
+- SEV_GROK_RESEARCHER.md - Grok agentic research architecture
+- SEV_GROK_PROMPTS.js - 25-field research prompts (to be adapted for Claude)
+- Files: .claude/project-management/sev-reference/*
+
 ### 2026-01-05 - Project Management System
 **DOCUMENTATION** - Implemented GO_TEMPLATE.md workflow system
 - Created GO.md onboarding procedure for Claude Code
 - Created ACTIVE.md with real-time system status and metrics
 - Created CHANGELOG.md (this file) with historical record
 - Restructured TODO.md with priority-based format
+- Added Vision: Species Intelligence Engine (5-layer stack)
 - Files: GO.md, ACTIVE.md, CHANGELOG.md, TODO.md
 
 ---

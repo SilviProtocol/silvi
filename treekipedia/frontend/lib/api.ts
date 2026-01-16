@@ -75,34 +75,34 @@ export const getSpeciesImages = async (taxon_id: string): Promise<SpeciesImagesR
 };
 
 /**
- * Fund research for a species (initiates the AI research process)
+ * Fund research for a species
+ *
+ * @deprecated Use triggerResearch() instead. This function is kept for backwards
+ * compatibility but now just adds to research_queue (no payment/NFT).
+ *
+ * NOTE (Jan 2026): NFT minting and blockchain features are disabled.
+ * Research uses queue-based Claude Code CLI workflow.
  */
 export const fundResearch = async (
-  taxon_id: string, 
-  wallet_address: string, 
-  chain: string,
-  transaction_hash: string,
-  ipfs_cid: string,
+  taxon_id: string,
+  _wallet_address: string,  // No longer used
+  _chain: string,           // No longer used
+  _transaction_hash: string, // No longer used
+  _ipfs_cid: string,        // No longer used
   scientific_name: string
 ): Promise<ResearchData> => {
   try {
+    // Now just adds to queue - same as triggerResearch
     const { data } = await apiClient.post('/research/fund-research', {
       taxon_id,
-      wallet_address,
-      chain,
-      transaction_hash,
-      ipfs_cid,
       scientific_name
     });
     return data;
   } catch (error) {
     console.error('Error funding research:', error);
     if (axios.isAxiosError(error) && error.response?.status === 409) {
-      // If we get a 409 Conflict, it means the species is already researched
-      // Return a basic object indicating this to avoid showing an error
       return {
         taxon_id,
-        // No researched flag
         message: 'This species has already been researched'
       } as ResearchData;
     }
@@ -112,19 +112,119 @@ export const fundResearch = async (
 
 /**
  * Trigger AI research for a species (simple endpoint, no web3)
+ *
+ * New architecture: Checks for insights in the database.
+ * If insights exist, syncs them to species.*_ai columns.
+ * If no insights exist, returns message about using Claude Code CLI.
  */
-export const triggerResearch = async (taxon_id: string): Promise<{
+export const triggerResearch = async (taxon_id: string, force: boolean = false): Promise<{
   success: boolean;
   taxon_id: string;
   scientific_name?: string;
+  message?: string;
+  insights_count?: number;
+  avg_confidence?: number;
+  research_version?: number;
+  current_version?: number;
+  can_reresearch?: boolean;
+  queued?: boolean;
+  queue_status?: 'pending' | 'processing' | 'completed' | 'failed';
   fields_filled?: number;
   fields_total?: number;
   duration_ms?: number;
   error?: string;
   data?: ResearchData;
 }> => {
-  const { data } = await apiClient.post(`/species/${taxon_id}/research`);
+  console.log(`[API] triggerResearch called - taxon_id=${taxon_id}, force=${force}`);
+  const { data } = await apiClient.post(`/species/${taxon_id}/research`, { force });
+  console.log(`[API] triggerResearch response:`, data);
   return data;
+};
+
+/**
+ * Get insights metadata for a species (research version, confidence, sources)
+ */
+export interface InsightsMetadata {
+  version: number;
+  research_date: string;
+  model: string;
+  insight_count: number;
+  field_count: number;  // Number of unique claim_types (fields)
+  avg_confidence: number;
+  source_count: number;
+  session_id?: string;
+}
+
+export interface InsightSource {
+  url: string;
+  title: string;
+  type: string;
+  credibility: number;
+}
+
+export interface ConfidenceBreakdown {
+  source_score: number;
+  agreement_score: number;
+  specificity_score: number;
+  source_count: number;
+  source_diversity: number;
+  methodology: string;
+}
+
+export interface Corroboration {
+  sources_agree: boolean;
+  agreement_note: string;
+  cross_referenced?: string[];
+  conflicting_info?: string;
+}
+
+export interface InsightDetail {
+  claim_type: string;
+  claim_value: string | object;
+  confidence: number;
+  confidence_breakdown?: ConfidenceBreakdown | null;
+  corroboration?: Corroboration | null;
+  sources: InsightSource[];
+  model: string;
+  agent_type: string;
+  created_at: string;
+}
+
+export interface InsightsResponse {
+  taxon_id: string;
+  has_insights: boolean;
+  metadata: InsightsMetadata | null;
+  insights: InsightDetail[];
+}
+
+export const getInsightsMetadata = async (taxon_id: string): Promise<InsightsResponse> => {
+  try {
+    const { data } = await apiClient.get(`/species/${taxon_id}/insights?_=${Date.now()}`);
+    return { ...data, insights: data.insights || [] };
+  } catch (error) {
+    console.error('Error fetching insights metadata:', error);
+    return {
+      taxon_id,
+      has_insights: false,
+      metadata: null,
+      insights: []
+    };
+  }
+};
+
+export const getFullInsights = async (taxon_id: string): Promise<InsightsResponse> => {
+  try {
+    const { data } = await apiClient.get(`/species/${taxon_id}/insights?full=true&_=${Date.now()}`);
+    return data;
+  } catch (error) {
+    console.error('Error fetching full insights:', error);
+    return {
+      taxon_id,
+      has_insights: false,
+      metadata: null,
+      insights: []
+    };
+  }
 };
 
 /**
@@ -135,16 +235,16 @@ export const getResearchData = async (taxon_id: string): Promise<ResearchData> =
     // Use the correct research data endpoint with cache busting
     const { data } = await apiClient.get(`/research/${taxon_id}?_=${Date.now()}`);
     console.log("Research data retrieved successfully");
-    
+
     // Do NOT modify the researched flag here - rely on what the server returns
-    
+
     return data;
   } catch (error) {
     // If we get a 404, it means research hasn't been done yet
     if (axios.isAxiosError(error) && error.response?.status === 404) {
       console.log(`No research data available for taxon_id: ${taxon_id}`);
       // Include more fields to make detection easier but don't set researched flag
-      return { 
+      return {
         taxon_id,
         // No researched flag,
         general_description_ai: null,

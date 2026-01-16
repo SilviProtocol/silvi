@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { getSpeciesById, getResearchData } from "@/lib/api";
+import { getSpeciesById, getResearchData, getFullInsights, InsightsMetadata, InsightDetail } from "@/lib/api";
 import { TreeSpecies, ResearchData } from "@/lib/types";
 
 /**
@@ -30,20 +30,65 @@ export function useSpeciesData(taxonId: string) {
     },
   });
 
+  // Fetch full insights (metadata + per-field confidence/sources)
+  const insightsQuery = useQuery({
+    queryKey: ["insights", taxonId],
+    queryFn: () => getFullInsights(taxonId),
+    staleTime: 10000,
+  });
+
+  // Create a map for quick lookup of insight details by claim_type
+  // ATOMIC MODEL: Multiple insights can exist per claim_type
+  const insightsByField = useMemo(() => {
+    const map = new Map<string, InsightDetail[]>();
+    if (insightsQuery.data?.insights) {
+      insightsQuery.data.insights.forEach(insight => {
+        const existing = map.get(insight.claim_type) || [];
+        existing.push(insight);
+        map.set(insight.claim_type, existing);
+      });
+    }
+    return map;
+  }, [insightsQuery.data?.insights]);
+
+  // Get all insights for a specific field (atomic model supports multiple)
+  const getInsightsForField = useCallback(
+    (fieldName: string): InsightDetail[] => {
+      return insightsByField.get(fieldName) || [];
+    },
+    [insightsByField]
+  );
+
+  // Get the primary (highest confidence) insight for a specific field
+  // For backwards compatibility with components expecting single insight
+  const getInsightForField = useCallback(
+    (fieldName: string): InsightDetail | null => {
+      const insights = insightsByField.get(fieldName);
+      if (!insights || insights.length === 0) return null;
+      // Return highest confidence insight as primary
+      return insights.reduce((best, current) =>
+        (current.confidence > best.confidence) ? current : best
+      );
+    },
+    [insightsByField]
+  );
+
   // Determine if the species has been researched
   const isResearched = useMemo(() => {
-    // ONLY check the explicit researched flag from the database
-    // This is the source of truth and prevents treating species with
-    // legacy content as being researched
-    const hasResearchedFlag = speciesQuery.data?.researched === true;
-    
-    // Log debugging info without using it for the decision
+    // Check the explicit researched flag from the database
+    // Handle both boolean true and string "YES" values
+    const researchedValue = speciesQuery.data?.researched;
+    const hasResearchedFlag = researchedValue === true ||
+                              researchedValue === 'YES' ||
+                              researchedValue === 'yes';
+
+    // Log debugging info
     console.log(`Research detection check for ${taxonId}:`, {
+      researchedValue,
       hasResearchedFlag,
       researchQueryStatus: researchQuery.status
     });
-    
-    // Only return true when the researched flag is explicitly set to true
+
     return hasResearchedFlag;
   }, [speciesQuery.data, researchQuery.status, taxonId]);
 
@@ -161,13 +206,20 @@ export function useSpeciesData(taxonId: string) {
   return {
     species: speciesQuery.data,
     researchData: researchQuery.data,
+    insightsMetadata: insightsQuery.data?.metadata || null,
+    insights: insightsQuery.data?.insights || [],
+    hasInsights: insightsQuery.data?.has_insights || false,
     isLoading: speciesQuery.isLoading || researchQuery.isLoading,
+    isInsightsLoading: insightsQuery.isLoading,
     isError: speciesQuery.isError || researchQuery.isError,
     isResearched,
     getFieldValue,
+    getInsightForField,
+    getInsightsForField, // NEW: Returns array of all insights for atomic model
     isFieldResearched,
     getResearchFieldCount,
     refetchSpecies: speciesQuery.refetch,
-    refetchResearch: researchQuery.refetch
+    refetchResearch: researchQuery.refetch,
+    refetchInsights: insightsQuery.refetch
   };
 }
