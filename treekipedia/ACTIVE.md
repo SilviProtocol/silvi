@@ -1,6 +1,6 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: December 17, 2025
+**Last Updated**: January 20, 2026
 **System Health**: Operational
 
 ---
@@ -12,19 +12,18 @@
 |--------|-------|----------|
 | **Total Species** | 67,927 | 50,797 species + 16,946 subspecies |
 | **Primary Keys** | `taxon_id` + `taxon_full` | `-00` suffix = species, `-01`+ = subspecies |
-| **Fields per Species** | 130 | v10 schema (17 new fields added Nov 2025) |
+| **Fields per Species** | 130+ | v10 schema + research versioning (7 new metadata fields Jan 2026) |
 | **Images** | 31,796 | 13,609 species (22.1% coverage) |
 | **Researched Species** | 19 | With AI-generated data |
-| **NFTs Minted** | 21 | Across 19 species |
-| **Registered Users** | 8 | Wallet addresses |
+| **Research Architecture** | Insights-based | Confidence scoring, source tracking, versioning |
 
 ### Geospatial Data
 | Metric | Value |
 |--------|-------|
-| **Geohash Tiles** | 5.3M (Level 7, ~150m resolution) |
-| **Species Occurrences** | 89.3M |
-| **WWF Ecoregions** | 847 |
-| **Ecoregion Assignment** | 97% complete (5.6M/5.8M tiles) |
+| **Geohash Tiles** | 6.46M (Level 7, ~150m resolution) |
+| **Species Occurrences** | 96.5M |
+| **WWF Ecoregions** | 847 (822 with occurrence data) |
+| **Ecoregion Assignment** | 97.2% complete (6.28M/6.46M tiles) |
 | **Country Polygons** | 242 (Natural Earth data) |
 
 ### v10 Data Population
@@ -76,9 +75,15 @@
 - `POST /api/geospatial/ecoregions/intersect` - Ecoregion intersection
 - `GET /api/geospatial/ecoregions/native-species/:ecoregion_name` - Native species (API key required)
 
-### Research & NFT
-- `POST /research` - Trigger AI research
+### Research
+- `POST /species/:taxon_id/research` - Trigger Grok-powered AI research with confidence scoring
 - `GET /research/:taxon_id` - Retrieve research data
+
+**Research Process** (Updated Jan 2026):
+- Uses Grok 4.1 Fast with agentic web search
+- Returns 25 AI fields with confidence scores (0-1.0)
+- Tracks research version, date, sources, and token usage
+- Stores metadata in `research_version`, `research_confidence`, `research_sources` columns
 
 Full API documentation: See **API.md**
 
@@ -90,19 +95,22 @@ Full API documentation: See **API.md**
 1. **Species Search & Browse** - 67,927 species searchable
 2. **Subspecies Management** - Automatic subspecies discovery on detail pages
 3. **Species Images** - Sticky sidebar carousel with 31,796 images
-4. **Species Detail Pages** - Two-column layout with 130 fields (v10 data)
-5. **AI Research Process** - Research generation, IPFS storage, NFT minting
-6. **Geospatial Analysis** - Interactive map with polygon drawing and KML upload
-7. **LEAF™ Scoring** - Location-based species recommendations with native status integration
-8. **WCVP Native Status** - 97.5% species coverage for native/introduced filtering
-9. **Ecoregion Queries** - 7 endpoints for ecological context
-10. **Public API Access** - API key authentication for external integrations
-11. **Admin Dashboard** - Password-protected server stats
+4. **Species Detail Pages** - Two-column layout with 130+ fields (v10 data)
+5. **AI Research Process** - Grok 4.1 with confidence scoring and source tracking
+6. **Research Versioning** - Version history, confidence scores, source citations
+7. **Geospatial Analysis** - Interactive map with polygon drawing and KML upload
+8. **LEAF Scoring** - Location-based species recommendations with native status integration
+9. **WCVP Native Status** - 97.5% species coverage for native/introduced filtering
+10. **Ecoregion Queries** - 7 endpoints for ecological context
+11. **Public API Access** - API key authentication for external integrations
+12. **Admin Dashboard** - Password-protected server stats
+13. **Habitat Biomes** - Derived from occurrence data, replaces unreliable SBTN land cover
 
 ### Known Issues
 - `performResearch is not a function` errors in logs (non-critical)
 - Database parameter validation ("null" strings vs NULL values)
 - `/scripts/research/` contains 48 test files (4.1MB) - can be archived
+- ~180K tiles without ecoregion assignment (ocean, Antarctica, remote areas)
 
 ---
 
@@ -139,8 +147,9 @@ psql -h localhost -U tree_user -d treekipedia
 
 ### Key Environment Variables
 - `DATABASE_URL` - PostgreSQL connection string
-- `OPENAI_API_KEY` - AI research generation
-- `PERPLEXITY_API_KEY` - Alternative AI research
+- `XAI_API_KEY` - Grok AI research (primary)
+- `OPENAI_API_KEY` - AI research (legacy)
+- `PERPLEXITY_API_KEY` - AI research (legacy)
 - `LIGHTHOUSE_API_KEY` - IPFS storage
 - `API_KEYS` - Comma-separated public API keys
 - Chain-specific: `CELO_RPC_URL`, `BASE_RPC_URL`, `OPTIMISM_RPC_URL`, `ARBITRUM_RPC_URL`

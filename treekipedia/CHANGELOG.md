@@ -6,6 +6,80 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-01-20 - Insights Architecture & Research Versioning
+
+**Database Migration** - Added insights architecture for research quality tracking
+- Applied `database/06_insights_architecture.sql` migration
+- New species columns: `research_version`, `research_date`, `research_agent`, `research_confidence`, `research_sources`, `research_flags`, `research_token_cost`
+- New helper columns: `sci_lower`, `taxon_lower`, `taxon_full_clean` for search optimization
+- New tables: `insights` (atomic knowledge), `research_history` (audit trail), `research_token_usage` (cost tracking), `research_queue` (processing status)
+- New views: `research_progress`, `research_token_summary`, `insights_needing_review`, `confidence_statistics`
+- Aggregation functions: `aggregate_text_insights()`, `aggregate_ranked_insights()`, `aggregate_top_insight()`
+- Note: FK constraint on insights.taxon_id omitted due to 27 duplicate taxon_ids in species table (logged in TODO.md)
+
+**Research Process** - Updated Grok service with confidence scoring
+- `backend/services/grokResearch.js` now extracts confidence and sources from Grok responses
+- Confidence calculation: field_coverage (40%) + critical_fields (30%) + specificity (20%) + sources (10%)
+- Critical fields: `general_description_ai`, `habitat_ai`, `ecological_function_ai`, `conservation_status_ai`, `native_adapted_habitats_ai`
+- Source extraction from web_search tool_use blocks in Grok API response
+- Returns `confidence`, `confidence_breakdown`, `sources`, `model` in response
+
+**Species Controller** - Updated research endpoint for versioning
+- `POST /species/:taxon_id/research` now stores versioning metadata
+- Increments `research_version`, sets `research_date`, `research_agent`, `research_confidence`, `research_sources`
+- Tracks token usage in `research_token_usage` table
+- API response includes confidence scoring and source data
+- Files: `backend/controllers/species.js`
+
+**Frontend Types** - Added research metadata fields to TypeScript
+- Added `research_version`, `research_date`, `research_agent`, `research_confidence`, `research_sources`, `research_flags`, `research_token_cost`, `popular_common_name_ai` to `TreeSpecies` interface
+- Files: `frontend/lib/types.ts`
+
+**Data Quality Discovery** - Found 27 duplicate taxon_ids affecting 54 species
+- Same taxon_id assigned to different species within same genus
+- Example: `AngMaApPtTs00060-00` = both *Pittosporum ellipticum* and *Pittosporum bicolor*
+- Documented in TODO.md for future fix
+- Blocks UNIQUE constraint on taxon_id column
+
+---
+
+## 2026-01-13 - Geohash Occurrence Data Refresh & Habitat Biomes
+
+**Database** - Full refresh of geohash occurrence data from BigQuery parquet export
+- Imported 6,458,119 tiles (was 5,786,835) - +11.6% increase
+- Total occurrences: 96,512,768 (was 94,422,564) - +2.2% increase
+- 12 parquet files processed, ~2GB total
+- Zero import errors
+- Files: `scripts/import_geohash_parquet.py`
+
+**Geometry Fix** - Recomputed geometries from geohash strings
+- Source WKT polygons were degenerate (5.4M tiles affected)
+- Used `ST_GeomFromGeoHash()` to recompute valid polygons
+- All 6.46M geometries now valid
+- Files: `scripts/fix_geohash_geometries.py`
+
+**Ecoregion Assignment** - Assigned ecoregions to 664,854 new tiles
+- Preserved 5.6M existing assignments via cache table
+- Phase 1: Center point containment (fast)
+- Phase 2: Intersection matching for boundary tiles
+- Final coverage: 97.2% (6,278,540 tiles with ecoregion)
+- Files: `scripts/assign_ecoregions_new_tiles.py`
+
+**Habitat Biomes Feature** - Replaced unreliable `sbtn_landcover` with derived biomes
+- SBTN land cover data was corrupted (tropical species showing "Permanent snow/ice")
+- New `derived_biomes` field computed from occurrence data per species
+- API returns top 5 biomes with ≥10 occurrences, ordered by occurrence count
+- Frontend "Quick Facts" now shows "Habitat Biomes" instead of "Land Cover Types"
+- Hover tooltip shows occurrence/tile counts for each biome
+- Files: `backend/controllers/species.js`, `frontend/app/species/[taxon_id]/components/SpeciesInfobox.tsx`, `frontend/lib/types.ts`
+
+**Verification** - LEAF scoring tested on Appalachian-Blue Ridge
+- Top species: Red Maple, Tuliptree, White Oak, Black Gum, Black Cherry
+- Species analysis spatial queries work correctly
+- Updated ACTIVE.md with new metrics
+
+---
+
 ## 2025-12-17 - Data Cleanup & LEAF Enhancements
 
 **Database** - Cleaned `taxon_full` field, removing redundant " NA" suffix from 50,970 species-level records

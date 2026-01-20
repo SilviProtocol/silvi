@@ -180,9 +180,30 @@ module.exports = (pool) => {
       const imageCountQuery = `SELECT COUNT(*) as image_count FROM images WHERE taxon_id = $1`;
       const imageCountResult = await pool.query(imageCountQuery, [taxon_id]);
       species.image_count = parseInt(imageCountResult.rows[0].image_count);
-      
-      console.log(`GET /species/${taxon_id} - researched flag: ${species.researched}, hasAiFields: ${hasAnyAiFields}, images: ${species.image_count}`);
-      
+
+      // Get derived habitat biomes from occurrence data
+      const biomesQuery = `
+        SELECT
+            t.biome_name,
+            SUM((t.species_data->>$1)::int) as occurrences,
+            COUNT(DISTINCT t.geohash_l7) as tile_count
+        FROM geohash_species_tiles t
+        WHERE t.species_data ? $1
+          AND t.biome_name IS NOT NULL
+        GROUP BY t.biome_name
+        HAVING SUM((t.species_data->>$1)::int) >= 10
+        ORDER BY occurrences DESC
+        LIMIT 5
+      `;
+      const biomesResult = await pool.query(biomesQuery, [taxon_id]);
+      species.derived_biomes = biomesResult.rows.map(r => ({
+        biome: r.biome_name,
+        occurrences: parseInt(r.occurrences),
+        tiles: parseInt(r.tile_count)
+      }));
+
+      console.log(`GET /species/${taxon_id} - researched flag: ${species.researched}, hasAiFields: ${hasAnyAiFields}, images: ${species.image_count}, biomes: ${species.derived_biomes.length}`);
+
       res.json(species);
     } catch (error) {
       console.error(`Error fetching species with taxon_id "${req.params.taxon_id}":`, error);
@@ -277,6 +298,7 @@ module.exports = (pool) => {
   /**
    * POST /:taxon_id/research
    * Trigger AI research for a species and update the database
+   * Includes research versioning, confidence scoring, and source tracking
    * Route params: taxon_id - The unique identifier for the species
    */
   router.post('/:taxon_id/research', async (req, res) => {
@@ -285,9 +307,10 @@ module.exports = (pool) => {
     try {
       console.log(`POST /species/${taxon_id}/research - Starting AI research`);
 
-      // Get species info
+      // Get species info including current research version
       const speciesQuery = `
-        SELECT taxon_id, species_scientific_name, common_name
+        SELECT taxon_id, species_scientific_name, common_name,
+               COALESCE(research_version, 0) as research_version
         FROM species
         WHERE taxon_id = $1
       `;
@@ -300,6 +323,8 @@ module.exports = (pool) => {
       const species = speciesResult.rows[0];
       const scientificName = species.species_scientific_name;
       const commonNames = species.common_name || '';
+      const currentVersion = species.research_version;
+      const newVersion = currentVersion + 1;
 
       // Perform AI research
       const grokResearch = require('../services/grokResearch');
@@ -310,7 +335,7 @@ module.exports = (pool) => {
         return res.status(500).json({ success: false, error: result.error });
       }
 
-      // Update species table with research data
+      // Update species table with research data + versioning metadata
       const updateQuery = `
         UPDATE species SET
           popular_common_name_ai = $1,
@@ -337,8 +362,14 @@ module.exports = (pool) => {
           pruning_maintenance_ai = $22,
           disease_pest_management_ai = $23,
           fire_management_ai = $24,
-          cultural_significance_ai = $25
-        WHERE taxon_id = $26
+          cultural_significance_ai = $25,
+          research_version = $26,
+          research_date = NOW(),
+          research_agent = $27,
+          research_confidence = $28,
+          research_sources = $29,
+          updated_at = NOW()
+        WHERE taxon_id = $30
       `;
 
       const d = result.data;
@@ -368,10 +399,34 @@ module.exports = (pool) => {
         d.disease_pest_management_ai,
         d.fire_management_ai,
         d.cultural_significance_ai,
+        newVersion,
+        result.model || 'grok-4-1-fast-reasoning',
+        result.confidence || null,
+        JSON.stringify(result.sources || []),
         taxon_id
       ]);
 
-      console.log(`POST /species/${taxon_id}/research - Database updated successfully`);
+      // Track token usage if available
+      if (result.usage) {
+        try {
+          await pool.query(`
+            INSERT INTO research_token_usage
+              (taxon_id, agent_name, model, input_tokens, output_tokens, cost_usd)
+            VALUES ($1, $2, $3, $4, $5, $6)
+          `, [
+            taxon_id,
+            'grok-research',
+            result.model || 'grok-4-1-fast-reasoning',
+            result.usage.input_tokens || 0,
+            result.usage.output_tokens || 0,
+            0 // Cost calculation can be added later
+          ]);
+        } catch (tokenError) {
+          console.warn(`Failed to track token usage for ${taxon_id}:`, tokenError.message);
+        }
+      }
+
+      console.log(`POST /species/${taxon_id}/research - Database updated (v${newVersion}, confidence: ${result.confidence})`);
 
       res.json({
         success: true,
@@ -380,6 +435,11 @@ module.exports = (pool) => {
         fields_filled: result.fields_filled,
         fields_total: result.fields_total,
         duration_ms: result.duration_ms,
+        research_version: newVersion,
+        confidence: result.confidence,
+        confidence_breakdown: result.confidence_breakdown,
+        sources: result.sources,
+        model: result.model,
         data: result.data
       });
 

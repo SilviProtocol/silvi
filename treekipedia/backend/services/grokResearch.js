@@ -1,8 +1,8 @@
 /**
  * Grok 4.1 Fast Research Service
  *
- * Simple, clean AI research for tree species using xAI's Grok API
- * with agentic web search capabilities.
+ * AI research for tree species using xAI's Grok API with agentic web search.
+ * Includes confidence scoring and source extraction for insights architecture.
  */
 
 const axios = require('axios');
@@ -21,6 +21,15 @@ const RESEARCH_FIELDS = [
   'lifespan_ai', 'maximum_tree_age_ai',
   'stewardship_best_practices_ai', 'planting_recipes_ai', 'pruning_maintenance_ai',
   'disease_pest_management_ai', 'fire_management_ai', 'cultural_significance_ai'
+];
+
+// Critical fields that should have higher weight in confidence calculation
+const CRITICAL_FIELDS = [
+  'general_description_ai',
+  'habitat_ai',
+  'ecological_function_ai',
+  'conservation_status_ai',
+  'native_adapted_habitats_ai'
 ];
 
 /**
@@ -112,6 +121,153 @@ function extractResponseText(responseData) {
 }
 
 /**
+ * Extract web search sources from Grok API response
+ * Grok returns tool_use blocks with web_search results
+ */
+function extractSources(responseData) {
+  const sources = [];
+
+  if (responseData.output && Array.isArray(responseData.output)) {
+    for (const item of responseData.output) {
+      // Look for tool_use blocks with web_search
+      if (item.type === 'tool_use' && item.name === 'web_search') {
+        // Extract search queries as implicit sources
+        if (item.input && item.input.query) {
+          sources.push({
+            type: 'web_search',
+            query: item.input.query,
+            timestamp: new Date().toISOString()
+          });
+        }
+      }
+      // Look for tool_result blocks with actual URLs/citations
+      if (item.type === 'tool_result' && item.content) {
+        try {
+          const content = typeof item.content === 'string'
+            ? JSON.parse(item.content)
+            : item.content;
+
+          if (Array.isArray(content)) {
+            for (const result of content) {
+              if (result.url || result.title) {
+                sources.push({
+                  type: 'web_result',
+                  url: result.url || null,
+                  title: result.title || null,
+                  snippet: result.snippet || result.description || null
+                });
+              }
+            }
+          }
+        } catch (e) {
+          // Content wasn't parseable JSON, skip
+        }
+      }
+    }
+  }
+
+  return sources;
+}
+
+/**
+ * Calculate confidence score based on research quality
+ *
+ * Factors:
+ * - Percentage of fields filled (40% weight)
+ * - Critical fields filled (30% weight)
+ * - Data specificity - longer responses indicate more detail (20% weight)
+ * - Number of sources used (10% weight)
+ */
+function calculateConfidence(normalizedData, filledFields, sources) {
+  // Factor 1: Overall field coverage (40%)
+  const fieldCoverageScore = filledFields / RESEARCH_FIELDS.length;
+
+  // Factor 2: Critical field coverage (30%)
+  const criticalFilled = CRITICAL_FIELDS.filter(f =>
+    normalizedData[f] &&
+    normalizedData[f] !== 'Data not available' &&
+    normalizedData[f] !== null
+  ).length;
+  const criticalScore = criticalFilled / CRITICAL_FIELDS.length;
+
+  // Factor 3: Data specificity - average content length (20%)
+  let totalLength = 0;
+  let textFieldCount = 0;
+  for (const field of RESEARCH_FIELDS) {
+    const value = normalizedData[field];
+    if (value && typeof value === 'string' && value !== 'Data not available') {
+      totalLength += value.length;
+      textFieldCount++;
+    }
+  }
+  const avgLength = textFieldCount > 0 ? totalLength / textFieldCount : 0;
+  // Scale: 0-50 chars = 0.0, 50-200 chars = 0.5, 200+ chars = 1.0
+  const specificityScore = Math.min(1.0, Math.max(0, (avgLength - 50) / 150));
+
+  // Factor 4: Source count (10%)
+  // Scale: 0 sources = 0.5 (baseline for web search), 1-3 = 0.7, 4+ = 1.0
+  const sourceScore = sources.length === 0 ? 0.5
+    : sources.length <= 3 ? 0.7
+    : 1.0;
+
+  // Weighted calculation
+  const confidence =
+    (fieldCoverageScore * 0.40) +
+    (criticalScore * 0.30) +
+    (specificityScore * 0.20) +
+    (sourceScore * 0.10);
+
+  return Math.round(confidence * 100) / 100; // Round to 2 decimal places
+}
+
+/**
+ * Generate confidence breakdown for transparency
+ */
+function getConfidenceBreakdown(normalizedData, filledFields, sources) {
+  const criticalFilled = CRITICAL_FIELDS.filter(f =>
+    normalizedData[f] &&
+    normalizedData[f] !== 'Data not available' &&
+    normalizedData[f] !== null
+  ).length;
+
+  let totalLength = 0;
+  let textFieldCount = 0;
+  for (const field of RESEARCH_FIELDS) {
+    const value = normalizedData[field];
+    if (value && typeof value === 'string' && value !== 'Data not available') {
+      totalLength += value.length;
+      textFieldCount++;
+    }
+  }
+
+  return {
+    field_coverage: {
+      score: Math.round((filledFields / RESEARCH_FIELDS.length) * 100) / 100,
+      filled: filledFields,
+      total: RESEARCH_FIELDS.length,
+      weight: 0.40
+    },
+    critical_fields: {
+      score: Math.round((criticalFilled / CRITICAL_FIELDS.length) * 100) / 100,
+      filled: criticalFilled,
+      total: CRITICAL_FIELDS.length,
+      weight: 0.30
+    },
+    specificity: {
+      score: Math.round(Math.min(1.0, Math.max(0, ((totalLength / Math.max(1, textFieldCount)) - 50) / 150)) * 100) / 100,
+      avg_length: textFieldCount > 0 ? Math.round(totalLength / textFieldCount) : 0,
+      weight: 0.20
+    },
+    sources: {
+      score: sources.length === 0 ? 0.5 : sources.length <= 3 ? 0.7 : 1.0,
+      count: sources.length,
+      weight: 0.10
+    },
+    methodology: 'grok-web-search: field_coverage × 40% + critical_fields × 30% + specificity × 20% + sources × 10%'
+  };
+}
+
+/**
  * Normalize numeric fields to proper types
  */
 function normalizeData(data) {
@@ -146,7 +302,7 @@ function normalizeData(data) {
  *
  * @param {string} scientificName - Scientific name of the species
  * @param {string} commonNames - Common names (comma-separated)
- * @returns {Promise<{success: boolean, data?: object, error?: string, usage?: object}>}
+ * @returns {Promise<{success: boolean, data?: object, error?: string, usage?: object, confidence?: number, sources?: array}>}
  */
 async function performResearch(scientificName, commonNames) {
   if (!XAI_API_KEY) {
@@ -183,6 +339,10 @@ async function performResearch(scientificName, commonNames) {
       return { success: false, error: 'Empty response from API' };
     }
 
+    // Extract sources from web search tool usage
+    const sources = extractSources(response.data);
+    console.log(`[GrokResearch] Extracted ${sources.length} sources from response`);
+
     // Extract text from response
     const outputText = extractResponseText(response.data);
 
@@ -213,7 +373,11 @@ async function performResearch(scientificName, commonNames) {
       normalizedData[f] !== null
     ).length;
 
-    console.log(`[GrokResearch] Completed: ${filledFields}/${RESEARCH_FIELDS.length} fields filled`);
+    // Calculate confidence score
+    const confidence = calculateConfidence(normalizedData, filledFields, sources);
+    const confidenceBreakdown = getConfidenceBreakdown(normalizedData, filledFields, sources);
+
+    console.log(`[GrokResearch] Completed: ${filledFields}/${RESEARCH_FIELDS.length} fields filled, confidence: ${confidence}`);
 
     return {
       success: true,
@@ -221,7 +385,11 @@ async function performResearch(scientificName, commonNames) {
       usage: response.data.usage,
       duration_ms: duration,
       fields_filled: filledFields,
-      fields_total: RESEARCH_FIELDS.length
+      fields_total: RESEARCH_FIELDS.length,
+      confidence: confidence,
+      confidence_breakdown: confidenceBreakdown,
+      sources: sources,
+      model: MODEL
     };
 
   } catch (error) {
@@ -238,5 +406,6 @@ async function performResearch(scientificName, commonNames) {
 
 module.exports = {
   performResearch,
-  RESEARCH_FIELDS
+  RESEARCH_FIELDS,
+  CRITICAL_FIELDS
 };

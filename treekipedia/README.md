@@ -22,10 +22,10 @@
 Treekipedia is an open-source platform making tree species data accessible, verifiable, and incentivized. Developed by [Silvi Protocol](https://silvi.earth), it combines AI-driven research with blockchain transparency to support reforestation, ecological restoration, and biodiversity monitoring.
 
 ### Current Stats
-- **67,927 species** with 130 data fields each (50,797 species + 16,946 subspecies)
+- **67,927 species** with 130+ data fields each (50,797 species + 16,946 subspecies)
 - **31,796 images** across 13,609 species
-- **5.3M geohash tiles** with 89M species occurrences
-- **847 WWF ecoregions** for ecological context
+- **6.46M geohash tiles** with 96.5M species occurrences
+- **847 WWF ecoregions** with 97.2% tile coverage
 - **Primary keys**: `taxon_id` + `taxon_full` (suffix `-00` = species, `-01`+ = subspecies)
 
 ---
@@ -57,7 +57,7 @@ Treekipedia is an open-source platform making tree species data accessible, veri
 │   + PostGIS     │ │   Graph         │ │   (Multi-chain) │
 ├─────────────────┤ ├─────────────────┤ ├─────────────────┤
 │ 67,927 species  │ │ Blazegraph:9999 │ │ Celo            │
-│ 5.3M geohash    │ │ Fuseki:3030     │ │ Base            │
+│ 6.46M geohash   │ │ Fuseki:3030     │ │ Base            │
 │ 847 ecoregions  │ │ Ontology:8000   │ │ Optimism        │
 └─────────────────┘ └─────────────────┘ │ Arbitrum        │
                                         └─────────────────┘
@@ -119,11 +119,12 @@ Treekipedia is an open-source platform making tree species data accessible, veri
 
 1. **Species Search** - 67,927 species searchable with subspecies discovery
 2. **Geospatial Analysis** - Polygon-based species analysis with PostGIS
-3. **AI Research** - OpenAI/Perplexity-powered data generation
-4. **Contreebution NFTs** - Blockchain-verified research contributions
+3. **AI Research** - Grok-powered agentic research with confidence scoring
+4. **LEAF Scoring** - Location-based Ecological Aptness Forecast for species recommendations
 5. **Ecoregion Integration** - 847 WWF ecoregions for ecological context
-6. **Native Status Analysis** - Country-based native/introduced classification
+6. **Native Status Analysis** - WCVP-based native/introduced classification (97.5% coverage)
 7. **Image Database** - 31,796 Wikimedia Commons images with attribution
+8. **Research Versioning** - Track research iterations with confidence and source metadata
 
 ---
 

@@ -15,7 +15,7 @@ interface SpeciesInfoboxProps {
 
 export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
   const [showAllClimate, setShowAllClimate] = useState(false);
-  const [showAllLandCover, setShowAllLandCover] = useState(false);
+  const [showAllBiomes, setShowAllBiomes] = useState(false);
   const [showAllCountries, setShowAllCountries] = useState(false);
 
   // Parse climate zones
@@ -25,16 +25,17 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
   // Parse precipitation
   const precipitation = parseNumericRange(species.annual_precipitation_mm);
 
-  // Parse SBTN land cover
-  const landCoverTypes = parseSemicolonList(species.sbtn_landcover);
-  const { visible: visibleLandCover, remaining: remainingLandCover } = truncateList(landCoverTypes, 4);
+  // Get derived habitat biomes from occurrence data
+  const habitatBiomes = species.derived_biomes || [];
+  const visibleBiomes = showAllBiomes ? habitatBiomes : habitatBiomes.slice(0, 3);
+  const remainingBiomes = habitatBiomes.length - 3;
 
   // Parse native regions (using WCVP data)
   const countries = parseSemicolonList(species.wcvp_native);
   const { visible: visibleCountries, remaining: remainingCountries } = truncateList(countries, 4);
 
   // Check if we have any data to display
-  const hasData = climateZones.length > 0 || precipitation || landCoverTypes.length > 0 || countries.length > 0;
+  const hasData = climateZones.length > 0 || precipitation || habitatBiomes.length > 0 || countries.length > 0;
 
   if (!hasData) {
     return null; // Don't show infobox if no data
@@ -89,30 +90,31 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
           </div>
         )}
 
-        {/* Land Cover */}
-        {landCoverTypes.length > 0 && (
+        {/* Habitat Biomes (derived from occurrence data) */}
+        {habitatBiomes.length > 0 && (
           <div>
-            <p className="text-sm text-white/60 mb-2">Land Cover Types</p>
+            <p className="text-sm text-white/60 mb-2">Habitat Biomes</p>
             <div className="flex flex-wrap gap-2">
-              {(showAllLandCover ? landCoverTypes : visibleLandCover).map((type, idx) => (
+              {visibleBiomes.map((biome, idx) => (
                 <span
                   key={idx}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/20 text-green-300 border border-green-600/30"
+                  title={`${biome.occurrences.toLocaleString()} occurrences in ${biome.tiles.toLocaleString()} tiles`}
                 >
-                  {type}
+                  {biome.biome}
                 </span>
               ))}
-              {!showAllLandCover && remainingLandCover > 0 && (
+              {!showAllBiomes && remainingBiomes > 0 && (
                 <button
-                  onClick={() => setShowAllLandCover(true)}
+                  onClick={() => setShowAllBiomes(true)}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-400 border border-green-600/20 hover:bg-green-600/20 transition-colors"
                 >
-                  +{remainingLandCover} more
+                  +{remainingBiomes} more
                 </button>
               )}
-              {showAllLandCover && landCoverTypes.length > 4 && (
+              {showAllBiomes && habitatBiomes.length > 3 && (
                 <button
-                  onClick={() => setShowAllLandCover(false)}
+                  onClick={() => setShowAllBiomes(false)}
                   className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-400 border border-green-600/20 hover:bg-green-600/20 transition-colors"
                 >
                   Show less
