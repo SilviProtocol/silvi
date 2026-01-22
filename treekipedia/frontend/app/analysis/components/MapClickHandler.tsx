@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useMapEvents, useMap, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import HabitatPredictionModal from './HabitatPredictionModal';
@@ -38,18 +38,72 @@ interface MapClickHandlerProps {
 export default function MapClickHandler({ enabled = true }: MapClickHandlerProps) {
   const [clickedLocation, setClickedLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
+  const [isDrawing, setIsDrawing] = useState(false);
 
   // Get map instance to pass to modal
   const map = useMap();
 
+  // Listen for leaflet-draw events to detect when drawing mode is active
+  useEffect(() => {
+    if (!map) return;
+
+    const onDrawStart = () => {
+      console.log('Drawing started - disabling click handler');
+      setIsDrawing(true);
+    };
+
+    const onDrawStop = () => {
+      console.log('Drawing stopped - enabling click handler');
+      // Small delay to prevent the final click from triggering prediction
+      setTimeout(() => setIsDrawing(false), 100);
+    };
+
+    const onDrawCreated = () => {
+      console.log('Draw created - enabling click handler');
+      setTimeout(() => setIsDrawing(false), 100);
+    };
+
+    // Listen for draw events
+    map.on('draw:drawstart', onDrawStart);
+    map.on('draw:drawstop', onDrawStop);
+    map.on('draw:created', onDrawCreated);
+    map.on('draw:editstart', onDrawStart);
+    map.on('draw:editstop', onDrawStop);
+    map.on('draw:deletestart', onDrawStart);
+    map.on('draw:deletestop', onDrawStop);
+
+    return () => {
+      map.off('draw:drawstart', onDrawStart);
+      map.off('draw:drawstop', onDrawStop);
+      map.off('draw:created', onDrawCreated);
+      map.off('draw:editstart', onDrawStart);
+      map.off('draw:editstop', onDrawStop);
+      map.off('draw:deletestart', onDrawStart);
+      map.off('draw:deletestop', onDrawStop);
+    };
+  }, [map]);
+
   useMapEvents({
     click: (e) => {
       console.log('=== MAP CLICK EVENT FIRED ===');
-      console.log('Enabled:', enabled);
+      console.log('Enabled:', enabled, 'IsDrawing:', isDrawing);
 
-      if (!enabled) {
-        console.log('MapClickHandler is disabled, ignoring click');
+      if (!enabled || isDrawing) {
+        console.log('MapClickHandler is disabled or drawing mode active, ignoring click');
         return;
+      }
+
+      // Check if click originated from a leaflet-draw control or toolbar
+      const target = e.originalEvent?.target as HTMLElement;
+      if (target) {
+        // Check if the click is on a draw control element
+        const isDrawControl = target.closest('.leaflet-draw') ||
+                              target.closest('.leaflet-draw-toolbar') ||
+                              target.closest('.leaflet-draw-section');
+        if (isDrawControl) {
+          console.log('Click on draw control, ignoring');
+          return;
+        }
       }
 
       const { lat, lng } = e.latlng;

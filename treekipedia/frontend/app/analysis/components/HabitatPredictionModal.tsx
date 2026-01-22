@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Loader2, MapPin, Sparkles } from 'lucide-react';
+import { X, Loader2, MapPin, Sparkles, Leaf, AlertTriangle, Globe } from 'lucide-react';
 import Link from 'next/link';
 import L from 'leaflet';
 
@@ -29,12 +29,36 @@ interface SpeciesPrediction {
   confidence: number;
   habitat_count?: number;
   alternate_habitats?: AlternateHabitat[];
+  native_status?: 'native' | 'introduced' | 'invasive' | 'native_and_introduced' | 'unknown';
+  is_native?: boolean;
+  is_introduced?: boolean;
+  is_invasive?: boolean;
+}
+
+interface LocationContext {
+  ecoregion: {
+    eco_id: number;
+    eco_name: string;
+    biome_name: string;
+    realm: string;
+  };
+  countries: string[];
+}
+
+interface NativeStatusSummary {
+  native: number;
+  introduced: number;
+  invasive: number;
+  native_and_introduced: number;
+  unknown: number;
 }
 
 interface PredictionResponse {
   success: boolean;
   prediction_count: number;
   predictions: SpeciesPrediction[];
+  location_context?: LocationContext | null;
+  native_status_summary?: NativeStatusSummary;
 }
 
 interface HabitatPredictionModalProps {
@@ -49,6 +73,8 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
   const [progress, setProgress] = useState(0);
   const [message, setMessage] = useState('Initializing...');
   const [predictions, setPredictions] = useState<SpeciesPrediction[]>([]);
+  const [locationContext, setLocationContext] = useState<LocationContext | null>(null);
+  const [nativeStatusSummary, setNativeStatusSummary] = useState<NativeStatusSummary | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [expandedSpecies, setExpandedSpecies] = useState<Set<string>>(new Set());
@@ -206,7 +232,9 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           embedding: samplingResult.embedding,
-          limit: 10
+          limit: 10,
+          lat,  // Pass location for native status determination
+          lon
         })
       });
 
@@ -223,6 +251,8 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
       setMessage('Species predictions ready!');
       setProgress(100);
       setPredictions(predictionData.predictions);
+      setLocationContext(predictionData.location_context || null);
+      setNativeStatusSummary(predictionData.native_status_summary || null);
       setStatus('complete');
 
     } catch (error) {
@@ -333,6 +363,51 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                 )}
               </div>
 
+              {/* Location Context & Native Status Summary */}
+              {(locationContext || nativeStatusSummary) && (
+                <div className="bg-black/30 rounded-xl p-4 border border-emerald-500/20 mb-4">
+                  {locationContext && (
+                    <div className="mb-3">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Globe className="h-4 w-4 text-emerald-400" />
+                        <span className="text-sm font-medium text-white">{locationContext.ecoregion.eco_name}</span>
+                      </div>
+                      <p className="text-xs text-emerald-300/60 ml-6">
+                        {locationContext.ecoregion.biome_name} • {locationContext.ecoregion.realm}
+                        {locationContext.countries.length > 0 && ` • ${locationContext.countries.join(', ')}`}
+                      </p>
+                    </div>
+                  )}
+                  {nativeStatusSummary && (
+                    <div className="flex flex-wrap gap-2">
+                      {nativeStatusSummary.native > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-300 text-xs">
+                          <Leaf className="h-3 w-3" />
+                          {nativeStatusSummary.native} Native
+                        </span>
+                      )}
+                      {nativeStatusSummary.introduced > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs">
+                          <Globe className="h-3 w-3" />
+                          {nativeStatusSummary.introduced} Introduced
+                        </span>
+                      )}
+                      {nativeStatusSummary.invasive > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-300 text-xs">
+                          <AlertTriangle className="h-3 w-3" />
+                          {nativeStatusSummary.invasive} Invasive
+                        </span>
+                      )}
+                      {nativeStatusSummary.unknown > 0 && (
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/20 text-gray-300 text-xs">
+                          {nativeStatusSummary.unknown} Unknown
+                        </span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-3">
                 {predictions.map((pred, index) => {
                   const isExpanded = expandedSpecies.has(pred.taxon_id);
@@ -350,6 +425,31 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                               <h4 className="text-white font-medium italic">
                                 {pred.species_scientific_name}
                               </h4>
+                              {/* Native Status Badge */}
+                              {pred.native_status === 'native' && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 text-xs">
+                                  <Leaf className="h-2.5 w-2.5" />
+                                  Native
+                                </span>
+                              )}
+                              {pred.native_status === 'introduced' && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-xs">
+                                  <Globe className="h-2.5 w-2.5" />
+                                  Introduced
+                                </span>
+                              )}
+                              {pred.native_status === 'invasive' && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-xs">
+                                  <AlertTriangle className="h-2.5 w-2.5" />
+                                  Invasive
+                                </span>
+                              )}
+                              {pred.native_status === 'native_and_introduced' && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs">
+                                  <Leaf className="h-2.5 w-2.5" />
+                                  Native+Intro
+                                </span>
+                              )}
                             </div>
                             <p className="text-sm text-emerald-300/70 ml-8">
                               {pred.family}

@@ -11,7 +11,7 @@ import random
 import numpy as np
 
 # Configuration
-PROJECT = 'treekipedia-476404'
+PROJECT = 'treekipedia-479918'
 AE_COLLECTION = 'GOOGLE/SATELLITE_EMBEDDING/V1/ANNUAL'
 
 app = Flask(__name__)

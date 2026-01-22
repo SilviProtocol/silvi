@@ -9,8 +9,9 @@ import 'leaflet-draw';
 import 'leaflet.heat';
 import { analyzePlot } from '@/lib/api';
 import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
-import { Layers } from 'lucide-react';
+import { Layers, Sparkles } from 'lucide-react';
 import MapClickHandler from './MapClickHandler';
+import PolygonPredictionModal from './PolygonPredictionModal';
 
 // Fix Leaflet icon issues with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -884,6 +885,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   const [baseLayer, setBaseLayer] = useState<string>('carto-dark');
   const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests'>('none');
   const [layerOpacity, setLayerOpacity] = useState(0.6);
+  const [showPolygonPrediction, setShowPolygonPrediction] = useState(false);
 
   // Note: Removed auto-enable heatmap - user must manually select overlay layer from dropdown
 
@@ -973,6 +975,20 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
             <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-white text-sm font-medium">Buffering...</span>
           </div>
+        </div>
+      )}
+
+      {/* Predict Species Action Bar - Show when polygon IS drawn */}
+      {drawnPolygon && !isAnalysisLoading && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1001]">
+          <button
+            onClick={() => setShowPolygonPrediction(true)}
+            className="group bg-black/90 hover:bg-emerald-900/90 backdrop-blur-md border border-emerald-500/40 hover:border-emerald-400/60 rounded-full shadow-xl px-5 py-2.5 text-white text-sm transition-all flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
+            <span className="font-medium">Predict Suitable Species</span>
+            <span className="text-emerald-400/60 text-xs ml-1">AI-powered</span>
+          </button>
         </div>
       )}
 
@@ -1074,7 +1090,8 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
               <li>• Use the rectangle tool for simple rectangular areas</li>
               <li>• Edit or delete drawn shapes using the edit tools</li>
               <li>• Or upload a KML file in the sidebar</li>
-              <li>• Click anywhere on the map to predict species based on habitat</li>
+              <li>• Click anywhere to predict species for that point</li>
+              <li>• Draw a polygon, then click <span className="text-emerald-400">"Predict Suitable Species"</span> for area predictions</li>
             </ul>
           </div>
         ) : (
@@ -1089,6 +1106,14 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
           </button>
         )}
       </div>
+
+      {/* Polygon Prediction Modal */}
+      {showPolygonPrediction && drawnPolygon && (
+        <PolygonPredictionModal
+          geometry={drawnPolygon}
+          onClose={() => setShowPolygonPrediction(false)}
+        />
+      )}
     </div>
   );
 }

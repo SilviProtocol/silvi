@@ -138,7 +138,8 @@ app.get('/api', (req, res) => {
       '/treederboard - User contributions leaderboard',
       '/research - AI research and NFT minting',
       '/sponsorships - Sponsorship payment tracking and webhooks',
-      '/api/embeddings - AlphaEarth habitat embeddings and similarity search'
+      '/api/embeddings - AlphaEarth habitat embeddings and similarity search',
+      '/api/prediction - Species prediction and recommendations (17,924 species, 44,625 habitat clusters)'
     ]
   });
 });
@@ -166,6 +167,10 @@ app.use('/api/admin', adminRoutes);
 // AlphaEarth Embeddings Routes
 const embeddingsRoutes = require('./controllers/embeddings')(pool);
 app.use('/api/embeddings', embeddingsRoutes);
+
+// Prediction Routes (species suitability and recommendations)
+const predictionRoutes = require('./routes/prediction');
+app.use('/api/prediction', predictionRoutes);
 
 // ============================================
 // Admin Authentication Endpoints (for monitoring)

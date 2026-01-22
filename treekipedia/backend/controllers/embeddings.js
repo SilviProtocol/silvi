@@ -231,155 +231,242 @@ module.exports = (pool) => {
   /**
    * POST /predict
    * Predict species from a raw embedding vector (e.g., from clicked location)
-   * Body: { embedding: { a00: 0.123, a01: -0.456, ..., a63: 0.789 }, limit: 10 }
+   * Body: { embedding: { a00: 0.123, a01: -0.456, ..., a63: 0.789 }, limit: 10, lat?: number, lon?: number }
+   *        OR { embedding: [0.123, -0.456, ..., 0.789], limit: 10, lat?: number, lon?: number }
    *
-   * This is the "reverse lookup" - given a habitat embedding, find matching species
+   * UPGRADED: Now uses species_habitat_centroids (17,924 species, 44,625 clusters)
+   * with pgvector IVFFlat index for <1ms queries.
+   * Includes native/introduced/invasive status when lat/lon provided.
    */
   router.post('/predict', async (req, res) => {
     try {
-      const { embedding, limit = 10 } = req.body;
+      const { embedding, limit = 10, lat, lon } = req.body;
 
       if (!embedding) {
         return res.status(400).json({ error: 'Missing required field: embedding' });
       }
 
-      // Validate embedding has all 64 dimensions
-      const requiredBands = Array.from({ length: 64 }, (_, i) => `a${i.toString().padStart(2, '0')}`);
-      const missingBands = requiredBands.filter(band => !(band in embedding));
-
-      if (missingBands.length > 0) {
+      // Convert embedding to array format if it's an object
+      let embeddingArray;
+      if (Array.isArray(embedding)) {
+        embeddingArray = embedding;
+      } else if (typeof embedding === 'object') {
+        // Convert {a00: 0.1, a01: 0.2, ...} to [0.1, 0.2, ...]
+        embeddingArray = [];
+        for (let i = 0; i < 64; i++) {
+          const key = `a${i.toString().padStart(2, '0')}`;
+          if (!(key in embedding)) {
+            return res.status(400).json({
+              error: 'Incomplete embedding vector',
+              missing_key: key
+            });
+          }
+          embeddingArray.push(parseFloat(embedding[key]));
+        }
+      } else {
         return res.status(400).json({
-          error: 'Incomplete embedding vector',
-          missing_bands: missingBands
+          error: 'Invalid embedding format. Expected array or object.'
         });
       }
 
-      console.log(`POST /embeddings/predict (limit=${limit})`);
+      if (embeddingArray.length !== 64) {
+        return res.status(400).json({
+          error: `Invalid embedding length: ${embeddingArray.length}. Expected 64.`
+        });
+      }
 
-      // Build dynamic SQL for cosine similarity
-      // Formula: dot_product(A, B) / (magnitude(A) * magnitude(B))
-      // For comparison purposes, we can use just dot product since query vector is constant
-      const dotProductTerms = requiredBands
-        .map(band => `c.centroid_${band} * ${parseFloat(embedding[band])}`)
-        .join(' + ');
+      console.log(`POST /embeddings/predict (limit=${limit}) - Using NEW 17,924 species database`);
 
-      // Get top matches from ALL habitat clusters (limit * 3 to ensure we get enough unique species)
+      // Get location context if lat/lon provided (for native status determination)
+      let ecoregion = null;
+      let countries = [];
+      let wcvpPatterns = [];
+
+      if (lat !== undefined && lon !== undefined) {
+        try {
+          // Get ecoregion at point
+          const ecoResult = await pool.query(`
+            SELECT eco_id, eco_name, biome_name, realm
+            FROM ecoregions
+            WHERE ST_Contains(geom, ST_SetSRID(ST_MakePoint($1, $2), 4326))
+            LIMIT 1
+          `, [parseFloat(lon), parseFloat(lat)]);
+
+          if (ecoResult.rows.length > 0) {
+            ecoregion = ecoResult.rows[0];
+
+            // Get countries for this ecoregion
+            const countriesResult = await pool.query(`
+              SELECT DISTINCT
+                CASE
+                  WHEN c.name_en = 'United States of America' THEN 'United States'
+                  WHEN c.name_en = 'United Kingdom' THEN 'United Kingdom'
+                  ELSE c.name_en
+                END as country_name
+              FROM ecoregions e
+              JOIN countries c ON ST_Intersects(e.geom, c.geom)
+              WHERE e.eco_id = $1
+            `, [ecoregion.eco_id]);
+            countries = countriesResult.rows.map(r => r.country_name).filter(Boolean);
+
+            // Build WCVP search patterns
+            const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
+            for (const country of countries) {
+              const regions = getWcvpRegionsForCountry(country);
+              wcvpPatterns.push(...regions.map(r => r.toLowerCase()));
+            }
+          }
+        } catch (ecoError) {
+          console.log('Ecoregion lookup failed (non-fatal):', ecoError.message);
+        }
+      }
+
+      // Convert to pgvector format
+      const vectorString = `[${embeddingArray.join(',')}]`;
+      const resultLimit = Math.min(parseInt(limit), 100);
+
+      // Query using pgvector cosine similarity with IVFFlat index
+      // Include WCVP fields for native status
       const query = `
+        WITH ranked_centroids AS (
+            SELECT
+                c.taxon_id,
+                c.cluster_id,
+                1 - (c.centroid_vector <=> $1::vector) as similarity,
+                c.mean_elevation,
+                c.occurrence_count,
+                c.mean_treecover2000,
+                c.forest_loss_fraction,
+                c.representative_lat,
+                c.representative_lon,
+                c.is_single_cluster,
+                ROW_NUMBER() OVER (
+                    PARTITION BY c.taxon_id
+                    ORDER BY c.centroid_vector <=> $1::vector
+                ) as rank_in_species
+            FROM species_habitat_centroids c
+        )
         SELECT
-          c.taxon_id,
-          s.species_scientific_name,
-          s.family,
-          s.common_name,
-          c.cluster_id,
-          c.cluster_size,
-          c.total_occurrences,
-          c.representative_lat,
-          c.representative_lon,
-          c.representative_year,
-          ROUND(
-            CAST((${dotProductTerms}) AS NUMERIC), 6
-          ) as similarity_score
-        FROM species_alphaearth_centroids c
-        JOIN species s ON c.taxon_id = s.taxon_id
-        ORDER BY similarity_score DESC
-        LIMIT $1
+            r.taxon_id,
+            r.cluster_id,
+            r.similarity,
+            r.mean_elevation as cluster_elevation,
+            r.occurrence_count as cluster_size,
+            r.mean_treecover2000,
+            r.forest_loss_fraction,
+            r.representative_lat,
+            r.representative_lon,
+            r.is_single_cluster,
+            s.accepted_scientific_name as species_scientific_name,
+            s.common_name,
+            s.family,
+            s.wcvp_native,
+            s.wcvp_introduced,
+            s.countries_invasive,
+            (SELECT SUM(occurrence_count) FROM species_habitat_centroids WHERE taxon_id = r.taxon_id) as total_occurrences,
+            (SELECT COUNT(*) FROM species_habitat_centroids WHERE taxon_id = r.taxon_id) as habitat_count
+        FROM ranked_centroids r
+        LEFT JOIN species s ON r.taxon_id = s.taxon_id
+        WHERE r.rank_in_species = 1
+          AND r.similarity >= 0.5
+        ORDER BY r.similarity DESC
+        LIMIT $2
       `;
 
-      const result = await pool.query(query, [limit * 3]);
+      const result = await pool.query(query, [vectorString, resultLimit * 2]);
 
       if (result.rowCount === 0) {
         return res.status(404).json({
           error: 'No species predictions available',
-          details: 'Database may be empty'
+          details: 'No matching habitats found'
         });
       }
 
-      // Group by species and calculate weighted average confidence
-      const speciesMap = new Map();
-      const maxScore = parseFloat(result.rows[0].similarity_score);
+      // Normalize confidence scores
+      const maxSimilarity = parseFloat(result.rows[0].similarity);
 
-      for (const row of result.rows) {
-        const taxonId = row.taxon_id;
-        const rawConfidence = maxScore > 0 ? parseFloat(row.similarity_score) / maxScore : 0;
+      // Helper functions for native status
+      const matchesWcvpPatterns = (wcvpField) => {
+        if (!wcvpField || wcvpPatterns.length === 0) return false;
+        const fieldLower = wcvpField.toLowerCase();
+        return wcvpPatterns.some(pattern => fieldLower.includes(pattern));
+      };
 
-        if (!speciesMap.has(taxonId)) {
-          // First occurrence for this species
-          speciesMap.set(taxonId, {
-            taxon_id: taxonId,
-            species_scientific_name: row.species_scientific_name,
-            family: row.family,
-            common_name: row.common_name,
-            total_occurrences: row.cluster_size,
-            habitats: [{
-              cluster_id: row.cluster_id,
-              cluster_size: row.cluster_size,
-              representative_lat: row.representative_lat,
-              representative_lon: row.representative_lon,
-              representative_year: row.representative_year,
-              similarity_score: row.similarity_score,
-              confidence: rawConfidence
-            }],
-            weighted_sum: row.cluster_size * rawConfidence,
-            occurrence_sum: row.cluster_size
-          });
-        } else {
-          // Additional habitat cluster for same species
-          const species = speciesMap.get(taxonId);
-          species.habitats.push({
-            cluster_id: row.cluster_id,
-            cluster_size: row.cluster_size,
-            representative_lat: row.representative_lat,
-            representative_lon: row.representative_lon,
-            representative_year: row.representative_year,
-            similarity_score: row.similarity_score,
-            confidence: rawConfidence
-          });
-          species.weighted_sum += row.cluster_size * rawConfidence;
-          species.occurrence_sum += row.cluster_size;
-          species.total_occurrences += row.cluster_size;
+      const isInvasiveInCountries = (invasiveField) => {
+        if (!invasiveField || countries.length === 0) return false;
+        const invasiveLower = invasiveField.toLowerCase();
+        return countries.some(country => invasiveLower.includes(country.toLowerCase()));
+      };
+
+      // Track native status summary
+      const nativeStatusSummary = {
+        native: 0,
+        introduced: 0,
+        invasive: 0,
+        native_and_introduced: 0,
+        unknown: 0
+      };
+
+      // Format predictions to match frontend expectations (backwards compatible)
+      const predictions = result.rows.slice(0, resultLimit).map(row => {
+        // Determine native status
+        const isNative = matchesWcvpPatterns(row.wcvp_native);
+        const isIntroduced = matchesWcvpPatterns(row.wcvp_introduced);
+        const isInvasive = isInvasiveInCountries(row.countries_invasive);
+
+        let native_status = 'unknown';
+        if (isInvasive) {
+          native_status = 'invasive';
+        } else if (isNative && !isIntroduced) {
+          native_status = 'native';
+        } else if (isIntroduced && !isNative) {
+          native_status = 'introduced';
+        } else if (isNative && isIntroduced) {
+          native_status = 'native_and_introduced';
         }
-      }
 
-      // Calculate final weighted confidence and format predictions
-      const predictions = Array.from(speciesMap.values()).map(species => {
-        // Weighted average confidence
-        const confidence = parseFloat((species.weighted_sum / species.occurrence_sum).toFixed(4));
-
-        // Sort habitats by confidence (best first)
-        species.habitats.sort((a, b) => b.confidence - a.confidence);
-
-        // Primary habitat (best match)
-        const primaryHabitat = species.habitats[0];
+        nativeStatusSummary[native_status]++;
 
         return {
-          taxon_id: species.taxon_id,
-          species_scientific_name: species.species_scientific_name,
-          family: species.family,
-          common_name: species.common_name,
-          cluster_id: primaryHabitat.cluster_id,
-          cluster_size: primaryHabitat.cluster_size,
-          total_occurrences: species.total_occurrences,
-          representative_lat: primaryHabitat.representative_lat,
-          representative_lon: primaryHabitat.representative_lon,
-          representative_year: primaryHabitat.representative_year,
-          similarity_score: primaryHabitat.similarity_score,
-          confidence: confidence, // Weighted average across all habitats
-          habitat_count: species.habitats.length,
-          alternate_habitats: species.habitats.slice(1) // All other habitats
+          taxon_id: row.taxon_id,
+          species_scientific_name: row.species_scientific_name,
+          family: row.family,
+          common_name: row.common_name,
+          cluster_id: row.cluster_id,
+          cluster_size: parseInt(row.cluster_size),
+          total_occurrences: parseInt(row.total_occurrences),
+          representative_lat: parseFloat(row.representative_lat),
+          representative_lon: parseFloat(row.representative_lon),
+          similarity_score: row.similarity.toFixed(6),
+          confidence: maxSimilarity > 0 ? parseFloat(row.similarity) / maxSimilarity : 0,
+          habitat_count: parseInt(row.habitat_count),
+          // Native status info
+          native_status,
+          is_native: isNative,
+          is_introduced: isIntroduced,
+          is_invasive: isInvasive
         };
       });
 
-      // Sort by weighted confidence and take top N
-      predictions.sort((a, b) => b.confidence - a.confidence);
-      const topPredictions = predictions.slice(0, limit);
-
-      console.log(`Found ${topPredictions.length} unique species (consolidated from ${result.rowCount} habitat clusters)`);
-      console.log(`Top prediction: ${topPredictions[0].species_scientific_name} (confidence: ${topPredictions[0].confidence}, ${topPredictions[0].habitat_count} habitats)`);
+      console.log(`Found ${predictions.length} species predictions (17,924 species database)`);
+      if (predictions.length > 0) {
+        console.log(`Top prediction: ${predictions[0].species_scientific_name} (confidence: ${predictions[0].confidence.toFixed(4)})`);
+      }
 
       res.json({
         success: true,
-        prediction_count: topPredictions.length,
-        predictions: topPredictions
+        prediction_count: predictions.length,
+        location_context: ecoregion ? {
+          ecoregion: {
+            eco_id: ecoregion.eco_id,
+            eco_name: ecoregion.eco_name,
+            biome_name: ecoregion.biome_name,
+            realm: ecoregion.realm
+          },
+          countries: countries
+        } : null,
+        native_status_summary: nativeStatusSummary,
+        predictions
       });
 
     } catch (error) {
