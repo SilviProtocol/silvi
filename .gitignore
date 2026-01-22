@@ -75,6 +75,14 @@ graphflow-extracted/
 silvi-open-gee-temporal-extraction/
 griis_data/
 
+# AlphaEarth data pipeline (large files - use BigQuery instead)
+orchestrator/alphaearth_extractions/
+orchestrator/bigquery_exports/
+Sources_Data/
+
+# GeoTIFF files (too large for git)
+*.tif
+
 # Meeting notes and docs (not code)
 *Notes by Gemini*.md
 species predictor discussions.md
