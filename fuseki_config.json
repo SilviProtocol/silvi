@@ -1,22 +1,14 @@
 {
-  "service_account_file": "service_account.json",
-  "spreadsheet_names": [
-    "Dynamic"
-  ],
-  "triplestore_type": "fuseki",
   "fuseki": {
     "base_url": "http://167.172.143.162:3030",
     "dataset": "treekipedia",
     "sparql_endpoint": "http://167.172.143.162:3030/treekipedia/sparql",
     "update_endpoint": "http://167.172.143.162:3030/treekipedia/update",
-    "data_endpoint": "http://167.172.143.162:3030/treekipedia/data"
-  },
-  "blazegraph": {
-    "enabled": false,
-    "endpoint": "http://167.172.143.162:9999/blazegraph/namespace/kb/sparql"
+    "data_endpoint": "http://167.172.143.162:3030/treekipedia/data",
+    "username": "treekipedia",
+    "password": "treekipedia@silvi"
   },
   "postgresql": {
-    "enabled": true,
     "db_connection": {
       "host": "167.172.143.162",
       "database": "treekipedia",
@@ -24,7 +16,5 @@
       "password": "9353jeremic",
       "port": 5432
     }
-  },
-  "auto_update_version": true,
-  "version_update_user": "Automation System (Fuseki)"
+  }
 }

@@ -1,9 +1,14 @@
 from flask import Flask, flash, redirect, url_for
-from config import AppConfig, logger
-from routes_main import main_bp
-from routes_api import api_bp
+from src.core.config import AppConfig, logger
+from src.routes.main import main_bp
+from src.routes.api import api_bp
+from src.routes.occurrence import occurrence_bp, init_occurrence_manager
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(
@@ -30,13 +35,30 @@ def create_app():
     # Enable Google Sheets integration
     app.config['USE_GOOGLE_SHEETS'] = True
     app.config['GOOGLE_SHEETS_ENABLED'] = True
-    
+
+    # Occurrence data configuration (GeoParquet + DuckDB)
+    app.config['OCCURRENCE_STORAGE_PATH'] = os.getenv('OCCURRENCE_STORAGE_PATH', 'data/occurrences')
+    app.config['OCCURRENCE_S3_BUCKET'] = os.getenv('OCCURRENCE_S3_BUCKET')  # Optional S3 storage
+
+    # Increase max upload size for large occurrence datasets (default 2 GB)
+    max_upload_mb = int(os.getenv('MAX_UPLOAD_SIZE_MB', '2048'))
+    app.config['MAX_CONTENT_LENGTH'] = max_upload_mb * 1024 * 1024
+    logger.info(f"Max upload size set to {max_upload_mb} MB ({max_upload_mb/1024:.1f} GB)")
+
     logger.info("✅ Dynamic ontology generation system initialized!")
     logger.info("✅ Google Sheets integration enabled!")
-    
+
     # Register blueprints
     app.register_blueprint(main_bp)
     app.register_blueprint(api_bp)
+    app.register_blueprint(occurrence_bp)
+
+    # Initialize occurrence data manager
+    try:
+        init_occurrence_manager(app)
+        logger.info("✅ Occurrence data system initialized (GeoParquet + DuckDB)")
+    except Exception as e:
+        logger.warning(f"Occurrence data system initialization failed: {e}")
     
     # Register error handlers
     register_error_handlers(app)
@@ -173,7 +195,7 @@ def register_dynamic_ontology_routes(app):
             'core_features': {
                 'csv_upload': True,
                 'google_sheets_import': app.config.get('USE_GOOGLE_SHEETS', False),
-                'blazegraph_integration': app.config.get('BLAZEGRAPH_ENABLED', False),
+                'fuseki_integration': app.config.get('TRIPLESTORE_ENABLED', False),
                 'postgresql_integration': app.config.get('POSTGRESQL_ENABLED', False),
                 'version_management': True,
                 'dynamic_analysis': True
@@ -209,7 +231,7 @@ def register_dynamic_ontology_routes(app):
             },
             'integrations': {
                 'sheets_status': 'enabled' if app.config.get('USE_GOOGLE_SHEETS') else 'disabled',
-                'blazegraph_status': 'enabled' if app.config.get('BLAZEGRAPH_ENABLED') else 'disabled',
+                'fuseki_status': 'enabled' if app.config.get('TRIPLESTORE_ENABLED') else 'disabled',
                 'postgres_status': 'enabled' if app.config.get('POSTGRESQL_ENABLED') else 'disabled'
             },
             'biodiversity_expertise': {
@@ -240,11 +262,11 @@ def register_dynamic_ontology_routes(app):
             'components': {
                 'ontology_generator': True,
                 'google_sheets': app.config.get('USE_GOOGLE_SHEETS', False),
-                'blazegraph': app.config.get('BLAZEGRAPH_ENABLED', False),
+                'fuseki': app.config.get('TRIPLESTORE_ENABLED', False),
                 'postgresql': app.config.get('POSTGRESQL_ENABLED', False)
             },
             'data_status': {
-                'species_in_blazegraph': '49000+',
+                'species_in_fuseki': '49000+',
                 'ontology_classes': '8+',
                 'field_patterns': '25+'
             }
@@ -264,7 +286,7 @@ def print_startup_banner():
     print(f"✨ Advanced Biodiversity Ontology Generation Platform")
     print(f"{'='*70}")
     print(f"🌐 Server: http://localhost:{port}")
-    print(f"📊 Apache Fuseki: {app.config.get('BLAZEGRAPH_ENDPOINT', 'Not configured')}")
+    print(f"📊 Apache Fuseki: {app.config.get('FUSEKI_SPARQL_ENDPOINT', 'Not configured')}")
     print(f"🗄️  PostgreSQL: {'✅ Enabled' if app.config.get('POSTGRESQL_ENABLED') else '❌ Disabled'}")
     print(f"")
     print(f"📋 DATA SOURCES:")

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Occurrence Data - TreeKipedia</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/treekipedia-unified.css') }}">
+    <style>
+        .version-card { transition: transform 0.2s; cursor: pointer; }
+        .version-card:hover { transform: translateY(-5px); box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .stat-card { background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); color: white; }
+        .upload-zone { border: 2px dashed #ccc; padding: 2rem; text-align: center; border-radius: 10px; transition: all 0.3s; }
+        .upload-zone:hover { border-color: var(--primary-color); background: #f8f9fa; }
+        .upload-zone.drag-over { border-color: var(--success-color); background: #e8f5e9; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">🌲 TreeKipedia</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/">Home</a>
+                <a class="nav-link active" href="/occurrence/">Occurrence Data</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Header -->
+        <div class="header compact">
+            <h1><i class="bi bi-geo-alt"></i> Occurrence Data Management</h1>
+            <p class="lead">GeoParquet + DuckDB System</p>
+        </div>
+
+        <!-- Success/Error Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                <div class="alert alert-{{ 'success' if category == 'success' else 'danger' }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Statistics -->
+        {% if latest_stats %}
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-layers" style="font-size: 2rem;"></i>
+                        <h3>{{ total_versions }}</h3>
+                        <p class="mb-0">Versions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-pin-map" style="font-size: 2rem;"></i>
+                        <h3>{{ "{:,}".format(latest_stats.total_records) if latest_stats and latest_stats.total_records else "0" }}</h3>
+                        <p class="mb-0">Total Records</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-tree" style="font-size: 2rem;"></i>
+                        <h3>{{ latest_stats.species_count }}</h3>
+                        <p class="mb-0">Species</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-hdd" style="font-size: 2rem;"></i>
+                        <h3>{{ "%.1f"|format(latest_stats.file_size_mb) if latest_stats and latest_stats.file_size_mb else "0.0" }} MB</h3>
+                        <p class="mb-0">Latest Version</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="d-flex justify-content-between mb-3">
+            <h3>Manage Versions</h3>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload"></i> Upload New Version
+                </button>
+            </div>
+        </div>
+
+        <!-- Versions List -->
+        <div class="row">
+            {% if versions %}
+                {% for version in versions %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card version-card h-100">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">{{ version.version }}</h5>
+                        </div>
+                        <div class="card-body">
+                            <p><strong><i class="bi bi-pin-map"></i> Records:</strong> {{ "{:,}".format(version.record_count) }}</p>
+                            <p><strong><i class="bi bi-tree"></i> Species:</strong> {{ version.species_count }}</p>
+                            <p><strong><i class="bi bi-hdd"></i> Size:</strong> {{ "%.1f"|format(version.file_size_mb) }} MB</p>
+                            <p><strong><i class="bi bi-calendar"></i> Created:</strong> {{ version.created_at[:10] }}</p>
+
+                            <div class="btn-group w-100 mt-2" role="group">
+                                <a href="{{ url_for('occurrence.map_view', version=version.version) }}"
+                                   class="btn btn-sm btn-success" target="_blank">
+                                    <i class="bi bi-map"></i> Map
+                                </a>
+                                <button class="btn btn-sm btn-info" onclick="showDetails('{{ version.version }}')">
+                                    <i class="bi bi-info-circle"></i> Details
+                                </button>
+                                <a href="{{ url_for('occurrence.export_rdf', version=version.version) }}"
+                                   class="btn btn-sm btn-secondary">
+                                    <i class="bi bi-download"></i> RDF
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No occurrence data versions yet. Upload your first CSV to get started!
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-upload"></i> Upload Occurrence Data</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="POST" action="{{ url_for('occurrence.upload') }}" enctype="multipart/form-data" id="uploadForm">
+                    <div class="modal-body">
+                        <!-- File Upload -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Occurrence Data File *</label>
+                            <div class="upload-zone" id="uploadZone">
+                                <i class="bi bi-cloud-upload" style="font-size: 3rem; color: var(--primary-color);"></i>
+                                <h5 class="mt-3">Drag & Drop or Click to Upload</h5>
+                                <p class="text-muted">Parquet, CSV, or Excel with occurrence records (max 2 GB)</p>
+                                <input type="file" name="occurrence_file" id="fileInput" accept=".parquet,.csv,.xlsx,.xls" class="d-none" required>
+                                <button type="button" class="btn btn-primary" id="browseBtn">Browse Files</button>
+                            </div>
+                            <div id="fileInfo" class="mt-2 d-none">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-file-earmark"></i> <span id="fileName"></span> (<span id="fileSize"></span>)
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Version -->
+                        <div class="mb-3">
+                            <label for="version" class="form-label fw-bold">Version *</label>
+                            <input type="text" class="form-control" name="version" placeholder="e.g., v1.0.0" required>
+                            <small class="form-text text-muted">Semantic versioning recommended</small>
+                        </div>
+
+                        <!-- Column Mappings (Auto-detect enabled) -->
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-diagram-3"></i> Column Mappings (Auto-detect enabled)</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label class="form-label">Latitude Column</label>
+                                        <input type="text" class="form-control" name="lat_col" value="latitude" placeholder="auto-detect">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Longitude Column</label>
+                                        <input type="text" class="form-control" name="lon_col" value="longitude" placeholder="auto-detect">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label class="form-label">Species Column</label>
+                                        <input type="text" class="form-control" name="species_col" value="species" placeholder="auto-detect">
+                                    </div>
+                                </div>
+                                <small class="text-muted">Leave defaults to auto-detect. All other columns preserved automatically.</small>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="2" placeholder="Version notes..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="uploaded_by" class="form-label">Uploaded By</label>
+                            <input type="text" class="form-control" name="uploaded_by" placeholder="Your name">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <i class="bi bi-upload"></i> Convert to GeoParquet
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Modal -->
+    <div class="modal fade" id="detailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-info-circle"></i> Version Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="detailsContent">
+                    <div class="text-center"><div class="spinner-border"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File upload handling
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const fileInfo = document.getElementById('fileInfo');
+
+        browseBtn.addEventListener('click', () => fileInput.click());
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = (file.size / (1024*1024)).toFixed(2) + ' MB';
+                fileInfo.classList.remove('d-none');
+            }
+        });
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('drag-over');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+            if (e.dataTransfer.files.length > 0) {
+                fileInput.files = e.dataTransfer.files;
+                fileInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        // Show version details
+        async function showDetails(version) {
+            const modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            const content = document.getElementById('detailsContent');
+            modal.show();
+
+            try {
+                const response = await fetch(`/occurrence/api/statistics/${version}`);
+                const data = await response.json();
+
+                content.innerHTML = `
+                    <dl class="row">
+                        <dt class="col-sm-4">Version:</dt>
+                        <dd class="col-sm-8">${data.version}</dd>
+
+                        <dt class="col-sm-4">Records:</dt>
+                        <dd class="col-sm-8">${data.record_count.toLocaleString()}</dd>
+
+                        <dt class="col-sm-4">Species:</dt>
+                        <dd class="col-sm-8">${data.species_count}</dd>
+
+                        <dt class="col-sm-4">File Size:</dt>
+                        <dd class="col-sm-8">${data.file_size_mb.toFixed(2)} MB</dd>
+
+                        <dt class="col-sm-4">Created:</dt>
+                        <dd class="col-sm-8">${data.created_at}</dd>
+
+                        ${data.metadata && data.metadata.description ? `
+                        <dt class="col-sm-4">Description:</dt>
+                        <dd class="col-sm-8">${data.metadata.description}</dd>
+                        ` : ''}
+
+                        ${data.bbox ? `
+                        <dt class="col-sm-4">Bounding Box:</dt>
+                        <dd class="col-sm-8">
+                            Lat: ${data.bbox[1].toFixed(4)} to ${data.bbox[3].toFixed(4)}<br>
+                            Lon: ${data.bbox[0].toFixed(4)} to ${data.bbox[2].toFixed(4)}
+                        </dd>
+                        ` : ''}
+                    </dl>
+                `;
+            } catch (error) {
+                content.innerHTML = '<div class="alert alert-danger">Error loading details</div>';
+            }
+        }
+
+        // Form submission handling
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Processing...';
+        });
+    </script>
+</body>
+</html>

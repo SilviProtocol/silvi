@@ -1,41 +1,75 @@
-# Python artifacts
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
 *.egg-info/
-.installed.cfg
+dist/
+build/
 *.egg
 
-# Virtual environment
+# Virtual Environments
 venv/
-ENV/
-env/
 myenv/
+env/
+ENV/
+venv_occurrence/
+
+# Environment Variables
 .env
+.env.local
+.env.production
 
-# Application specific
-Uploads/
-Metadata/
-*.log
-*.owl
-
-# Google service account credentials (VERY IMPORTANT - NEVER COMMIT THESE)
+# Credentials & Secrets
 service_account.json
-*-credentials.json
-*credentials*.json
-*.p12
+credentials/
 *.pem
+*.key
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+logs/
+app.log
+
+# Data & Uploads
+data/
+Uploads/
+generated_ontologies/
+ontology_history/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Coverage & Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Documentation builds
+docs/_build/
+site/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project Specific
+fuseki_config.json
+treekipedia_automation_results.json

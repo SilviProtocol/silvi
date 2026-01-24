@@ -3,56 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ontology Generated Successfully</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <title>Success - Treekipedia GraphFlow</title>
+    <meta name="description" content="Your ontology has been generated successfully" />
+    <meta name="theme-color" content="#0a0f0d" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/treekipedia-unified.css">
     <style>
-        .dynamic-summary-card {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e3f2fd 100%);
-            border: 2px solid #2196f3;
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            margin: 1.5rem 0;
-        }
-        
         .fuseki-status {
-            background: white;
-            border-radius: var(--border-radius);
+            background: var(--bg-tertiary);
+            border-radius: var(--radius-lg);
             padding: 1.5rem;
             margin: 1.5rem 0;
-            border-left: 4px solid #4caf50;
+            border-left: 3px solid var(--success);
         }
-        
         .fuseki-status.failed {
-            border-left-color: #f44336;
+            border-left-color: var(--danger);
         }
-        
         .fuseki-status.not-attempted {
-            border-left-color: #ff9800;
+            border-left-color: var(--warning);
         }
-        
-        .metric-card {
-            background: white;
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            text-align: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .fuseki-status h4 {
+            font-family: var(--font-body);
+            font-weight: 600;
             margin-bottom: 1rem;
         }
-        
-        .metric-value {
-            font-size: 1.8rem;
-            font-weight: 600;
-            color: #2196f3;
-            margin-bottom: 0.25rem;
+        .fuseki-status.success h4 { color: var(--success); }
+        .fuseki-status.failed h4 { color: var(--danger); }
+        .metric-card {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 1rem;
         }
-        
+        .metric-value {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            font-family: var(--font-mono);
+        }
         .metric-label {
-            font-size: 0.9rem;
-            color: #6c757d;
+            font-size: 0.75rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.08em;
         }
     </style>
 </head>
@@ -253,9 +250,9 @@
             </div>
         </div>
         
-        <div class="footer">
-            <p>Treekipedia GraphFlow - Smart Ontology Generator with Apache Jena Fuseki</p>
-        </div>
+        <footer class="footer">
+            <p><span style="color: var(--accent-amber);">Treekipedia</span> GraphFlow | <a href="{{ url_for('main.index') }}">Home</a> | <a href="/documentation" target="_blank">Documentation</a></p>
+        </footer>
     </div>
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

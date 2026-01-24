@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: treekipedia-web
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+      - POSTGRES_HOST=postgres
+      - FUSEKI_HOST=fuseki
+    volumes:
+      - ./data:/app/data
+      - ./generated_ontologies:/app/generated_ontologies
+      - ./Uploads:/app/Uploads
+      - ./logs:/app/logs
+    depends_on:
+      - postgres
+      - fuseki
+    restart: unless-stopped
+    networks:
+      - treekipedia-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: treekipedia-postgres
+    environment:
+      - POSTGRES_DB=treekipedia
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - treekipedia-network
+
+  fuseki:
+    image: stain/jena-fuseki:latest
+    container_name: treekipedia-fuseki
+    environment:
+      - ADMIN_PASSWORD=${FUSEKI_ADMIN_PASSWORD:-admin}
+      - JVM_ARGS=-Xmx2g
+    volumes:
+      - fuseki-data:/fuseki
+    ports:
+      - "3030:3030"
+    restart: unless-stopped
+    networks:
+      - treekipedia-network
+
+volumes:
+  postgres-data:
+  fuseki-data:
+
+networks:
+  treekipedia-network:
+    driver: bridge

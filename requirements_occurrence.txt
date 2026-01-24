@@ -1,0 +1,28 @@
+# =============================================================================
+# Additional Dependencies for GeoParquet + DuckDB Occurrence Data System
+# =============================================================================
+# Add these to your existing requirements.txt
+
+# DuckDB for fast analytical queries
+duckdb>=0.10.0
+
+# Geospatial data handling
+geopandas>=0.14.0
+shapely>=2.0.0
+pyarrow>=14.0.0  # Required for Parquet support
+fastparquet>=2023.10.0  # Alternative Parquet engine
+
+# RDF export (if not already installed)
+rdflib>=7.0.0
+
+# Data processing (if not already installed)
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Optional: AWS S3 support (only if using cloud storage)
+boto3>=1.34.0  # Uncomment if using S3
+# s3fs>=2023.12.0  # Uncomment if using S3 with DuckDB httpfs
+
+# Optional: Additional geospatial tools
+# folium>=0.15.0  # For advanced map visualizations
+# geopy>=2.4.0  # For geocoding

@@ -4,24 +4,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Treekipedia GraphFlow</title>
+    <meta name="description" content="Smart Ontology Generator - Transform biodiversity data into knowledge graphs" />
+    <meta name="theme-color" content="#0a0f0d" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css"
       rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css"
-    />
-    <link rel="stylesheet" href="/static/css/treekipedia-unified.css">
+    <link rel="stylesheet" href="/static/css/treekipedia-unified.css" />
   </head>
   <body>
     <div class="container">
-      <div class="header">
-        <h1><i class="fas fa-dna"></i> Treekipedia GraphFlow</h1>
+      <header class="header">
+        <div class="header-badge">
+          <span class="badge-dot"></span>
+          <span>Knowledge Graph Engine</span>
+        </div>
+        <h1><i class="fas fa-seedling"></i> Treekipedia GraphFlow</h1>
         <p class="lead">
-          Smart Ontology Generator - Data flowing from sheets → RDF → Apache Fuseki
+          Transform biodiversity data into living knowledge graphs
         </p>
-        <!-- Documentation Button in Header -->
+        <div class="header-flow">
+          <span class="flow-node">Sheets</span>
+          <span class="flow-arrow"><i class="fas fa-arrow-right"></i></span>
+          <span class="flow-node">RDF</span>
+          <span class="flow-arrow"><i class="fas fa-arrow-right"></i></span>
+          <span class="flow-node active">Apache Fuseki</span>
+        </div>
         <div class="mt-3">
           <a href="/documentation" target="_blank" class="btn btn-outline-light btn-sm me-2">
             <i class="fas fa-book me-1"></i>Documentation
@@ -30,7 +40,68 @@
             <i class="fas fa-question-circle me-1"></i>Quick Help
           </button>
         </div>
-      </div>
+      </header>
+
+      <style>
+        .header-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding: 0.375rem 1rem;
+          background: rgba(245, 158, 11, 0.1);
+          border: 1px solid rgba(245, 158, 11, 0.2);
+          border-radius: 100px;
+          font-size: 0.75rem;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.08em;
+          color: var(--accent-amber);
+          margin-bottom: 1.5rem;
+          position: relative;
+        }
+        .badge-dot {
+          width: 6px;
+          height: 6px;
+          background: var(--accent-amber);
+          border-radius: 50%;
+          animation: pulse-dot 2s ease-in-out infinite;
+        }
+        @keyframes pulse-dot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.5; transform: scale(1.2); }
+        }
+        .header-flow {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 0.75rem 1.25rem;
+          background: rgba(10, 15, 13, 0.5);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-lg);
+          margin-top: 1rem;
+          position: relative;
+        }
+        .flow-node {
+          padding: 0.375rem 0.875rem;
+          background: var(--bg-tertiary);
+          border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-sm);
+          font-size: 0.8125rem;
+          font-weight: 500;
+          color: var(--text-muted);
+          transition: all 0.3s ease;
+        }
+        .flow-node.active {
+          background: var(--accent-amber-glow);
+          border-color: rgba(245, 158, 11, 0.3);
+          color: var(--accent-amber);
+        }
+        .flow-arrow {
+          color: var(--text-muted);
+          font-size: 0.75rem;
+          opacity: 0.5;
+        }
+      </style>
 
       {% with messages = get_flashed_messages(with_categories=true) %} 
       {% if messages %} 
@@ -62,7 +133,7 @@
         <div class="status-grid">
           <div class="status-item">
             <h6>Apache Fuseki</h6>
-            <div id="blazegraph-status" class="status-indicator disconnected">
+            <div id="fuseki-status" class="status-indicator disconnected">
               <i class="fas fa-spinner fa-spin me-1"></i> Checking...
             </div>
           </div>
@@ -221,12 +292,13 @@
         </div>
       </div>
 
-      <div class="footer">
-        <p>Biodiversity Ontology Generator | 
-          <a href="/documentation" target="_blank">Documentation</a> | 
+      <footer class="footer">
+        <p>
+          <span style="color: var(--accent-amber);">Treekipedia</span> GraphFlow |
+          <a href="/documentation" target="_blank">Documentation</a> |
           <a href="#" onclick="showSupport()">Support</a>
         </p>
-      </div>
+      </footer>
     </div>
 
     <!-- All your existing modals remain the same -->
@@ -452,8 +524,8 @@
         try {
           const response = await fetch('/api/system-status');
           const status = await response.json();
-          
-          updateStatusIndicator('blazegraph', status.blazegraph);
+
+          updateStatusIndicator('fuseki', status.fuseki);
           updateStatusIndicator('sheets', status.google_sheets);
           updateStatusIndicator('postgres', status.postgresql);
           
@@ -474,7 +546,7 @@
         } catch (error) {
           console.error('Error checking system status:', error);
           // Set all indicators to error state
-          ['blazegraph', 'sheets', 'postgres'].forEach(system => {
+          ['fuseki', 'sheets', 'postgres'].forEach(system => {
             const indicator = document.getElementById(`${system}-status`);
             indicator.className = 'status-indicator disconnected';
             indicator.innerHTML = '<i class="fas fa-exclamation-circle me-1"></i> Error';
@@ -681,9 +753,9 @@
                   </div>
                   <div class="card-body">
                     <div class="text-center">
-                      <i class="fas fa-${status.services.blazegraph?.status === 'healthy' ? 'check-circle text-success' : 'times-circle text-danger'} fa-2x mb-2"></i>
-                      <p><strong>Status:</strong> ${status.services.blazegraph?.status || 'unknown'}</p>
-                      <p><strong>Endpoint:</strong><br><small>${status.services.blazegraph?.endpoint || 'N/A'}</small></p>
+                      <i class="fas fa-${status.services.fuseki?.status === 'healthy' ? 'check-circle text-success' : 'times-circle text-danger'} fa-2x mb-2"></i>
+                      <p><strong>Status:</strong> ${status.services.fuseki?.status || 'unknown'}</p>
+                      <p><strong>Endpoint:</strong><br><small>${status.services.fuseki?.endpoint || 'N/A'}</small></p>
                     </div>
                   </div>
                 </div>

@@ -1,0 +1,34 @@
+[Unit]
+Description=Treekipedia - Graphflow
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/treekipedia
+
+# Load environment variables
+EnvironmentFile=/var/www/treekipedia/.env
+
+ExecStart=/var/www/treekipedia/myenv/bin/gunicorn \
+    --bind 0.0.0.0:5001 \
+    --workers 4 \
+    --timeout 300 \
+    --access-logfile /var/www/treekipedia/logs/access.log \
+    --error-logfile /var/www/treekipedia/logs/error.log \
+    wsgi:app
+
+Restart=always
+RestartSec=10
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+
+ReadWritePaths=/var/www/treekipedia/data /var/www/treekipedia/logs /var/www/treekipedia/Uploads /var/www/treekipedia/Metadata
+
+[Install]
+WantedBy=multi-user.target

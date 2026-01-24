@@ -12,7 +12,7 @@ import sys
 project_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, project_dir)
 
-from app import app
+from . import app
 
 # This is what Gunicorn will look for
 application = app

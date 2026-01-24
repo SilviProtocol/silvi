@@ -3,8 +3,8 @@
 # =============================================================================
 
 from flask import Blueprint, render_template, request, redirect, url_for, flash, send_file, jsonify
-from config import logger, check_triplestore_status
-from utils import *
+from src.core.config import logger, check_triplestore_status
+from src.utils import *
 import os
 import shutil
 import uuid
@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 from datetime import datetime, timedelta
 
 # Import our multi-sheet biodiversity ontology generator
-from multi_sheet_biodiversity_generator import MultiSheetBiodiversityGenerator, generate_multi_sheet_biodiversity_ontology_from_directory
+from src.core.multi_sheet_generator import MultiSheetBiodiversityGenerator, generate_multi_sheet_biodiversity_ontology_from_directory
 
 
 
@@ -761,7 +761,7 @@ def check_status(session_id):
                 'filename': metadata.get('filename'),
                 'file_size': metadata.get('file_size', 0),
                 'source': metadata.get('source', 'upload'),
-                'blazegraph_import': metadata.get('blazegraph_import', 'N/A'),
+                'triplestore_import': metadata.get('triplestore_import', 'N/A'),
                 'graph_uri': metadata.get('graph_uri', ''),
                 'ontology_type': metadata.get('ontology_type', 'multi_sheet_biodiversity'),
                 'generator_version': metadata.get('generator_version', '3.0.0'),
@@ -824,8 +824,8 @@ def get_ontology_details(session_id):
                 'no_code_changes_needed': True
             },
             'integration_status': {
-                'blazegraph_import': metadata.get('blazegraph_import', 'Not attempted'),
-                'blazegraph_message': metadata.get('blazegraph_message', ''),
+                'triplestore_import': metadata.get('triplestore_import', 'Not attempted'),
+                'triplestore_message': metadata.get('triplestore_message', ''),
                 'graph_uri': metadata.get('graph_uri', '')
             }
         }
@@ -884,7 +884,7 @@ def get_system_capabilities():
         },
         'output_formats': {
             'owl_rdf_xml': True,
-            'blazegraph_import': current_app.config.get('BLAZEGRAPH_ENABLED', False),
+            'fuseki_import': current_app.config.get('TRIPLESTORE_ENABLED', False),
             'google_sheets_logging': current_app.config.get('USE_GOOGLE_SHEETS', False)
         },
         'quality_features': {

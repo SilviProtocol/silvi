@@ -3,17 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spreadsheet Version Management - Biodiversity Ontology Generator</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <title>Version Management - Treekipedia GraphFlow</title>
+    <meta name="description" content="Track changes and manage versions of your biodiversity data" />
+    <meta name="theme-color" content="#0a0f0d" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/static/css/treekipedia-unified.css">
 </head>
 <body>
     <div class="container">
-        <div class="header compact">
-            <h1><i class="fas fa-code-branch"></i> Spreadsheet Version Management</h1>
-            <p class="lead">Track changes and manage versions of your biodiversity data spreadsheets</p>
-        </div>
+        <header class="header compact">
+            <div class="header-badge">
+                <span class="badge-dot"></span>
+                <span>Version Control</span>
+            </div>
+            <h1><i class="fas fa-code-branch"></i> Version Management</h1>
+            <p class="lead">Track changes and manage versions of your biodiversity data</p>
+        </header>
+
+        <style>
+            .header-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                padding: 0.375rem 1rem;
+                background: rgba(20, 184, 166, 0.1);
+                border: 1px solid rgba(20, 184, 166, 0.2);
+                border-radius: 100px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.08em;
+                color: var(--accent-teal);
+                margin-bottom: 1.5rem;
+            }
+            .badge-dot {
+                width: 6px;
+                height: 6px;
+                background: var(--accent-teal);
+                border-radius: 50%;
+                animation: pulse-dot 2s ease-in-out infinite;
+            }
+            @keyframes pulse-dot {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.5; transform: scale(1.2); }
+            }
+        </style>
 
         <div id="alertsContainer">
             <!-- Dynamic alerts will be inserted here -->
@@ -56,7 +92,83 @@
                         </div>
                     </form>
                 </div>
-                
+
+                <!-- Import CSV Section (Always Visible) -->
+                <div class="content-card">
+                    <h3><i class="fas fa-file-csv"></i> Import CSV to Google Sheets</h3>
+                    <p>Create a new Google Spreadsheet with automatic versioning from a CSV file.</p>
+
+                    <form id="importCSVForm" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="csv_file" class="form-label">Select CSV File</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-file"></i></span>
+                                <input type="file" class="form-control" id="csv_file" name="csv_file" accept=".csv" required>
+                            </div>
+                            <div class="form-text">Click to browse and select a CSV file from your computer</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="import_spreadsheet_name" class="form-label">Spreadsheet Name</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-table"></i></span>
+                                <input type="text" class="form-control" id="import_spreadsheet_name" name="spreadsheet_name" placeholder="My Biodiversity Data" required>
+                            </div>
+                            <div class="form-text">Name for the new Google Sheet</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="import_version" class="form-label">Initial Version</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                        <input type="text" class="form-control" id="import_version" name="version" value="1.0.0">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="import_author" class="form-label">Author</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                        <input type="text" class="form-control" id="import_author" name="author" placeholder="Your name">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="import_description" class="form-label">Description</label>
+                            <textarea class="form-control" id="import_description" name="description" rows="2" placeholder="Describe the data in this spreadsheet"></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-file-import"></i> Import CSV
+                        </button>
+                    </form>
+
+                    <div id="importProgress" class="mt-4" style="display: none;">
+                        <h5>Import Progress</h5>
+                        <div class="progress">
+                            <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <p id="importStatus" class="mt-2 text-muted">Initializing import...</p>
+                    </div>
+
+                    <div id="importResult" class="mt-4" style="display: none;">
+                        <div class="alert alert-success">
+                            <h5><i class="fas fa-check-circle"></i> Import Successful!</h5>
+                            <p class="mb-2"><strong>Spreadsheet ID:</strong> <span id="resultSpreadsheetId"></span></p>
+                            <p class="mb-2"><strong>Rows Imported:</strong> <span id="resultRowsImported"></span></p>
+                            <p class="mb-2"><strong>Worksheets Created:</strong> <span id="resultWorksheetsCreated"></span></p>
+                            <a id="resultSpreadsheetLink" href="#" target="_blank" class="btn btn-sm btn-primary mt-2">
+                                <i class="fas fa-external-link-alt"></i> Open Spreadsheet
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Loading Spinner -->
                 <div id="loadingSpinner" class="loading-spinner">
                     <div class="spinner-border" role="status">
@@ -227,11 +339,11 @@
             </div>
         </div>
         
-        <div class="footer">
-            <p>Biodiversity Ontology Generator | <a href="/documentation" target="_blank">Documentation</a> | <a href="#" target="_blank">Report Issues</a></p>
-        </div>
+        <footer class="footer">
+            <p>Treekipedia GraphFlow | <a href="/documentation" target="_blank">Documentation</a> | <a href="{{ url_for('main.index') }}">Home</a></p>
+        </footer>
     </div>
-    
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Helper function to display alerts
@@ -552,6 +664,69 @@
                 })
                 .catch(error => {
                     document.getElementById('loadingSpinner').style.display = 'none';
+                    showAlert(`Error: ${error.message || 'Network error'}`, 'danger');
+                });
+        });
+
+        // Import CSV Form Submission
+        document.getElementById('importCSVForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const csvFile = document.getElementById('csv_file').files[0];
+            const spreadsheetName = formData.get('spreadsheet_name');
+
+            if (!csvFile || !spreadsheetName) {
+                showAlert('Please select a CSV file and provide a spreadsheet name.', 'danger');
+                return;
+            }
+
+            // Validate file type
+            if (!csvFile.name.endsWith('.csv')) {
+                showAlert('Please select a valid CSV file.', 'danger');
+                return;
+            }
+
+            // Show progress
+            document.getElementById('importProgress').style.display = 'block';
+            document.getElementById('importResult').style.display = 'none';
+            document.getElementById('importProgressBar').style.width = '30%';
+            document.getElementById('importStatus').textContent = 'Starting import...';
+
+            // Make API call to import CSV
+            fetch('/import-csv', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update progress to complete
+                        document.getElementById('importProgressBar').style.width = '100%';
+                        document.getElementById('importStatus').textContent = 'Import complete!';
+
+                        // Show results
+                        setTimeout(() => {
+                            document.getElementById('importProgress').style.display = 'none';
+                            document.getElementById('importResult').style.display = 'block';
+
+                            document.getElementById('resultSpreadsheetId').textContent = data.spreadsheet_id;
+                            document.getElementById('resultRowsImported').textContent = data.rows_imported.toLocaleString();
+                            document.getElementById('resultWorksheetsCreated').textContent = data.worksheets_created;
+                            document.getElementById('resultSpreadsheetLink').href = data.spreadsheet_url;
+
+                            showAlert('CSV imported successfully! You can now manage versions for this spreadsheet.', 'success');
+
+                            // Reset form
+                            document.getElementById('importCSVForm').reset();
+                        }, 1000);
+                    } else {
+                        document.getElementById('importProgress').style.display = 'none';
+                        showAlert(`Import failed: ${data.error || 'Unknown error'}`, 'danger');
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('importProgress').style.display = 'none';
                     showAlert(`Error: ${error.message || 'Network error'}`, 'danger');
                 });
         });
