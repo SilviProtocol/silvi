@@ -1,21 +1,22 @@
 import React from "react";
 import { Leaf } from "lucide-react";
-import { TreeSpecies, Insight } from "@/lib/types";
+import { TreeSpecies } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { SubspeciesSection } from "../SubspeciesSection";
 import { SpeciesInfobox } from "../SpeciesInfobox";
-import { InsightField } from "../InsightField";
 
 interface OverviewTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
-  getFieldInsights?: (fieldName: string) => Insight[];
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[];
   fields: FieldDefinition[];
 }
 
-export function OverviewTab({ species, isResearched, getFieldValue, getFieldInsights, fields }: OverviewTabProps) {
+export function OverviewTab({ species, isResearched, getFieldValue, getInsightForField, getInsightsForField, fields }: OverviewTabProps) {
   // Get general description field
   const generalDescriptionField = fields.find(
     (field) => field.key === "general_description"
@@ -77,6 +78,8 @@ export function OverviewTab({ species, isResearched, getFieldValue, getFieldInsi
               getFieldValue={getFieldValue}
               isResearched={isResearched}
               isFieldResearched={() => true} // These fields aren't researched
+              insight={getInsightForField(field.key)}
+              insights={getInsightsForField(field.key)}
             />
           ))}
         </div>

@@ -1,3 +1,18 @@
+/**
+ * IPFS Services - Lighthouse Storage
+ *
+ * STATUS: DISABLED (Jan 2026)
+ *
+ * These functions are preserved for future use but are not currently called.
+ * Research metadata was previously stored on IPFS for NFT minting.
+ * Research is now performed by Claude Code CLI and stored in PostgreSQL insights table.
+ *
+ * To re-enable:
+ * 1. Set LIGHTHOUSE_API_KEY in .env
+ * 2. Import uploadToIPFS in research controller
+ * 3. Call after research completes (before NFT minting)
+ */
+
 // Import required modules
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../../.env') });

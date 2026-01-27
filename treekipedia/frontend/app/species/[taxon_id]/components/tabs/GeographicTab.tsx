@@ -1,5 +1,6 @@
 import React from "react";
-import { TreeSpecies, Insight } from "@/lib/types";
+import { TreeSpecies } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { ClimateProfile } from "../ClimateProfile";
@@ -8,11 +9,12 @@ interface GeographicTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
-  getFieldInsights?: (fieldName: string) => Insight[];
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[];
   fields: FieldDefinition[];
 }
 
-export function GeographicTab({ species, isResearched, getFieldValue, getFieldInsights, fields }: GeographicTabProps) {
+export function GeographicTab({ species, isResearched, getFieldValue, getInsightForField, getInsightsForField, fields }: GeographicTabProps) {
   return (
     <div className="space-y-6">
       {/* Geographic Distribution Fields */}
@@ -29,7 +31,8 @@ export function GeographicTab({ species, isResearched, getFieldValue, getFieldIn
                 const { value } = getFieldValue(fieldName);
                 return !!value;
               }}
-              insights={getFieldInsights?.(field.key)}
+              insight={getInsightForField(field.key)}
+              insights={getInsightsForField(field.key)}
             />
           ))}
         </div>

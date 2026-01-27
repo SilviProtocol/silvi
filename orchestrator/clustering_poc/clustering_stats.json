@@ -1,0 +1,502 @@
+{
+  "AngMaFaFbCx09116-00": {
+    "n_occurrences": 175,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09133-00": {
+    "n_occurrences": 40,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09144-00": {
+    "n_occurrences": 135,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09154-00": {
+    "n_occurrences": 24,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09174-00": {
+    "n_occurrences": 2060,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09182-00": {
+    "n_occurrences": 933,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09196-00": {
+    "n_occurrences": 53,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09227-00": {
+    "n_occurrences": 271,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09228-00": {
+    "n_occurrences": 488,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09246-00": {
+    "n_occurrences": 91,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09278-00": {
+    "n_occurrences": 17,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09283-00": {
+    "n_occurrences": 44,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09346-00": {
+    "n_occurrences": 68,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09349-00": {
+    "n_occurrences": 28,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09400-00": {
+    "n_occurrences": 2799,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09422-00": {
+    "n_occurrences": 212,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09441-00": {
+    "n_occurrences": 23,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09471-00": {
+    "n_occurrences": 203,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09472-00": {
+    "n_occurrences": 18,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09478-00": {
+    "n_occurrences": 18,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09492-00": {
+    "n_occurrences": 59,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09522-00": {
+    "n_occurrences": 44,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09556-00": {
+    "n_occurrences": 17,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09695-00": {
+    "n_occurrences": 438,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx09959-00": {
+    "n_occurrences": 49,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx10099-00": {
+    "n_occurrences": 100,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx10332-00": {
+    "n_occurrences": 27,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx10447-00": {
+    "n_occurrences": 9,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx10730-00": {
+    "n_occurrences": 22,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx11183-00": {
+    "n_occurrences": 275,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx11214-00": {
+    "n_occurrences": 124,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx11506-00": {
+    "n_occurrences": 43,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx11524-00": {
+    "n_occurrences": 28,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx12678-00": {
+    "n_occurrences": 290,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx12974-00": {
+    "n_occurrences": 59,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13060-00": {
+    "n_occurrences": 568,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13076-00": {
+    "n_occurrences": 53,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13105-00": {
+    "n_occurrences": 790,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13644-00": {
+    "n_occurrences": 40,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13660-00": {
+    "n_occurrences": 24,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13681-00": {
+    "n_occurrences": 119,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13688-00": {
+    "n_occurrences": 21,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFbCx13735-00": {
+    "n_occurrences": 510,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14165-00": {
+    "n_occurrences": 22261,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14755-00": {
+    "n_occurrences": 59,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14757-00": {
+    "n_occurrences": 522,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14765-00": {
+    "n_occurrences": 62,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14838-00": {
+    "n_occurrences": 256,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14890-00": {
+    "n_occurrences": 2301,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaFaFgCx14905-00": {
+    "n_occurrences": 15,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32139-00": {
+    "n_occurrences": 35,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32170-00": {
+    "n_occurrences": 54,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32283-00": {
+    "n_occurrences": 70,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32521-00": {
+    "n_occurrences": 70,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32585-00": {
+    "n_occurrences": 704,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32612-00": {
+    "n_occurrences": 37,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32741-00": {
+    "n_occurrences": 106,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMaSlCc32773-00": {
+    "n_occurrences": 77,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37247-00": {
+    "n_occurrences": 22,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37252-00": {
+    "n_occurrences": 899,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37255-00": {
+    "n_occurrences": 331,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37257-00": {
+    "n_occurrences": 44,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37347-00": {
+    "n_occurrences": 20,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37410-00": {
+    "n_occurrences": 63,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37474-00": {
+    "n_occurrences": 20,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37483-00": {
+    "n_occurrences": 25,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37518-00": {
+    "n_occurrences": 53,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37525-00": {
+    "n_occurrences": 46,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37558-00": {
+    "n_occurrences": 299,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37750-00": {
+    "n_occurrences": 370,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37761-00": {
+    "n_occurrences": 73,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37785-00": {
+    "n_occurrences": 24,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37857-00": {
+    "n_occurrences": 54,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37868-00": {
+    "n_occurrences": 22,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37879-00": {
+    "n_occurrences": 23,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37883-00": {
+    "n_occurrences": 216,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37886-00": {
+    "n_occurrences": 49,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37891-00": {
+    "n_occurrences": 1220,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37950-00": {
+    "n_occurrences": 15,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37962-00": {
+    "n_occurrences": 177,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37968-00": {
+    "n_occurrences": 465,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37978-00": {
+    "n_occurrences": 110,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt37983-00": {
+    "n_occurrences": 22,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38083-00": {
+    "n_occurrences": 48,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38084-00": {
+    "n_occurrences": 85,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38118-00": {
+    "n_occurrences": 51,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38903-00": {
+    "n_occurrences": 49,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38947-00": {
+    "n_occurrences": 268,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38951-00": {
+    "n_occurrences": 19,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt38953-00": {
+    "n_occurrences": 28,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39003-00": {
+    "n_occurrences": 33,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39009-00": {
+    "n_occurrences": 28,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39051-00": {
+    "n_occurrences": 325,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39646-00": {
+    "n_occurrences": 50,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39671-00": {
+    "n_occurrences": 169,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39713-00": {
+    "n_occurrences": 154,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39736-00": {
+    "n_occurrences": 159,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt39985-00": {
+    "n_occurrences": 828,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "AngMaMyMyRt40824-00": {
+    "n_occurrences": 52,
+    "n_clusters": 5,
+    "method": "kmeans"
+  },
+  "GymPiPiPnCx50757-00": {
+    "n_occurrences": 631,
+    "n_clusters": 5,
+    "method": "kmeans"
+  }
+}

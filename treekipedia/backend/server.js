@@ -16,7 +16,9 @@ const PORT = process.env.PORT || 3000;
 const corsOptions = {
   origin: function (origin, callback) {
     const allowedOrigins = [
-      'http://localhost:3000',               // Next.js dev server
+      'http://localhost:3001',               // Next.js dev server (custom port)
+      'http://localhost:3000',               // Next.js dev server (default)
+      'http://localhost:8001',               // Backend dev server
       'http://localhost:8000',               // Alternative port if needed
       'http://167.172.143.162:3001',         // Current frontend deployment (HTTP)
       'https://167.172.143.162:3001',        // Current frontend deployment (HTTPS)
@@ -135,7 +137,9 @@ app.get('/api', (req, res) => {
       '/species - Species search and details',
       '/treederboard - User contributions leaderboard',
       '/research - AI research and NFT minting',
-      '/sponsorships - Sponsorship payment tracking and webhooks'
+      '/sponsorships - Sponsorship payment tracking and webhooks',
+      '/api/embeddings - AlphaEarth habitat embeddings and similarity search',
+      '/api/prediction - Species prediction and recommendations (17,924 species, 44,625 habitat clusters)'
     ]
   });
 });
@@ -156,8 +160,20 @@ app.use('/sponsorships', sponsorshipRoutes);
 const geospatialRoutes = require('./routes/geospatial')(pool);
 app.use('/api/geospatial', geospatialRoutes);
 
+// GraphFlow Admin Routes (for ontology generation, sync, SPARQL, etc.)
+const adminRoutes = require('./routes/admin');
+app.use('/api/admin', adminRoutes);
+
+// AlphaEarth Embeddings Routes
+const embeddingsRoutes = require('./controllers/embeddings')(pool);
+app.use('/api/embeddings', embeddingsRoutes);
+
+// Prediction Routes (species suitability and recommendations)
+const predictionRoutes = require('./routes/prediction');
+app.use('/api/prediction', predictionRoutes);
+
 // ============================================
-// Admin Authentication Endpoints
+// Admin Authentication Endpoints (for monitoring)
 // ============================================
 
 // Admin login endpoint (no auth required)
@@ -213,10 +229,9 @@ app.get('/admin-api/check-auth', (req, res) => {
 });
 
 // ============================================
-// Protected Admin Monitoring Endpoints
+// Admin Monitoring Endpoints
 // ============================================
 
-// Admin API endpoints (no auth required - protected by client-side password)
 app.get('/admin-api/stats', (req, res) => {
   const stats = {
     serverUptime: process.uptime(),

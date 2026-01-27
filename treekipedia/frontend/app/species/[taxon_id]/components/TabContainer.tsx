@@ -1,5 +1,6 @@
 import React from "react";
-import { TreeSpecies, ResearchData, Insight } from "@/lib/types";
+import { TreeSpecies, ResearchData } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { useFieldDefinitions } from "../hooks/useFieldDefinitions";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { GeographicTab } from "./tabs/GeographicTab";
@@ -15,7 +16,8 @@ interface TabContainerProps {
   researchData: ResearchData | undefined;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
-  getFieldInsights?: (fieldName: string) => Insight[];
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[]; // NEW: Atomic insights support
 }
 
 export function TabContainer({
@@ -25,6 +27,8 @@ export function TabContainer({
   researchData,
   isResearched,
   getFieldValue,
+  getInsightForField,
+  getInsightsForField,
 }: TabContainerProps) {
   // Get field definitions
   const {
@@ -109,51 +113,63 @@ export function TabContainer({
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={overviewFields}
           />
         )}
-        
+
         {activeTab === "geographic" && (
           <GeographicTab
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={geographicFields}
           />
         )}
-        
+
         {activeTab === "ecological" && (
           <EcologicalTab
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={ecologicalFields}
           />
         )}
-        
+
         {activeTab === "physical" && (
           <PhysicalTab
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={physicalFields}
           />
         )}
-        
+
         {activeTab === "stewardship" && (
           <StewardshipTab
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={stewardshipFields}
           />
         )}
-        
+
         {activeTab === "research" && (
           <ResearchDataTab
             species={species}
             isResearched={isResearched}
             getFieldValue={getFieldValue}
+            getInsightForField={getInsightForField}
+            getInsightsForField={getInsightsForField}
             fields={researchDataFields}
           />
         )}

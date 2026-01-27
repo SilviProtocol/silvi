@@ -1,0 +1,24 @@
+services:
+  fuseki:
+    image: stain/jena-fuseki:latest
+    platform: linux/amd64
+    container_name: treekipedia-fuseki
+    ports:
+      - "3030:3030"
+    environment:
+      - ADMIN_PASSWORD=${FUSEKI_ADMIN_PASSWORD:-treekipedia2024}
+      - JVM_ARGS=-Xmx2g
+      - FUSEKI_DATASET_1=treekipedia
+    volumes:
+      - fuseki-data:/fuseki
+      - ./data:/staging
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3030/$/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  fuseki-data:
+    driver: local

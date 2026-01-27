@@ -3,12 +3,13 @@ import { ChevronDown, ChevronUp, FlaskConical, Calendar, Database, BarChart3, Li
 
 export interface ResearchMetadata {
   version: number;
-  research_date: string | null;
-  model: string | null;
-  confidence: number | null;
+  research_date: string;
+  model: string;
+  insight_count: number;
+  field_count: number;  // Number of unique claim_types (fields)
+  avg_confidence: number;
   source_count: number;
-  fields_filled?: number;
-  fields_total?: number;
+  session_id?: string;
 }
 
 interface ResearchMetadataPanelProps {
@@ -28,12 +29,11 @@ export function ResearchMetadataPanel({ metadata, isLoading }: ResearchMetadataP
     );
   }
 
-  if (!metadata || metadata.version === 0) {
+  if (!metadata) {
     return null;
   }
 
-  const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return "Unknown";
+  const formatDate = (dateStr: string) => {
     try {
       return new Date(dateStr).toLocaleDateString("en-US", {
         year: "numeric",
@@ -45,21 +45,20 @@ export function ResearchMetadataPanel({ metadata, isLoading }: ResearchMetadataP
     }
   };
 
-  const confidence = metadata.confidence ?? 0;
-  const confidenceColor = confidence >= 0.85
+  const confidenceColor = metadata.avg_confidence >= 0.85
     ? "text-emerald-400"
-    : confidence >= 0.7
+    : metadata.avg_confidence >= 0.7
       ? "text-amber-400"
       : "text-red-400";
 
-  const confidenceLabel = confidence >= 0.85
+  const confidenceLabel = metadata.avg_confidence >= 0.85
     ? "High"
-    : confidence >= 0.7
+    : metadata.avg_confidence >= 0.7
       ? "Medium"
       : "Low";
 
   return (
-    <div className="rounded-xl bg-violet-900/20 border border-violet-500/30 overflow-hidden mb-4">
+    <div className="rounded-xl bg-violet-900/20 border border-violet-500/30 overflow-hidden">
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
@@ -67,15 +66,13 @@ export function ResearchMetadataPanel({ metadata, isLoading }: ResearchMetadataP
       >
         <div className="flex items-center gap-2">
           <FlaskConical className="w-4 h-4 text-violet-400" />
-          <span className="font-medium text-violet-300">AI Research</span>
+          <span className="font-medium text-violet-300">Synthetic Knowledge</span>
           <span className="text-xs text-white/50">v{metadata.version}</span>
         </div>
         <div className="flex items-center gap-3">
-          {confidence > 0 && (
-            <span className={`text-sm font-medium ${confidenceColor}`}>
-              {Math.round(confidence * 100)}% confidence
-            </span>
-          )}
+          <span className={`text-sm font-medium ${confidenceColor}`}>
+            {Math.round(metadata.avg_confidence * 100)}% confidence
+          </span>
           {isExpanded ? (
             <ChevronUp className="w-4 h-4 text-white/50" />
           ) : (
@@ -97,51 +94,48 @@ export function ResearchMetadataPanel({ metadata, isLoading }: ResearchMetadataP
               </div>
             </div>
 
-            {/* Fields Filled */}
-            {metadata.fields_filled !== undefined && (
-              <div className="flex items-start gap-2">
-                <Database className="w-4 h-4 text-violet-400 mt-0.5" />
-                <div>
-                  <div className="text-xs text-white/50">Fields Populated</div>
-                  <div className="text-sm text-white/80">
-                    {metadata.fields_filled}/{metadata.fields_total || 25} fields
-                  </div>
+            {/* Insights Count */}
+            <div className="flex items-start gap-2">
+              <Database className="w-4 h-4 text-violet-400 mt-0.5" />
+              <div>
+                <div className="text-xs text-white/50">Insights</div>
+                <div className="text-sm text-white/80">
+                  {metadata.insight_count} insight{metadata.insight_count !== 1 ? 's' : ''}
+                  {metadata.field_count && metadata.field_count !== metadata.insight_count && (
+                    <span className="text-white/50"> across {metadata.field_count} fields</span>
+                  )}
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Sources */}
             <div className="flex items-start gap-2">
               <Link2 className="w-4 h-4 text-violet-400 mt-0.5" />
               <div>
-                <div className="text-xs text-white/50">Sources Used</div>
+                <div className="text-xs text-white/50">Sources Cited</div>
                 <div className="text-sm text-white/80">{metadata.source_count} sources</div>
               </div>
             </div>
 
             {/* Confidence */}
-            {confidence > 0 && (
-              <div className="flex items-start gap-2">
-                <BarChart3 className="w-4 h-4 text-violet-400 mt-0.5" />
-                <div>
-                  <div className="text-xs text-white/50">Confidence Score</div>
-                  <div className={`text-sm font-medium ${confidenceColor}`}>
-                    {Math.round(confidence * 100)}% ({confidenceLabel})
-                  </div>
+            <div className="flex items-start gap-2">
+              <BarChart3 className="w-4 h-4 text-violet-400 mt-0.5" />
+              <div>
+                <div className="text-xs text-white/50">Avg Confidence</div>
+                <div className={`text-sm font-medium ${confidenceColor}`}>
+                  {Math.round(metadata.avg_confidence * 100)}% ({confidenceLabel})
                 </div>
               </div>
-            )}
+            </div>
 
             {/* Model */}
-            {metadata.model && (
-              <div className="flex items-start gap-2">
-                <Cpu className="w-4 h-4 text-violet-400 mt-0.5" />
-                <div>
-                  <div className="text-xs text-white/50">Research Model</div>
-                  <div className="text-sm text-white/80">{metadata.model}</div>
-                </div>
+            <div className="flex items-start gap-2">
+              <Cpu className="w-4 h-4 text-violet-400 mt-0.5" />
+              <div>
+                <div className="text-xs text-white/50">Research Model</div>
+                <div className="text-sm text-white/80">{metadata.model}</div>
               </div>
-            )}
+            </div>
 
             {/* Version */}
             <div className="flex items-start gap-2">
@@ -154,30 +148,28 @@ export function ResearchMetadataPanel({ metadata, isLoading }: ResearchMetadataP
           </div>
 
           {/* Confidence bar visualization */}
-          {confidence > 0 && (
-            <div className="mt-4">
-              <div className="flex items-center justify-between text-xs text-white/50 mb-1">
-                <span>Confidence Level</span>
-                <span>{Math.round(confidence * 100)}%</span>
-              </div>
-              <div className="h-2 bg-black/40 rounded-full overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all ${
-                    confidence >= 0.85
-                      ? "bg-emerald-500"
-                      : confidence >= 0.7
-                        ? "bg-amber-500"
-                        : "bg-red-500"
-                  }`}
-                  style={{ width: `${confidence * 100}%` }}
-                />
-              </div>
+          <div className="mt-4">
+            <div className="flex items-center justify-between text-xs text-white/50 mb-1">
+              <span>Confidence Distribution</span>
+              <span>{Math.round(metadata.avg_confidence * 100)}%</span>
             </div>
-          )}
+            <div className="h-2 bg-black/40 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  metadata.avg_confidence >= 0.85
+                    ? "bg-emerald-500"
+                    : metadata.avg_confidence >= 0.7
+                      ? "bg-amber-500"
+                      : "bg-red-500"
+                }`}
+                style={{ width: `${metadata.avg_confidence * 100}%` }}
+              />
+            </div>
+          </div>
 
           <p className="mt-4 text-xs text-white/40">
-            This data was synthesized using AI-assisted research with web search.
-            Higher confidence indicates more complete data with multiple source corroboration.
+            This data was synthesized from multiple scientific databases and publications using
+            AI-assisted research. Higher confidence indicates stronger source agreement.
           </p>
         </div>
       )}

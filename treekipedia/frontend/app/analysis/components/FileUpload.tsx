@@ -12,35 +12,46 @@ interface FileUploadProps {
 
 // Simple KML to GeoJSON converter
 function parseKMLToGeoJSON(kmlContent: string): GeoJSONPolygon[] {
+  console.log('Starting KML parsing...');
   const parser = new DOMParser();
   const xmlDoc = parser.parseFromString(kmlContent, 'text/xml');
-  
+
   // Check for parsing errors
   const parseError = xmlDoc.querySelector('parsererror');
   if (parseError) {
+    console.error('KML parsing error:', parseError.textContent);
     throw new Error('Invalid KML file format');
   }
-  
+
   const polygons: GeoJSONPolygon[] = [];
-  
-  // Find all Polygon elements
+
+  // Find all Polygon elements (handles both direct Polygon and MultiGeometry > Polygon)
   const polygonElements = xmlDoc.getElementsByTagName('Polygon');
-  
+  console.log(`Found ${polygonElements.length} Polygon elements`);
+
   for (let i = 0; i < polygonElements.length; i++) {
     const polygon = polygonElements[i];
-    
-    // Find the outer boundary coordinates
-    const outerBoundary = polygon.querySelector('outerBoundaryIs coordinates') || 
-                         polygon.querySelector('coordinates');
-    
-    if (outerBoundary) {
-      const coordinatesText = outerBoundary.textContent?.trim();
+
+    // Find coordinates - try multiple paths for different KML structures
+    // Structure: Polygon > outerBoundaryIs > LinearRing > coordinates
+    let coordinatesElement = polygon.querySelector('outerBoundaryIs LinearRing coordinates');
+
+    // Fallback: direct coordinates child
+    if (!coordinatesElement) {
+      coordinatesElement = polygon.querySelector('outerBoundaryIs coordinates');
+    }
+    if (!coordinatesElement) {
+      coordinatesElement = polygon.querySelector('coordinates');
+    }
+
+    if (coordinatesElement) {
+      const coordinatesText = coordinatesElement.textContent?.trim();
       if (coordinatesText) {
         try {
-          // Parse coordinates - KML format is "lon,lat,alt lon,lat,alt ..."
-          const coordPairs = coordinatesText.split(/\s+/).filter(pair => pair.trim());
+          // Parse coordinates - KML format is "lon,lat,alt lon,lat,alt ..." or newline-separated
+          const coordPairs = coordinatesText.split(/[\s\n]+/).filter(pair => pair.trim());
           const coordinates: number[][] = [];
-          
+
           for (const pair of coordPairs) {
             const parts = pair.split(',');
             if (parts.length >= 2) {
@@ -51,7 +62,7 @@ function parseKMLToGeoJSON(kmlContent: string): GeoJSONPolygon[] {
               }
             }
           }
-          
+
           // Ensure the polygon is closed
           if (coordinates.length > 0) {
             const first = coordinates[0];
@@ -60,7 +71,7 @@ function parseKMLToGeoJSON(kmlContent: string): GeoJSONPolygon[] {
               coordinates.push([...first]);
             }
           }
-          
+
           if (coordinates.length >= 4) { // Minimum for a valid polygon
             polygons.push({
               type: 'Polygon',
@@ -71,13 +82,17 @@ function parseKMLToGeoJSON(kmlContent: string): GeoJSONPolygon[] {
           console.warn('Failed to parse coordinates for polygon:', error);
         }
       }
+    } else {
+      console.warn(`Polygon ${i} has no coordinates element`);
     }
   }
-  
+
+  console.log(`Successfully parsed ${polygons.length} polygons`);
+
   if (polygons.length === 0) {
     throw new Error('No valid polygons found in KML file');
   }
-  
+
   return polygons;
 }
 

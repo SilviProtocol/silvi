@@ -31,8 +31,9 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
     const fetchSubspecies = async () => {
       try {
         setIsLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
         const response = await fetch(
-          `https://treekipedia-api.silvi.earth/species/${taxonId}/subspecies`
+          `${API_URL}/species/${taxonId}/subspecies`
         );
 
         if (!response.ok) {

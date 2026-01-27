@@ -1,0 +1,99 @@
+/Users/djimoserodio/Library/Python/3.9/lib/python/site-packages/urllib3/__init__.py:35: NotOpenSSLWarning: urllib3 v2 only supports OpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+======================================================================
+GBIF OCCURRENCE DOWNLOADER - BATCH OF 50
+With ≤10m GPS precision for AlphaEarth 10m pixels
+======================================================================
+
+✅ Retrieved 50 candidate species
+
+🔍 Matching 50 species to GBIF...
+  [1/50] Bauhinia monandra... ✅ EXACT (key: 2953715)
+  [2/50] Eucalyptus squamosa... ✅ EXACT (key: 3177122)
+  [3/50] Piscidia piscipula... ✅ EXACT (key: 2956069)
+  [4/50] Quercus gracilior... ✅ EXACT (key: 2878067)
+  [5/50] Styphnolobium parviflorum... ✅ EXACT (key: 3913363)
+  [6/50] Senegalia greggii... ✅ EXACT (key: 2978335)
+  [7/50] Peltogyne recifensis... ✅ EXACT (key: 2952702)
+  [8/50] Eugenia inconspicua... ✅ EXACT (key: 5417806)
+  [9/50] Archidendron contortum... ✅ EXACT (key: 2941231)
+  [10/50] Decaspermum prunoides... ✅ EXACT (key: 3180137)
+  [11/50] Senegalia rostrata... ✅ EXACT (key: 3795867)
+  [12/50] Aldina reticulata... ✅ EXACT (key: 5360765)
+  [13/50] Syzygium laurifolium... ✅ EXACT (key: 3183920)
+  [14/50] Quercus hemisphaerica... ✅ EXACT (key: 2877348)
+  [15/50] Myrcia pitoniana... ✅ EXACT (key: 10808644)
+  [16/50] Melaleuca croxfordiae... ✅ EXACT (key: 5416170)
+  [17/50] Mimosa arenosa... ✅ EXACT (key: 2969922)
+  [18/50] Syzygium busuense... ✅ EXACT (key: 3182817)
+  [19/50] Quercus hintonii... ✅ EXACT (key: 2880370)
+  [20/50] Syzygium parvulum... ✅ EXACT (key: 8289521)
+  [21/50] Quercus spinosa... ✅ EXACT (key: 2879155)
+  [22/50] Microberlinia bisulcata... ✅ EXACT (key: 2941148)
+  [23/50] Crotalaria longirostrata... ✅ EXACT (key: 2942760)
+  [24/50] Libidibia ferrea... ✅ EXACT (key: 5832783)
+  [25/50] Albizia mahalao... ✅ EXACT (key: 2973284)
+  [26/50] Crudia acuminata... ✅ EXACT (key: 2974587)
+  [27/50] Syzygium tsoongii... ✅ EXACT (key: 3182869)
+  [28/50] Syzygium viburnoides... ✅ EXACT (key: 3184359)
+  [29/50] Lithocarpus bacgiangensis... ✅ EXACT (key: 5332420)
+  [30/50] Acacia undoolyana... ✅ EXACT (key: 2979243)
+  [31/50] Cryptosepalum pellegrinianum... ✅ EXACT (key: 2956491)
+  [32/50] Osbornia octodonta... ✅ EXACT (key: 5420695)
+  [33/50] Gilbertiodendron dewevrei... ✅ EXACT (key: 2941659)
+  [34/50] Loesenera walkeri... ✅ EXACT (key: 2944256)
+  [35/50] Casearia kostermansii... ✅ EXACT (key: 7577944)
+  [36/50] Salix argyrophegga... ✅ EXACT (key: 5582690)
+  [37/50] Quercus fulva... ✅ EXACT (key: 2881100)
+  [38/50] Campomanesia ilhoensis... ✅ EXACT (key: 3181043)
+  [39/50] Machaerium fulvovenosum... ✅ EXACT (key: 5355056)
+  [40/50] Peltophorum africanum... ✅ EXACT (key: 2952780)
+  [41/50] Acacia argyraea... ✅ EXACT (key: 2978898)
+  [42/50] Eucalyptus xanthonema... ✅ EXACT (key: 3176425)
+  [43/50] Eucalyptus imlayensis... ✅ EXACT (key: 3176635)
+  [44/50] Adenanthera forbesii... ✅ EXACT (key: 2951843)
+  [45/50] Luetzelburgia amazonica... ✅ EXACT (key: 7352929)
+  [46/50] Albizia zimmermannii... ✅ EXACT (key: 2973118)
+  [47/50] Erythrostemon coccineus... ✅ EXACT (key: 9574659)
+  [48/50] Philenoptera violacea... ✅ EXACT (key: 3976037)
+  [49/50] Inga chartacea... ✅ EXACT (key: 5357658)
+  [50/50] Senegalia klugii... ✅ EXACT (key: 3796072)
+
+✅ Matched: 50
+❌ Failed: 0
+
+💾 Saved to: /Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_data/gbif_matches.json
+
+📥 Downloading ALL 50 species...
+  (Selection of top 100 will happen AFTER download based on actual data)
+
+📥 Requesting GBIF occurrence download...
+  Species: 50 (all matched)
+  Species: 50
+  GBIF keys: [2953715, 3177122, 2956069, 2878067, 3913363]... (showing first 5)
+
+  Filters:
+    ✓ Has coordinates
+    ✓ No geospatial issues
+    ✓ Years: 2017-2024 (AlphaEarth window)
+    ✓ Coordinate uncertainty ≤ 10m (GPS-level accuracy for 10m AlphaEarth pixels)
+
+❌ Download request failed: Download request failed: A download limitation is exceeded:
+User djimo has too many simultaneous downloads; the limit is 3.
+Please wait for some to complete, or cancel any unwanted downloads.  See your user page.
+
+
+To fix:
+  1. Register at: https://www.gbif.org/user/profile
+  2. Update GBIF_USER, GBIF_PWD, GBIF_EMAIL in this script
+Traceback (most recent call last):
+  File "/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_downloader.py", line 440, in <module>
+    main()
+  File "/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_downloader.py", line 421, in main
+    download_key = request_gbif_download(gbif_matches, selected_taxon_ids=None)
+  File "/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/gbif_downloader.py", line 256, in request_gbif_download
+    raise Exception(f"Download request failed: {download_result.text}")
+Exception: Download request failed: A download limitation is exceeded:
+User djimo has too many simultaneous downloads; the limit is 3.
+Please wait for some to complete, or cancel any unwanted downloads.  See your user page.
+

@@ -1,0 +1,39 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(brew services:*)",
+      "Bash(lsof:*)",
+      "Bash(curl:*)",
+      "Bash(psql treekipedia:*)",
+      "Bash(sqlite3:*)",
+      "Bash(cat:*)",
+      "Bash(cd:*)",
+      "Bash(kill:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)",
+      "Bash(xargs kill:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(echo:*)",
+      "Bash",
+      "Read(//Users/djimoserodio/Documents/**)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "WebSearch",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/approve-research-websearch.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

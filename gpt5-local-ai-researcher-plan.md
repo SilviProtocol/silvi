@@ -363,3 +363,5 @@ GET  /admin-api/llm/status
 This plan is tailored to the current repository: it reuses the existing research queue and controllers, extends provider support for local models, formalizes a staging/validation pipeline, integrates with the `ontology-generator`, and upgrades the admin portal to orchestrate local, verifiable deep research at scale.
 
 
+
+

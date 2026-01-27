@@ -1,8 +1,15 @@
 # Treekipedia & Ontology-Generator Documentation
-**Last Updated**: October 18, 2025
+**Last Updated**: January 5, 2026
 **Version**: Production + Local Development Environment
 
-> **IMPORTANT**: For current deployment status, known issues, and immediate priorities, see [STATE.md](/STATE.md)
+> **FOR ONBOARDING**: Read [GO.md](.claude/project-management/GO.md) first for complete project context and onboarding procedure.
+>
+> **DOCUMENTATION SYSTEM** (in `.claude/project-management/`):
+> - [GO.md](.claude/project-management/GO.md) - Onboarding workflow (start here)
+> - [ACTIVE.md](.claude/project-management/ACTIVE.md) - Current production status and metrics
+> - [TODO.md](.claude/project-management/TODO.md) - Development roadmap and priorities
+> - [CHANGELOG.md](.claude/project-management/CHANGELOG.md) - History of completed work
+> - This file (CLAUDE.md) - Development guide and patterns
 
 This repository contains two interconnected systems: **Treekipedia** (web platform for tree species knowledge) and **Ontology-Generator** (semantic knowledge graph builder).
 
@@ -12,11 +19,18 @@ This repository contains two interconnected systems: **Treekipedia** (web platfo
 
 | Service | Status | Location | Details |
 |---------|--------|----------|---------|
+| **Local Frontend** | ✅ Running | http://localhost:3001 | Next.js 15 dev server |
 | **Local Backend** | ✅ Running | http://localhost:5001 | PostgreSQL 17 + PostGIS 3.6 |
-| **Local Frontend** | ✅ Running | http://localhost:3000 | Next.js 15 dev server |
+| **Location Predictor** | ✅ Running | http://localhost:5002 | AlphaEarth GEE sampling service |
 | **Local Database** | ✅ Synced | treekipedia (local) | 67,743 species, 5.7M geohash tiles |
 | **Production API** | ✅ Live | https://treekipedia-api.silvi.earth | Digital Ocean VM |
 | **Production Frontend** | ✅ Live | https://treekipedia.silvi.earth | Vercel deployment |
+
+**⚠️ IMPORTANT - Port 5002 Service Selection**:
+- For **habitat prediction** (map click feature): Use `orchestrator/location_predictor_FIXED.py`
+- For **ontology/GraphFlow**: Use `treekipedia/python-microservice/api_only.py`
+- **DO NOT run both simultaneously** - they conflict on port 5002
+- Habitat prediction requires the orchestrator service to work properly
 
 **Critical Known Issues**:
 - ⚠️ Species search endpoint broken (`/species?search=X` returns 500 error - schema column mismatch in [controllers/species.js](treekipedia/backend/controllers/species.js))
@@ -428,18 +442,93 @@ PostGIS geohash_species_tiles table
 
 ## Quick Commands
 
-### Frontend Development
+### Complete Local Deployment (All Services)
+
+**✨ Quick Start (Recommended):**
+
+```bash
+# Start all services with one command
+./start-local.sh
+
+# Stop all services
+./stop-local.sh
+```
+
+**Manual Start (if you need more control):**
+
+```bash
+# 1. Ensure PostgreSQL is running
+brew services list | grep postgresql
+# If not running: brew services start postgresql@17
+
+# 2. Start Backend API (port 5001)
+cd treekipedia/backend
+node server.js > /tmp/treekipedia-backend.log 2>&1 &
+# Changed from 5000 to 5001 due to macOS ControlCenter conflict
+
+# 3. Start Location Predictor Service (port 5002) - CRITICAL for habitat prediction
+cd orchestrator
+python3 location_predictor_FIXED.py > /tmp/location-predictor.log 2>&1 &
+# NOTE: Use location_predictor_FIXED.py, NOT python-microservice/api_only.py
+# The api_only.py is for GraphFlow/ontology generation and lacks the /sample endpoint
+
+# 4. Start Frontend (port 3001)
+cd treekipedia/frontend
+npm run dev > /tmp/treekipedia-frontend.log 2>&1 &
+```
+
+**Verify all services:**
+```bash
+# Check processes
+lsof -ti:5001  # Backend
+lsof -ti:5002  # Location Predictor
+lsof -ti:3001  # Frontend
+
+# Test endpoints
+curl http://localhost:5001/species/suggest?q=oak
+curl http://localhost:5002/health
+curl http://localhost:3001
+```
+
+**Stop all services:**
+```bash
+# Kill by port
+lsof -ti:5001 | xargs kill
+lsof -ti:5002 | xargs kill
+lsof -ti:3001 | xargs kill
+```
+
+### Individual Service Commands
+
+#### Frontend Development
 ```bash
 cd treekipedia/frontend
 npm install
-npm run dev  # http://localhost:3000
+npm run dev  # http://localhost:3001 (configured in package.json)
 ```
 
-### Backend Development
+#### Backend Development
 ```bash
 cd treekipedia/backend
 npm install
-node server.js  # http://localhost:5001 (changed from 5000 due to macOS ControlCenter)
+node server.js  # http://localhost:5001
+```
+
+#### Location Predictor Service (for habitat prediction feature)
+```bash
+cd orchestrator
+python3 location_predictor_FIXED.py  # http://localhost:5002
+# Provides /sample endpoint for AlphaEarth GEE sampling
+# Falls back to simulated data when AlphaEarth unavailable
+```
+
+#### GraphFlow/Ontology Service (alternative for port 5002)
+```bash
+cd treekipedia/python-microservice
+source venv/bin/activate
+FLASK_APP=api_only.py flask run --port 5002
+# Only use this if you need ontology generation
+# Does NOT support habitat prediction (/sample endpoint)
 ```
 
 ### Local Database Access
@@ -451,13 +540,7 @@ psql treekipedia
 SELECT COUNT(*) FROM species;  # Should return 67,743
 SELECT COUNT(*) FROM geohash_species_tiles;  # Should return 5,786,835
 SELECT PostGIS_Version();  # Should show 3.6.0
-```
-
-### Ontology-Generator
-```bash
-cd ontology-generator
-pip install -r requirements.txt
-python app.py  # http://localhost:5000
+SELECT COUNT(*) FROM species_alphaearth_centroids;  # Should return 500
 ```
 
 ---

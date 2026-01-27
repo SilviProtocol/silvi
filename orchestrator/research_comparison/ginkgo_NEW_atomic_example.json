@@ -1,0 +1,248 @@
+{
+  "taxon_id": "GymGiGiGnKg50344-00",
+  "species_name": "Ginkgo biloba",
+  "research_date": "2026-01-08",
+  "model_version": "research-agent",
+  "insights": [
+    {
+      "claim_type": "popular_common_name",
+      "claim_value": {
+        "name": "Ginkgo",
+        "rank": 1,
+        "languages": ["en", "scientific"],
+        "regions": ["worldwide"]
+      },
+      "confidence": 0.98,
+      "sources": [{"url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:828476-1", "title": "POWO", "credibility": 0.95}]
+    },
+    {
+      "claim_type": "popular_common_name",
+      "claim_value": {
+        "name": "Maidenhair Tree",
+        "rank": 2,
+        "languages": ["en"],
+        "regions": ["UK", "US", "Australia"]
+      },
+      "confidence": 0.92,
+      "sources": [{"url": "https://www.rhs.org.uk/plants/7857/ginkgo-biloba", "title": "RHS", "credibility": 0.90}]
+    },
+    {
+      "claim_type": "popular_common_name",
+      "claim_value": {
+        "name": "银杏 (Yínxìng)",
+        "rank": 3,
+        "languages": ["zh"],
+        "regions": ["China"]
+      },
+      "confidence": 0.95,
+      "sources": [{"url": "https://www.cfh.ac.cn/", "title": "China Flora", "credibility": 0.88}]
+    },
+    {
+      "claim_type": "popular_common_name",
+      "claim_value": {
+        "name": "イチョウ (Ichō)",
+        "rank": 4,
+        "languages": ["ja"],
+        "regions": ["Japan"]
+      },
+      "confidence": 0.95,
+      "sources": [{"url": "https://www.biodic.go.jp/", "title": "Japan Biodiversity Center", "credibility": 0.88}]
+    },
+    {
+      "claim_type": "cultural_significance",
+      "claim_value": {
+        "text": "Sacred tree in Buddhism - Buddhist monks preserved the species through deliberate temple plantings across East Asia for over 1,000 years",
+        "context": "Buddhism",
+        "region": "East Asia"
+      },
+      "confidence": 0.95,
+      "sources": [
+        {"url": "https://www.jstor.org/stable/1547234", "title": "The Conservation of Ginkgo biloba", "credibility": 0.92}
+      ]
+    },
+    {
+      "claim_type": "cultural_significance",
+      "claim_value": {
+        "text": "Six ginkgo trees survived the 1945 Hiroshima atomic bomb and are still alive today, becoming powerful symbols of peace, hope, and resilience",
+        "context": "Japanese post-war symbolism",
+        "region": "Japan"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {"url": "https://www.hiroshima-navi.or.jp/en/sightseeing/hibaku_trees/", "title": "Hiroshima A-bombed Trees", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "cultural_significance",
+      "claim_value": {
+        "text": "Symbol of longevity and vitality in Confucianism and Taoism, planted at temples and academies throughout China",
+        "context": "Chinese philosophy",
+        "region": "China"
+      },
+      "confidence": 0.90,
+      "sources": [
+        {"url": "https://www.sciencedirect.com/science/article/pii/S0169555X10001078", "title": "Cultural significance of Ginkgo in China", "credibility": 0.88}
+      ]
+    },
+    {
+      "claim_type": "cultural_significance",
+      "claim_value": {
+        "text": "Traditional Chinese medicine has used ginkgo leaves and seeds for over 2,000 years to treat various ailments including memory and circulation",
+        "context": "Traditional Chinese Medicine",
+        "region": "China"
+      },
+      "confidence": 0.88,
+      "sources": [
+        {"url": "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3679686/", "title": "Ginkgo biloba in traditional medicine", "credibility": 0.90}
+      ]
+    },
+    {
+      "claim_type": "cultural_significance",
+      "claim_value": {
+        "text": "Featured on over 100 Japanese family crests (kamon) and is the official symbol of Tokyo prefecture",
+        "context": "Japanese heraldry",
+        "region": "Japan"
+      },
+      "confidence": 0.92,
+      "sources": [
+        {"url": "https://www.metro.tokyo.lg.jp/english/about/symbols.html", "title": "Tokyo Metropolitan Government", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "habitat",
+      "claim_value": {
+        "text": "Natural wild populations found in disturbed streamside environments within deciduous forests on acidic loess soils with good drainage",
+        "biome": "Temperate Broadleaf Forest",
+        "vegetation_type": "Deciduous forest streamsides"
+      },
+      "confidence": 0.90,
+      "sources": [
+        {"url": "https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2745.13856", "title": "Journal of Ecology", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "habitat",
+      "claim_value": {
+        "text": "Wild populations restricted to mountainous areas of southeastern China: Mt. Tianmu (Zhejiang) at 300-1250m and Dalou Mountains (Guizhou) at 840-1200m",
+        "biome": "Temperate Broadleaf Forest",
+        "vegetation_type": "Montane deciduous forest"
+      },
+      "confidence": 0.92,
+      "sources": [
+        {"url": "https://www.iucnredlist.org/species/32353/9700472", "title": "IUCN Red List", "credibility": 0.98}
+      ]
+    },
+    {
+      "claim_type": "associated_species",
+      "claim_value": {
+        "text": "In natural Chinese habitat, occurs in deciduous forests but specific tree associates are poorly documented due to extreme rarity of wild populations",
+        "community_type": "Chinese deciduous forest",
+        "species_list": []
+      },
+      "confidence": 0.72,
+      "sources": [
+        {"url": "https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2745.13856", "title": "Journal of Ecology", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "associated_species",
+      "claim_value": {
+        "text": "In temple groves throughout East Asia, commonly planted alongside Cryptomeria japonica and Podocarpus species",
+        "community_type": "Temple grove cultivation",
+        "species_list": ["Cryptomeria japonica", "Podocarpus macrophyllus"]
+      },
+      "confidence": 0.85,
+      "sources": [
+        {"url": "https://www.bgci.org/plant-conservation/ginkgo-biloba/", "title": "BGCI", "credibility": 0.88}
+      ]
+    },
+    {
+      "claim_type": "conservation_status",
+      "claim_value": {
+        "iucn_status": "EN",
+        "iucn_year": 2021,
+        "population_trend": "stable",
+        "threats": ["Habitat loss", "Climate change"],
+        "text": "Endangered in the wild with fewer than 11 natural populations, though secure through extensive cultivation worldwide"
+      },
+      "confidence": 0.98,
+      "sources": [
+        {"url": "https://www.iucnredlist.org/species/32353/9700472", "title": "IUCN Red List", "credibility": 0.98}
+      ]
+    },
+    {
+      "claim_type": "general_description",
+      "claim_value": {
+        "text": "Large, long-lived deciduous gymnosperm tree, the sole surviving species of the ancient division Ginkgophyta. Known as a 'living fossil' having remained virtually unchanged for over 200 million years. Grows 20-35m tall with distinctive fan-shaped, bilobed leaves that turn golden-yellow in autumn."
+      },
+      "confidence": 0.95,
+      "sources": [
+        {"url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:828476-1", "title": "POWO", "credibility": 0.95},
+        {"url": "https://www.britannica.com/plant/ginkgo", "title": "Britannica", "credibility": 0.85}
+      ]
+    },
+    {
+      "claim_type": "maximum_height",
+      "claim_value": {
+        "value": 50,
+        "unit": "meters",
+        "typical_range": "20-35",
+        "text": "Maximum recorded height up to 50m (164 ft), though typical mature specimens reach 20-35m"
+      },
+      "confidence": 0.90,
+      "sources": [
+        {"url": "https://plants.ces.ncsu.edu/plants/ginkgo-biloba/", "title": "NC State Extension", "credibility": 0.85}
+      ]
+    },
+    {
+      "claim_type": "maximum_tree_age",
+      "claim_value": {
+        "value": 1600,
+        "unit": "years",
+        "typical_age": "500-1000",
+        "text": "Oldest reliably dated specimens approximately 1,600 years. Claims of 3,500 years remain unverified. Famous 1,400-year-old specimen at Gu Guanyin Temple."
+      },
+      "confidence": 0.88,
+      "sources": [
+        {"url": "https://www.pnas.org/doi/10.1073/pnas.1916548117", "title": "PNAS Ginkgo aging study", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "growth_form",
+      "claim_value": {
+        "primary": "tree",
+        "habit": "pyramidal when young, irregular with age",
+        "text": "Large deciduous tree with single trunk and sparse branching. Distinctive short shoots (spurs). Dioecious with separate male and female trees."
+      },
+      "confidence": 0.95,
+      "sources": [
+        {"url": "https://www.rhs.org.uk/plants/7857/ginkgo-biloba", "title": "RHS", "credibility": 0.90}
+      ]
+    },
+    {
+      "claim_type": "leaf_type",
+      "claim_value": {
+        "type": "simple",
+        "arrangement": "alternate",
+        "shape": "fan-shaped with notched margin, often bilobed",
+        "text": "Unique fan-shaped leaves 5-10cm with dichotomous venation. Bright green in summer, golden-yellow in autumn."
+      },
+      "confidence": 0.98,
+      "sources": [
+        {"url": "https://powo.science.kew.org/taxon/urn:lsid:ipni.org:names:828476-1", "title": "POWO", "credibility": 0.95}
+      ]
+    },
+    {
+      "claim_type": "deciduous_evergreen",
+      "claim_value": {
+        "type": "deciduous",
+        "text": "Deciduous. One of few deciduous gymnosperms. Leaves turn brilliant golden-yellow in autumn, then drop rapidly - often within a single night."
+      },
+      "confidence": 0.98,
+      "sources": [
+        {"url": "https://www.britannica.com/plant/ginkgo", "title": "Britannica", "credibility": 0.85}
+      ]
+    }
+  ],
+  "_note": "This is an EXAMPLE of atomic output format. Additional insights would be generated for all 35+ fields, with multiple insights for multi-value fields like agroforestry_use_cases, non_timber_products, etc."
+}

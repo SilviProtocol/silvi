@@ -3,7 +3,8 @@ const { ethers } = require('ethers');
 const crypto = require('crypto');
 const { v4: uuidv4 } = require('uuid');
 const chains = require('../config/chains');
-const { performAIResearch } = require('../services/aiResearch');
+// NOTE: AI research now performed by Claude Code CLI via orchestrator (port 5003)
+// Old Perplexity/OpenAI system removed Jan 2026
 
 const SPONSORSHIP_AMOUNT = 3; // 3 USDC per species
 
