@@ -6,6 +6,30 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-01-23 - Insights Flow Integration
+
+**Research Flow Refactored** - Research now writes to insights table, then syncs to _ai columns
+- Flow: Grok API → Create Insights → Sync to species._ai columns
+- `createInsightsFromResearch()` - Creates atomic insights from each research field
+- `syncInsightsToSpecies()` - Aggregates insights back to _ai columns for backward compatibility
+- Each insight stores: `claim_type`, `claim_value` (JSON), `confidence`, `sources`, `research_session_id`
+- Content-hash deduplication via trigger prevents duplicate insights
+- Tested: 23 insights created for Manilkara bidentata, synced to species table
+
+**New Endpoint** - `GET /species/:taxon_id/insights`
+- Returns all current insights for species grouped by claim_type
+- Optional `?full=true` for complete insight data with sources/confidence_breakdown
+- Response: `{taxon_id, insight_count, claim_types, insights: {habitat: [...], ...}}`
+
+**Field Mapping** - 25 research fields mapped to claim_types
+- Text fields stored as `{text: "..."}` in claim_value
+- Numeric fields (maximum_height, maximum_diameter, maximum_tree_age) stored as `{value: N, unit: "meters|years"}`
+- ON CONFLICT updates confidence if new is higher, preserves existing insights
+
+Files: `backend/controllers/species.js`
+
+---
+
 ## 2026-01-20 - Insights Architecture & Research Versioning
 
 **Database Migration** - Added insights architecture for research quality tracking

@@ -1,19 +1,21 @@
 import React from "react";
 import { Leaf } from "lucide-react";
-import { TreeSpecies } from "@/lib/types";
+import { TreeSpecies, Insight } from "@/lib/types";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { SubspeciesSection } from "../SubspeciesSection";
 import { SpeciesInfobox } from "../SpeciesInfobox";
+import { InsightField } from "../InsightField";
 
 interface OverviewTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getFieldInsights?: (fieldName: string) => Insight[];
   fields: FieldDefinition[];
 }
 
-export function OverviewTab({ species, isResearched, getFieldValue, fields }: OverviewTabProps) {
+export function OverviewTab({ species, isResearched, getFieldValue, getFieldInsights, fields }: OverviewTabProps) {
   // Get general description field
   const generalDescriptionField = fields.find(
     (field) => field.key === "general_description"

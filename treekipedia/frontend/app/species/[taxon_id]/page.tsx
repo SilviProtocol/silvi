@@ -24,13 +24,16 @@ export default function SpeciesDetailsPage() {
   const {
     species,
     researchData,
+    insights,
     isLoading,
     isError,
     isResearched,
     getFieldValue,
+    getFieldInsights,
     isFieldResearched,
     refetchSpecies,
     refetchResearch,
+    refetchInsights,
   } = useSpeciesData(taxonId);
 
   // Handle research button click

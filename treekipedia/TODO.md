@@ -88,28 +88,49 @@ Full refresh of geohash occurrence data from BigQuery parquet export.
 
 ---
 
-## [IN PROGRESS] - Research Metadata Frontend Display
+## [IN PROGRESS] - Research & Insights Architecture
 
-**Status**: Backend complete, frontend design pending
+**Status**: Insights flow implemented, frontend display pending
 **Added**: January 2026
 
-### Research Versioning Display
-- [ ] Design research metadata UI (confidence badge, version indicator)
-- [ ] Add research metadata to species detail page
-- [ ] Show confidence score with color coding (green ≥85%, amber ≥70%, red <70%)
-- [ ] Display research date and version number
-- [ ] Optional: Show source count and expandable details
+### Backend Complete ✅
+- [x] Insights table and triggers created (`database/06_insights_architecture.sql`)
+- [x] Research creates atomic insights, then syncs to `_ai` columns
+- [x] `GET /species/:taxon_id/insights` endpoint returns grouped insights
+- [x] Confidence scoring with breakdown (field_coverage, critical_fields, specificity, sources)
+- [x] Research versioning (`research_version`, `research_date`, `research_agent`, `research_confidence`)
 
-**Backend API now returns**:
+**New Endpoint**: `GET /species/:taxon_id/insights`
 ```json
 {
-  "research_version": 1,
-  "research_date": "2026-01-20T...",
-  "research_agent": "grok-4-1-fast-reasoning",
-  "research_confidence": 0.82,
-  "research_sources": "[...]"
+  "taxon_id": "...",
+  "insight_count": 23,
+  "claim_types": 23,
+  "insights": {
+    "habitat": [{"claim_value": {"text": "..."}, "confidence": 0.8, ...}],
+    "conservation_status": [...]
+  }
 }
 ```
+
+### Frontend Tasks (Pending)
+- [ ] Design insights display for species detail page
+- [ ] Show per-field insights with confidence indicators
+- [ ] Use implicit quality signals ("well-documented" vs "preliminary") instead of raw numbers
+- [ ] Progressive disclosure: collapse detailed metadata by default
+- [ ] Color scheme: Use existing design system, NOT purple/violet synthetic theme
+
+### Future: Dual Research System
+- [ ] Add user permissions system (admin vs regular users)
+- [ ] Admin users: Instant Grok research (synchronous)
+- [ ] Regular users: Add to `research_queue` for CLI processing
+- [ ] Build Claude Code CLI queue processor (`scripts/research_queue_processor.py`)
+- [ ] Support re-research to accumulate/improve insights
+
+### Future: Insights Vector/Graph
+- [ ] Embed insights in vector database for semantic search
+- [ ] Transform insights into graph database triples
+- [ ] Build insight relationships across species
 
 ---
 

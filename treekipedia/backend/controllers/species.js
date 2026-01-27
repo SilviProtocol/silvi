@@ -1,7 +1,230 @@
 const express = require('express');
+const { v4: uuidv4 } = require('uuid');
 
 module.exports = (pool) => {
   const router = express.Router();
+
+  // ============================================================================
+  // INSIGHT MANAGEMENT FUNCTIONS
+  // ============================================================================
+
+  /**
+   * Mapping from research field names to insight claim_types
+   * The _ai suffix is stripped for the claim_type
+   */
+  const FIELD_TO_CLAIM_TYPE = {
+    popular_common_name_ai: 'popular_common_name',
+    habitat_ai: 'habitat',
+    elevation_ranges_ai: 'elevation_ranges',
+    ecological_function_ai: 'ecological_function',
+    native_adapted_habitats_ai: 'native_adapted_habitats',
+    agroforestry_use_cases_ai: 'agroforestry_use_cases',
+    conservation_status_ai: 'conservation_status',
+    general_description_ai: 'general_description',
+    compatible_soil_types_ai: 'compatible_soil_types',
+    growth_form_ai: 'growth_form',
+    leaf_type_ai: 'leaf_type',
+    deciduous_evergreen_ai: 'deciduous_evergreen',
+    flower_color_ai: 'flower_color',
+    fruit_type_ai: 'fruit_type',
+    bark_characteristics_ai: 'bark_characteristics',
+    maximum_height_ai: 'maximum_height',
+    maximum_diameter_ai: 'maximum_diameter',
+    lifespan_ai: 'lifespan',
+    maximum_tree_age_ai: 'maximum_tree_age',
+    stewardship_best_practices_ai: 'stewardship_best_practices',
+    planting_recipes_ai: 'planting_recipes',
+    pruning_maintenance_ai: 'pruning_maintenance',
+    disease_pest_management_ai: 'disease_pest_management',
+    fire_management_ai: 'fire_management',
+    cultural_significance_ai: 'cultural_significance'
+  };
+
+  // Numeric fields that should store value+unit instead of text
+  const NUMERIC_CLAIM_TYPES = ['maximum_height', 'maximum_diameter', 'maximum_tree_age'];
+
+  /**
+   * Create insights from research data
+   * @param {string} taxonId - The species taxon_id
+   * @param {object} researchData - The data object from grokResearch
+   * @param {number} confidence - Overall confidence score
+   * @param {array} sources - Array of source objects
+   * @param {string} model - The AI model used
+   * @param {number} version - Research version number
+   * @returns {Promise<{created: number, skipped: number}>}
+   */
+  async function createInsightsFromResearch(taxonId, researchData, confidence, sources, model, version) {
+    let created = 0;
+    let skipped = 0;
+    const researchSessionId = uuidv4();
+
+    for (const [fieldName, claimType] of Object.entries(FIELD_TO_CLAIM_TYPE)) {
+      const value = researchData[fieldName];
+
+      // Skip null/undefined/empty values
+      if (value === null || value === undefined || value === '' || value === 'Data not available') {
+        skipped++;
+        continue;
+      }
+
+      // Build claim_value based on field type
+      let claimValue;
+      if (NUMERIC_CLAIM_TYPES.includes(claimType)) {
+        // Numeric fields: store as {value, unit}
+        const unit = claimType === 'maximum_tree_age' ? 'years' : 'meters';
+        claimValue = { value: value, unit: unit };
+      } else {
+        // Text fields: store as {text}
+        claimValue = { text: String(value) };
+      }
+
+      try {
+        // Insert insight (content_hash trigger will handle deduplication)
+        await pool.query(`
+          INSERT INTO insights (
+            taxon_id, claim_type, claim_value, confidence, sources,
+            is_current, research_session_id
+          ) VALUES ($1, $2, $3, $4, $5, TRUE, $6)
+          ON CONFLICT (content_hash) WHERE is_current = TRUE
+          DO UPDATE SET
+            confidence = GREATEST(insights.confidence, EXCLUDED.confidence),
+            sources = EXCLUDED.sources,
+            updated_at = NOW()
+        `, [
+          taxonId,
+          claimType,
+          JSON.stringify(claimValue),
+          confidence,
+          JSON.stringify(sources),
+          researchSessionId
+        ]);
+        created++;
+      } catch (err) {
+        console.warn(`Failed to create insight for ${taxonId}/${claimType}:`, err.message);
+        skipped++;
+      }
+    }
+
+    console.log(`[Insights] Created ${created} insights, skipped ${skipped} for ${taxonId}`);
+    return { created, skipped, sessionId: researchSessionId };
+  }
+
+  /**
+   * Sync insights to species._ai columns
+   * Aggregates all current insights for a species and updates the _ai columns
+   * @param {string} taxonId - The species taxon_id
+   * @returns {Promise<{synced: number}>}
+   */
+  async function syncInsightsToSpecies(taxonId) {
+    // Get all current insights for this species
+    const insightsResult = await pool.query(`
+      SELECT claim_type, claim_value, confidence
+      FROM insights
+      WHERE taxon_id = $1 AND is_current = TRUE
+      ORDER BY claim_type, confidence DESC
+    `, [taxonId]);
+
+    if (insightsResult.rows.length === 0) {
+      return { synced: 0 };
+    }
+
+    // Group insights by claim_type
+    const insightsByType = {};
+    for (const row of insightsResult.rows) {
+      if (!insightsByType[row.claim_type]) {
+        insightsByType[row.claim_type] = [];
+      }
+      insightsByType[row.claim_type].push(row);
+    }
+
+    // Build update values - aggregate insights into prose for each _ai column
+    const updates = {};
+    for (const [claimType, insights] of Object.entries(insightsByType)) {
+      const fieldName = claimType + '_ai';
+
+      if (NUMERIC_CLAIM_TYPES.includes(claimType)) {
+        // For numeric fields, use the highest-confidence value
+        const topInsight = insights[0];
+        const val = topInsight.claim_value;
+        updates[fieldName] = typeof val === 'object' ? val.value : val;
+      } else {
+        // For text fields, join multiple insights with paragraph breaks
+        const texts = insights.map(i => {
+          const val = i.claim_value;
+          return typeof val === 'object' ? (val.text || JSON.stringify(val)) : String(val);
+        });
+        // Remove duplicates and join
+        const uniqueTexts = [...new Set(texts)];
+        updates[fieldName] = uniqueTexts.join('\n\n');
+      }
+    }
+
+    // Build dynamic UPDATE query
+    const setClauses = [];
+    const values = [];
+    let paramIndex = 1;
+
+    for (const [field, value] of Object.entries(updates)) {
+      setClauses.push(`${field} = $${paramIndex}`);
+      values.push(value);
+      paramIndex++;
+    }
+
+    if (setClauses.length === 0) {
+      return { synced: 0 };
+    }
+
+    // Add taxon_id as last parameter
+    values.push(taxonId);
+
+    const updateQuery = `
+      UPDATE species SET
+        ${setClauses.join(',\n        ')},
+        updated_at = NOW()
+      WHERE taxon_id = $${paramIndex}
+    `;
+
+    await pool.query(updateQuery, values);
+
+    console.log(`[Sync] Updated ${setClauses.length} _ai columns for ${taxonId}`);
+    return { synced: setClauses.length };
+  }
+
+  /**
+   * GET /:taxon_id/insights
+   * Get all current insights for a species
+   */
+  router.get('/:taxon_id/insights', async (req, res) => {
+    try {
+      const { taxon_id } = req.params;
+      const { full } = req.query;
+
+      const query = full === 'true'
+        ? `SELECT * FROM insights WHERE taxon_id = $1 AND is_current = TRUE ORDER BY claim_type, confidence DESC`
+        : `SELECT id, claim_type, claim_value, confidence, created_at FROM insights WHERE taxon_id = $1 AND is_current = TRUE ORDER BY claim_type, confidence DESC`;
+
+      const result = await pool.query(query, [taxon_id]);
+
+      // Group by claim_type for easier frontend consumption
+      const grouped = {};
+      for (const row of result.rows) {
+        if (!grouped[row.claim_type]) {
+          grouped[row.claim_type] = [];
+        }
+        grouped[row.claim_type].push(row);
+      }
+
+      res.json({
+        taxon_id,
+        insight_count: result.rows.length,
+        claim_types: Object.keys(grouped).length,
+        insights: grouped
+      });
+    } catch (error) {
+      console.error(`Error fetching insights for ${req.params.taxon_id}:`, error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 
   /**
    * GET /
@@ -297,7 +520,8 @@ module.exports = (pool) => {
 
   /**
    * POST /:taxon_id/research
-   * Trigger AI research for a species and update the database
+   * Trigger AI research for a species using insights architecture
+   * Flow: Grok API → Create Insights → Sync to _ai columns
    * Includes research versioning, confidence scoring, and source tracking
    * Route params: taxon_id - The unique identifier for the species
    */
@@ -305,7 +529,7 @@ module.exports = (pool) => {
     const { taxon_id } = req.params;
 
     try {
-      console.log(`POST /species/${taxon_id}/research - Starting AI research`);
+      console.log(`POST /species/${taxon_id}/research - Starting AI research (insights flow)`);
 
       // Get species info including current research version
       const speciesQuery = `
@@ -326,7 +550,7 @@ module.exports = (pool) => {
       const currentVersion = species.research_version;
       const newVersion = currentVersion + 1;
 
-      // Perform AI research
+      // Step 1: Perform AI research via Grok
       const grokResearch = require('../services/grokResearch');
       const result = await grokResearch.performResearch(scientificName, commonNames);
 
@@ -335,70 +559,31 @@ module.exports = (pool) => {
         return res.status(500).json({ success: false, error: result.error });
       }
 
-      // Update species table with research data + versioning metadata
-      const updateQuery = `
-        UPDATE species SET
-          popular_common_name_ai = $1,
-          habitat_ai = $2,
-          elevation_ranges_ai = $3,
-          ecological_function_ai = $4,
-          native_adapted_habitats_ai = $5,
-          agroforestry_use_cases_ai = $6,
-          conservation_status_ai = $7,
-          general_description_ai = $8,
-          compatible_soil_types_ai = $9,
-          growth_form_ai = $10,
-          leaf_type_ai = $11,
-          deciduous_evergreen_ai = $12,
-          flower_color_ai = $13,
-          fruit_type_ai = $14,
-          bark_characteristics_ai = $15,
-          maximum_height_ai = $16,
-          maximum_diameter_ai = $17,
-          lifespan_ai = $18,
-          maximum_tree_age_ai = $19,
-          stewardship_best_practices_ai = $20,
-          planting_recipes_ai = $21,
-          pruning_maintenance_ai = $22,
-          disease_pest_management_ai = $23,
-          fire_management_ai = $24,
-          cultural_significance_ai = $25,
-          research_version = $26,
-          research_date = NOW(),
-          research_agent = $27,
-          research_confidence = $28,
-          research_sources = $29,
-          updated_at = NOW()
-        WHERE taxon_id = $30
-      `;
+      // Step 2: Create insights from research results
+      const insightResult = await createInsightsFromResearch(
+        taxon_id,
+        result.data,
+        result.confidence || 0.5,
+        result.sources || [],
+        result.model || 'grok-4-1-fast-reasoning',
+        newVersion
+      );
 
-      const d = result.data;
-      await pool.query(updateQuery, [
-        d.popular_common_name_ai,
-        d.habitat_ai,
-        d.elevation_ranges_ai,
-        d.ecological_function_ai,
-        d.native_adapted_habitats_ai,
-        d.agroforestry_use_cases_ai,
-        d.conservation_status_ai,
-        d.general_description_ai,
-        d.compatible_soil_types_ai,
-        d.growth_form_ai,
-        d.leaf_type_ai,
-        d.deciduous_evergreen_ai,
-        d.flower_color_ai,
-        d.fruit_type_ai,
-        d.bark_characteristics_ai,
-        d.maximum_height_ai,
-        d.maximum_diameter_ai,
-        d.lifespan_ai,
-        d.maximum_tree_age_ai,
-        d.stewardship_best_practices_ai,
-        d.planting_recipes_ai,
-        d.pruning_maintenance_ai,
-        d.disease_pest_management_ai,
-        d.fire_management_ai,
-        d.cultural_significance_ai,
+      // Step 3: Sync insights to species._ai columns
+      const syncResult = await syncInsightsToSpecies(taxon_id);
+
+      // Step 4: Update versioning metadata on species table
+      await pool.query(`
+        UPDATE species SET
+          research_version = $1,
+          research_date = NOW(),
+          research_agent = $2,
+          research_confidence = $3,
+          research_sources = $4,
+          researched = TRUE,
+          updated_at = NOW()
+        WHERE taxon_id = $5
+      `, [
         newVersion,
         result.model || 'grok-4-1-fast-reasoning',
         result.confidence || null,
@@ -406,7 +591,7 @@ module.exports = (pool) => {
         taxon_id
       ]);
 
-      // Track token usage if available
+      // Step 5: Track token usage if available
       if (result.usage) {
         try {
           await pool.query(`
@@ -426,21 +611,22 @@ module.exports = (pool) => {
         }
       }
 
-      console.log(`POST /species/${taxon_id}/research - Database updated (v${newVersion}, confidence: ${result.confidence})`);
+      console.log(`POST /species/${taxon_id}/research - Complete (v${newVersion}, ${insightResult.created} insights, confidence: ${result.confidence})`);
 
       res.json({
         success: true,
         taxon_id: taxon_id,
         scientific_name: scientificName,
-        fields_filled: result.fields_filled,
-        fields_total: result.fields_total,
-        duration_ms: result.duration_ms,
         research_version: newVersion,
+        insights_created: insightResult.created,
+        insights_skipped: insightResult.skipped,
+        fields_synced: syncResult.synced,
         confidence: result.confidence,
         confidence_breakdown: result.confidence_breakdown,
         sources: result.sources,
         model: result.model,
-        data: result.data
+        duration_ms: result.duration_ms,
+        session_id: insightResult.sessionId
       });
 
     } catch (error) {

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { TreeSpecies, ResearchData, SpeciesImagesResponse, GeoJSONPolygon, PlotAnalysisResponse } from './types';
+import { TreeSpecies, ResearchData, SpeciesImagesResponse, SpeciesInsightsResponse, GeoJSONPolygon, PlotAnalysisResponse } from './types';
 
 // Set base URL for API - use the confirmed HTTPS endpoint
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';

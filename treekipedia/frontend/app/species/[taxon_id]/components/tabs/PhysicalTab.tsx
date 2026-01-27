@@ -1,5 +1,5 @@
 import React from "react";
-import { TreeSpecies } from "@/lib/types";
+import { TreeSpecies, Insight } from "@/lib/types";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 
@@ -7,10 +7,11 @@ interface PhysicalTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getFieldInsights?: (fieldName: string) => Insight[];
   fields: FieldDefinition[];
 }
 
-export function PhysicalTab({ species, isResearched, getFieldValue, fields }: PhysicalTabProps) {
+export function PhysicalTab({ species, isResearched, getFieldValue, getFieldInsights, fields }: PhysicalTabProps) {
   return (
     <div className="space-y-6">
       <div>
@@ -26,6 +27,7 @@ export function PhysicalTab({ species, isResearched, getFieldValue, fields }: Ph
                 const { value } = getFieldValue(fieldName);
                 return !!value;
               }}
+              insights={getFieldInsights?.(field.key)}
             />
           ))}
         </div>

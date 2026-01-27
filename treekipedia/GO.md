@@ -89,7 +89,7 @@ As you work with the user, **maintain documentation discipline**:
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind, Wagmi v2, React-Leaflet
 - **Backend**: Node.js, Express, PostgreSQL, PostGIS, PM2
 - **Blockchain**: Celo, Base, Optimism, Arbitrum (multi-chain NFT minting)
-- **AI**: OpenAI, Perplexity API for research generation
+- **AI Research**: Grok 4.1 Fast (xAI) with agentic web search → atomic insights
 - **Storage**: IPFS (Lighthouse), EAS attestations
 
 **Key URLs**:

@@ -1,12 +1,16 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { FieldDefinition } from "../hooks/useFieldDefinitions";
+import { Insight } from "@/lib/types";
+import { InsightField } from "./InsightField";
 
 interface DataFieldProps {
   field: FieldDefinition;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
   isResearched: boolean;
   isFieldResearched: (fieldName: string) => boolean;
+  // New: insights for this field (optional - if provided, will display insights instead of legacy value)
+  insights?: Insight[];
 }
 
 export function DataField({ field, getFieldValue, isResearched, isFieldResearched }: DataFieldProps) {

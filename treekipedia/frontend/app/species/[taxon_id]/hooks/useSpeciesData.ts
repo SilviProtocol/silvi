@@ -1,8 +1,8 @@
 import { useState, useCallback, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { getSpeciesById, getResearchData } from "@/lib/api";
-import { TreeSpecies, ResearchData } from "@/lib/types";
+import { getSpeciesById, getResearchData, getSpeciesInsights } from "@/lib/api";
+import { TreeSpecies, ResearchData, SpeciesInsightsResponse, Insight } from "@/lib/types";
 
 /**
  * Custom hook for fetching and managing species and research data

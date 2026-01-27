@@ -1,5 +1,5 @@
 import React from "react";
-import { TreeSpecies, ResearchData } from "@/lib/types";
+import { TreeSpecies, ResearchData, Insight } from "@/lib/types";
 import { useFieldDefinitions } from "../hooks/useFieldDefinitions";
 import { OverviewTab } from "./tabs/OverviewTab";
 import { GeographicTab } from "./tabs/GeographicTab";
@@ -15,6 +15,7 @@ interface TabContainerProps {
   researchData: ResearchData | undefined;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getFieldInsights?: (fieldName: string) => Insight[];
 }
 
 export function TabContainer({
