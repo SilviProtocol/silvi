@@ -77,7 +77,7 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <Leaf className="w-5 h-5 mr-2 text-green-400" />
+        <Leaf className="w-5 h-5 mr-2 text-emerald-400" />
         Subspecies & Varieties
         <span className="ml-2 text-sm text-white/60 font-normal">
           ({data.subspecies_count})

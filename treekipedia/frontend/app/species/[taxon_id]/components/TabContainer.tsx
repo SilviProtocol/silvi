@@ -48,7 +48,7 @@ export function TabContainer({
           onClick={() => setActiveTab("overview")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "overview"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >
@@ -58,7 +58,7 @@ export function TabContainer({
           onClick={() => setActiveTab("geographic")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "geographic"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >
@@ -68,7 +68,7 @@ export function TabContainer({
           onClick={() => setActiveTab("ecological")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "ecological"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >
@@ -78,7 +78,7 @@ export function TabContainer({
           onClick={() => setActiveTab("physical")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "physical"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >
@@ -88,7 +88,7 @@ export function TabContainer({
           onClick={() => setActiveTab("stewardship")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "stewardship"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >
@@ -98,7 +98,7 @@ export function TabContainer({
           onClick={() => setActiveTab("research")}
           className={`px-4 py-2 whitespace-nowrap ${
             activeTab === "research"
-              ? "border-b-2 border-green-400 text-green-400"
+              ? "border-b-2 border-emerald-400 text-emerald-400"
               : "text-white/70 hover:text-white"
           }`}
         >

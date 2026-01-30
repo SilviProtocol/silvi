@@ -23,8 +23,7 @@ const axios = require('axios');
 // Configuration
 const LOCATION_PREDICTOR_URL = process.env.LOCATION_PREDICTOR_URL || 'http://localhost:5002';
 const pool = new Pool({
-    database: 'treekipedia',
-    // Uses default localhost:5432 and current user
+    connectionString: process.env.DATABASE_URL || 'postgres://tree_user:Kj9mPx7vLq2wZn4t@localhost:5432/treekipedia',
 });
 
 /**
@@ -175,11 +174,10 @@ router.get('/predict', async (req, res) => {
                 s.common_name,
                 s.family,
                 s.genus,
-                s.growth_form,
-                s.maximum_height,
+                COALESCE(s.growth_form_human, s.growth_form_ai) as growth_form,
+                COALESCE(s.maximum_height_human, s.maximum_height_ai) as maximum_height,
                 s.wcvp_native as native_regions,
-                s.conservation_status,
-                s.threatened_status
+                COALESCE(s.conservation_status_human, s.conservation_status_ai) as conservation_status
             FROM ranked_centroids r
             LEFT JOIN species s ON r.taxon_id = s.taxon_id
             WHERE r.rank_in_species = 1  -- Best cluster per species
@@ -222,7 +220,7 @@ router.get('/predict', async (req, res) => {
                 growth_form: row.growth_form,
                 maximum_height: row.maximum_height,
                 conservation_status: row.conservation_status,
-                threatened_status: row.threatened_status
+                threatened_status: null
             }
         }));
 
@@ -347,13 +345,12 @@ router.get('/recommend', async (req, res) => {
                     s.accepted_scientific_name,
                     s.common_name,
                     s.family,
-                    s.growth_form,
+                    COALESCE(s.growth_form_human, s.growth_form_ai) as growth_form,
                     s.wcvp_native,
                     s.wcvp_introduced,
                     s.functional_ecosystem_groups,
-                    s.nitrogen_fixing,
                     s.uses,
-                    s.conservation_status,
+                    COALESCE(s.conservation_status_human, s.conservation_status_ai) as conservation_status,
                     -- Native status scoring
                     CASE
                         WHEN $4::text IS NOT NULL AND s.wcvp_native ILIKE '%' || $4 || '%' THEN 0.2
@@ -362,9 +359,9 @@ router.get('/recommend', async (req, res) => {
                     END as native_boost,
                     -- Restoration goal scoring
                     CASE
-                        WHEN $5 = 'soil_fertility' AND s.nitrogen_fixing = true THEN 0.15
+                        WHEN $5 = 'soil_fertility' THEN 0.0
                         WHEN $5 = 'biodiversity' AND s.functional_ecosystem_groups IS NOT NULL THEN 0.1
-                        WHEN $5 = 'carbon' AND s.growth_form ILIKE '%tree%' THEN 0.1
+                        WHEN $5 = 'carbon' AND COALESCE(s.growth_form_human, s.growth_form_ai) ILIKE '%tree%' THEN 0.1
                         WHEN $5 = 'timber' AND s.uses ILIKE '%timber%' THEN 0.1
                         ELSE 0
                     END as goal_boost
@@ -388,7 +385,6 @@ router.get('/recommend', async (req, res) => {
                 wcvp_native,
                 wcvp_introduced,
                 functional_ecosystem_groups,
-                nitrogen_fixing,
                 conservation_status,
                 similarity,
                 cluster_elevation,
@@ -434,7 +430,7 @@ router.get('/recommend', async (req, res) => {
                 is_introduced: row.wcvp_introduced?.toLowerCase().includes(country_code?.toLowerCase() || ''),
                 native_regions: row.wcvp_native,
                 functional_groups: row.functional_ecosystem_groups,
-                nitrogen_fixing: row.nitrogen_fixing
+                nitrogen_fixing: null
             },
 
             // Species attributes
@@ -694,7 +690,7 @@ router.post('/from-embedding', async (req, res) => {
                 r.representative_lat,
                 r.representative_lon,
                 r.is_single_cluster,
-                s.accepted_scientific_name as species_scientific_name,
+                s.taxon_full,
                 s.common_name,
                 s.family,
                 (SELECT SUM(occurrence_count) FROM species_habitat_centroids WHERE taxon_id = r.taxon_id) as total_occurrences,
@@ -722,9 +718,9 @@ router.post('/from-embedding', async (req, res) => {
         // Format predictions to match frontend expectations
         const predictions = result.rows.slice(0, resultLimit).map(row => ({
             taxon_id: row.taxon_id,
-            species_scientific_name: row.species_scientific_name,
-            family: row.family,
+            taxon_full: row.taxon_full,
             common_name: row.common_name,
+            family: row.family,
             cluster_id: row.cluster_id,
             cluster_size: parseInt(row.cluster_size),
             total_occurrences: parseInt(row.total_occurrences),
@@ -741,7 +737,7 @@ router.post('/from-embedding', async (req, res) => {
         }));
 
         console.log(`Found ${predictions.length} species predictions (from ${result.rowCount} candidates)`);
-        console.log(`Top prediction: ${predictions[0].species_scientific_name} (confidence: ${predictions[0].confidence.toFixed(4)})`);
+        console.log(`Top prediction: ${predictions[0].taxon_full} (confidence: ${predictions[0].confidence.toFixed(4)})`);
 
         res.json({
             success: true,

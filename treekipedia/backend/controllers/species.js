@@ -37,7 +37,18 @@ module.exports = (pool) => {
     pruning_maintenance_ai: 'pruning_maintenance',
     disease_pest_management_ai: 'disease_pest_management',
     fire_management_ai: 'fire_management',
-    cultural_significance_ai: 'cultural_significance'
+    cultural_significance_ai: 'cultural_significance',
+    // v2 additions (10 new fields)
+    etymology_ai: 'etymology',
+    synonyms_ai: 'synonyms',
+    identification_features_ai: 'identification_features',
+    climate_tolerance_ai: 'climate_tolerance',
+    tolerances_ai: 'tolerances',
+    associated_species_ai: 'associated_species',
+    propagation_methods_ai: 'propagation_methods',
+    timber_value_ai: 'timber_value',
+    non_timber_products_ai: 'non_timber_products',
+    nutritional_caloric_value_ai: 'nutritional_caloric_value'
   };
 
   // Numeric fields that should store value+unit instead of text
@@ -106,6 +117,115 @@ module.exports = (pool) => {
     }
 
     console.log(`[Insights] Created ${created} insights, skipped ${skipped} for ${taxonId}`);
+    return { created, skipped, sessionId: researchSessionId };
+  }
+
+  /**
+   * Create atomic insights from v2 research data (multi-value arrays)
+   * @param {string} taxonId
+   * @param {object} fields - Keyed by claim_type (no _ai suffix), values are strings/numbers/arrays
+   * @param {array} globalSources - Sources from the Grok calls
+   * @param {string} model - AI model used
+   * @param {number} version - Research version number
+   * @returns {Promise<{created: number, skipped: number, sessionId: string}>}
+   */
+  async function createAtomicInsights(taxonId, fields, globalSources, model, version) {
+    let created = 0;
+    let skipped = 0;
+    const researchSessionId = uuidv4();
+
+    // Mark old insights as not current before inserting new ones
+    await pool.query(
+      `UPDATE insights SET is_current = FALSE WHERE taxon_id = $1 AND is_current = TRUE`,
+      [taxonId]
+    );
+
+    for (const [fieldName, value] of Object.entries(fields)) {
+      // Skip null/undefined/empty
+      if (value === null || value === undefined || value === '' || value === 'Data not available') {
+        skipped++;
+        continue;
+      }
+
+      // Determine entries to insert
+      const entries = [];
+
+      if (Array.isArray(value)) {
+        // Multi-value field: one insight per array element
+        for (const item of value) {
+          if (!item || (typeof item === 'object' && !item.text)) {
+            skipped++;
+            continue;
+          }
+          const text = typeof item === 'string' ? item : item.text;
+          if (!text || text === 'Data not available') {
+            skipped++;
+            continue;
+          }
+          // Per-insight confidence: 0.80 if source_hint present, 0.70 otherwise
+          const confidence = (item.source_hint) ? 0.80 : 0.70;
+          const claimValue = {
+            text,
+            context: item.context || null,
+            region: item.region || null,
+            source_hint: item.source_hint || null
+          };
+          entries.push({ claimValue, confidence });
+        }
+        if (entries.length === 0) {
+          skipped++;
+          continue;
+        }
+      } else if (NUMERIC_CLAIM_TYPES.includes(fieldName)) {
+        // Numeric field
+        const numVal = typeof value === 'string' ? parseFloat(value) : value;
+        if (isNaN(numVal) || numVal === null) {
+          skipped++;
+          continue;
+        }
+        const unit = fieldName === 'maximum_tree_age' ? 'years' : 'meters';
+        entries.push({ claimValue: { value: numVal, unit }, confidence: 0.75 });
+      } else {
+        // Single string field
+        const text = String(value);
+        if (text === 'Data not available') {
+          skipped++;
+          continue;
+        }
+        entries.push({ claimValue: { text }, confidence: 0.75 });
+      }
+
+      // Insert each entry
+      for (const entry of entries) {
+        try {
+          await pool.query(`
+            INSERT INTO insights (
+              taxon_id, claim_type, claim_value, confidence, sources,
+              is_current, research_session_id
+            ) VALUES ($1, $2, $3, $4, $5, TRUE, $6)
+            ON CONFLICT (content_hash) WHERE is_current = TRUE
+            DO UPDATE SET
+              confidence = GREATEST(insights.confidence, EXCLUDED.confidence),
+              sources = EXCLUDED.sources,
+              is_current = TRUE,
+              updated_at = NOW()
+          `, [
+            taxonId,
+            fieldName,
+            JSON.stringify(entry.claimValue),
+            entry.confidence,
+            JSON.stringify(globalSources),
+            researchSessionId
+          ]);
+          created++;
+        } catch (err) {
+          console.warn(`Failed to create atomic insight for ${taxonId}/${fieldName}:`, err.message);
+          skipped++;
+        }
+      }
+    }
+
+    console.log(`[AtomicInsights] Created ${created} insights, skipped ${skipped} for ${taxonId}`);
     return { created, skipped, sessionId: researchSessionId };
   }
 
@@ -214,11 +334,50 @@ module.exports = (pool) => {
         grouped[row.claim_type].push(row);
       }
 
+      // Get research metadata from species table
+      const metaResult = await pool.query(`
+        SELECT research_version, research_date, research_agent,
+               research_confidence, research_sources
+        FROM species WHERE taxon_id = $1
+      `, [taxon_id]);
+
+      const speciesMeta = metaResult.rows[0] || {};
+      const hasInsights = result.rows.length > 0;
+
+      // Compute avg confidence from actual insights
+      const avgConfidence = hasInsights
+        ? result.rows.reduce((sum, r) => sum + (r.confidence || 0), 0) / result.rows.length
+        : 0;
+
+      // Count unique sources across all insights
+      let sourceCount = 0;
+      if (hasInsights && full === 'true') {
+        const sourceSet = new Set();
+        for (const row of result.rows) {
+          const sources = typeof row.sources === 'string' ? JSON.parse(row.sources) : (row.sources || []);
+          if (Array.isArray(sources)) {
+            sources.forEach(s => sourceSet.add(typeof s === 'object' ? (s.url || s.title || JSON.stringify(s)) : s));
+          }
+        }
+        sourceCount = sourceSet.size;
+      }
+
       res.json({
         taxon_id,
+        has_insights: hasInsights,
         insight_count: result.rows.length,
         claim_types: Object.keys(grouped).length,
-        insights: grouped
+        metadata: hasInsights ? {
+          version: speciesMeta.research_version || 1,
+          research_date: speciesMeta.research_date || null,
+          model: speciesMeta.research_agent || 'unknown',
+          insight_count: result.rows.length,
+          field_count: Object.keys(grouped).length,
+          avg_confidence: avgConfidence,
+          source_count: sourceCount,
+        } : null,
+        insights: result.rows,
+        insights_grouped: grouped
       });
     } catch (error) {
       console.error(`Error fetching insights for ${req.params.taxon_id}:`, error);
@@ -550,20 +709,19 @@ module.exports = (pool) => {
       const currentVersion = species.research_version;
       const newVersion = currentVersion + 1;
 
-      // Step 1: Perform AI research via Grok
+      // Step 1: Perform atomic AI research via Grok (two parallel calls)
       const grokResearch = require('../services/grokResearch');
-      const result = await grokResearch.performResearch(scientificName, commonNames);
+      const result = await grokResearch.performAtomicResearch(scientificName, commonNames);
 
       if (!result.success) {
         console.error(`Research failed for ${taxon_id}:`, result.error);
         return res.status(500).json({ success: false, error: result.error });
       }
 
-      // Step 2: Create insights from research results
-      const insightResult = await createInsightsFromResearch(
+      // Step 2: Create atomic insights from research results
+      const insightResult = await createAtomicInsights(
         taxon_id,
-        result.data,
-        result.confidence || 0.5,
+        result.fields,
         result.sources || [],
         result.model || 'grok-4-1-fast-reasoning',
         newVersion
@@ -573,6 +731,15 @@ module.exports = (pool) => {
       const syncResult = await syncInsightsToSpecies(taxon_id);
 
       // Step 4: Update versioning metadata on species table
+      // Calculate avg confidence from created insights
+      const avgConfResult = await pool.query(
+        `SELECT AVG(confidence) as avg_conf FROM insights WHERE taxon_id = $1 AND is_current = TRUE`,
+        [taxon_id]
+      );
+      const avgConfidence = avgConfResult.rows[0]?.avg_conf
+        ? Math.round(parseFloat(avgConfResult.rows[0].avg_conf) * 100) / 100
+        : null;
+
       await pool.query(`
         UPDATE species SET
           research_version = $1,
@@ -586,7 +753,7 @@ module.exports = (pool) => {
       `, [
         newVersion,
         result.model || 'grok-4-1-fast-reasoning',
-        result.confidence || null,
+        avgConfidence,
         JSON.stringify(result.sources || []),
         taxon_id
       ]);
@@ -600,18 +767,18 @@ module.exports = (pool) => {
             VALUES ($1, $2, $3, $4, $5, $6)
           `, [
             taxon_id,
-            'grok-research',
+            'grok-research-atomic',
             result.model || 'grok-4-1-fast-reasoning',
             result.usage.input_tokens || 0,
             result.usage.output_tokens || 0,
-            0 // Cost calculation can be added later
+            0
           ]);
         } catch (tokenError) {
           console.warn(`Failed to track token usage for ${taxon_id}:`, tokenError.message);
         }
       }
 
-      console.log(`POST /species/${taxon_id}/research - Complete (v${newVersion}, ${insightResult.created} insights, confidence: ${result.confidence})`);
+      console.log(`POST /species/${taxon_id}/research - Complete (v${newVersion}, ${insightResult.created} insights, ${result.calls_succeeded}/2 calls, confidence: ${avgConfidence})`);
 
       res.json({
         success: true,
@@ -621,8 +788,11 @@ module.exports = (pool) => {
         insights_created: insightResult.created,
         insights_skipped: insightResult.skipped,
         fields_synced: syncResult.synced,
-        confidence: result.confidence,
-        confidence_breakdown: result.confidence_breakdown,
+        confidence: avgConfidence,
+        calls_succeeded: result.calls_succeeded,
+        partial: result.partial,
+        fields_filled: result.fields_filled,
+        fields_total: result.fields_total,
         sources: result.sources,
         model: result.model,
         duration_ms: result.duration_ms,

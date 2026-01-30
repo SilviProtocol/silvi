@@ -88,44 +88,45 @@ Full refresh of geohash occurrence data from BigQuery parquet export.
 
 ---
 
-## [IN PROGRESS] - Research & Insights Architecture
+## [COMPLETE] - Research & Insights Architecture ✅
 
-**Status**: Insights flow implemented, frontend display pending
+**Status**: Backend + frontend aligned after djimo merge (Jan 27, 2026)
 **Added**: January 2026
 
-### Backend Complete ✅
+### Backend ✅
 - [x] Insights table and triggers created (`database/06_insights_architecture.sql`)
 - [x] Research creates atomic insights, then syncs to `_ai` columns
-- [x] `GET /species/:taxon_id/insights` endpoint returns grouped insights
+- [x] `GET /species/:taxon_id/insights` returns `has_insights`, `metadata`, flat insights array
 - [x] Confidence scoring with breakdown (field_coverage, critical_fields, specificity, sources)
 - [x] Research versioning (`research_version`, `research_date`, `research_agent`, `research_confidence`)
+- [x] 9 new _ai columns: etymology, synonyms, identification_features, climate_tolerance, tolerances, associated_species, timber_value, non_timber_products, nutritional_caloric_value
 
-**New Endpoint**: `GET /species/:taxon_id/insights`
-```json
-{
-  "taxon_id": "...",
-  "insight_count": 23,
-  "claim_types": 23,
-  "insights": {
-    "habitat": [{"claim_value": {"text": "..."}, "confidence": 0.8, ...}],
-    "conservation_status": [...]
-  }
-}
-```
+### Frontend ✅
+- [x] `useSpeciesData.ts` simplified to 2 queries (species + insights), removed redundant /research query
+- [x] Synthetic Knowledge panel (ResearchMetadataPanel) renders with confidence, version, model
+- [x] DataField shows per-field confidence bars and atomic insights
+- [x] Data priority: human → ai → legacy via `getFieldValue()`
+- [x] Dead code removed (InsightField.tsx, InsightItem.tsx, useResearchProcess.ts)
 
-### Frontend Tasks (Pending)
-- [ ] Design insights display for species detail page
-- [ ] Show per-field insights with confidence indicators
-- [ ] Use implicit quality signals ("well-documented" vs "preliminary") instead of raw numbers
-- [ ] Progressive disclosure: collapse detailed metadata by default
-- [ ] Color scheme: Use existing design system, NOT purple/violet synthetic theme
+### Remaining
+- [ ] Queue research path should also call `createInsightsFromResearch()` when processing completes
+- [ ] Restyle ResearchMetadataPanel (violet → existing design system, or keep as differentiation)
 
-### Future: Dual Research System
-- [ ] Add user permissions system (admin vs regular users)
-- [ ] Admin users: Instant Grok research (synchronous)
-- [ ] Regular users: Add to `research_queue` for CLI processing
-- [ ] Build Claude Code CLI queue processor (`scripts/research_queue_processor.py`)
-- [ ] Support re-research to accumulate/improve insights
+### Dual Research Integration (NOWPayments + Grok)
+**Planning Doc**: [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md)
+
+Two research paths: instant ($1 crypto via NOWPayments) and free queue.
+
+- [ ] Sign up NOWPayments with dev@silvi.earth, get API key + IPN secret
+- [ ] Create `research_payments` table
+- [ ] Build `backend/controllers/payments.js` (invoice creation + webhook)
+- [ ] Build `backend/routes/payments.js` + register in server.js
+- [ ] Webhook: verify HMAC-SHA512, trigger Grok research on payment confirmation
+- [ ] Frontend: dual-button UI ("Research Instantly $1" / "Add to Queue (Free)")
+- [ ] Frontend: show "Re-research" with last research date for already-researched species
+- [ ] Install `@nowpaymentsio/nowpayments-api-js`
+- [ ] Test with NOWPayments sandbox
+- [ ] Future: admin role bypasses payment for instant research
 
 ### Future: Insights Vector/Graph
 - [ ] Embed insights in vector database for semantic search
@@ -230,6 +231,44 @@ Full refresh of geohash occurrence data from BigQuery parquet export.
 
 ---
 
+## [IN PROGRESS] - Ecoregion Reforestation Guides
+
+**Status**: Phases 2-3 complete — backend API + frontend pages live. Phase 1 species research ongoing.
+**Added**: January 2026
+**Planning Doc**: [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md)
+
+Auto-generated reforestation guides per ecoregion using LEAF scoring + AI-researched species data. Frontend pages at `/guide/[eco_id]`. Also feeds into ReFi Reforestation Playbook for Regen Coordination.
+
+**Pilot Ecoregion**: Tyrrhenian-Adriatic sclerophyllous and mixed forests (eco_id 806, Sicily)
+
+**Live Routes**: `/guide` (search), `/guide/806` (example guide)
+
+### Phase 1: Research Pilot Species (2/25 complete)
+- [x] Add 25 pilot species to research queue (queue IDs 1-24)
+- [x] Research Myrtus communis (67 insights, 0.84 confidence)
+- [x] Research Quercus ilex (73 insights, 0.87 confidence)
+- [ ] Research remaining 23 species (via queue workflow or direct Grok API)
+- [ ] Verify insights quality and coverage across all 25
+
+### Phase 2: Backend API ✅ COMPLETE
+- [x] `GET /api/guides/ecoregion/:eco_id` — LEAF-ranked species + synthesized content
+- [x] `POST /api/guides/ecoregion/:eco_id/synthesize` — Grok synthesis trigger
+- [x] `GET /api/geospatial/ecoregions/search?q=` — Autocomplete search
+- [x] `ecoregion_guides` table + synthesis service
+
+### Phase 3: Frontend Guide Pages ✅ COMPLETE
+- [x] `/guide` search page with autocomplete
+- [x] `/guide/[eco_id]` accordion detail page
+- [ ] Add "Guides" to navbar (deferred)
+- [x] Species cards, tier badges, methodology section
+
+### Phase 4: Polish & Expand
+- [ ] Ecoregion map visualization
+- [ ] Planting strategy groupings (canopy, understory, pioneer)
+- [ ] Expand to 12 bioregional campaign ecoregions
+
+---
+
 ## [FUTURE] - Advanced Features
 
 ### Unified Zone Schema
@@ -250,10 +289,10 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 ### AI Research Enhancement
 - [x] ~~Decide on production integration strategy~~ → Using Grok 4.1 Fast with web search (Jan 2026)
 - [x] ~~Implement confidence scoring~~ → Implemented in grokResearch.js (Jan 2026)
-- [ ] Implement improved 3-group research strategy (Ecological, Morphological, Stewardship)
+- [x] ~~Implement improved multi-group research strategy~~ → Atomic v2: 2 parallel calls (Identity+Ecological, Morphological+Stewardship), 35 fields, 50-80+ insights (Jan 2026)
 - [ ] Add Claude 3.5 Haiku as fallback/alternative research agent
-- [ ] Implement insights table population (store atomic claims with per-field confidence)
-- [ ] Add `sync_insights_to_species()` function usage for multi-source aggregation
+- [x] ~~Implement insights table population (store atomic claims with per-field confidence)~~ → `createAtomicInsights()` with per-claim confidence (Jan 2026)
+- [x] ~~Add `sync_insights_to_species()` function usage for multi-source aggregation~~ → Already in use since Jan 2026
 
 ### Blazegraph Knowledge Graph
 - [ ] Assess current Blazegraph instance vs Fuseki capabilities
@@ -305,6 +344,9 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 - [ ] eBird data for bird species
 - [ ] Forest inventory data from national databases
 
+### Infrastructure & Security
+- [ ] Migrate from root user to dedicated non-root user (create user, move project, reconfigure code-server/PM2/permissions)
+
 ### Open Data & Governance
 - [ ] Automated monthly exports to IPFS
 - [ ] Database schema documentation to EAS
@@ -333,6 +375,8 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 | LEAF™ Scoring | [docs/todo/LEAF.md](docs/todo/LEAF.md) | Active |
 | Geohash Import | [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md) | Active |
 | Frontend v10 | [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md) | Active |
+| Dual Research | [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md) | Planning |
+| Ecoregion Guides | [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md) | Active |
 | Unified Zone Schema | [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md) | Planning |
 
 **Reference Documentation** (in `docs/`):

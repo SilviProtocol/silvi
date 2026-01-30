@@ -160,6 +160,9 @@ app.use('/sponsorships', sponsorshipRoutes);
 const geospatialRoutes = require('./routes/geospatial')(pool);
 app.use('/api/geospatial', geospatialRoutes);
 
+const guidesRoutes = require('./routes/guides')(pool);
+app.use('/api/guides', guidesRoutes);
+
 // GraphFlow Admin Routes (for ontology generation, sync, SPARQL, etc.)
 const adminRoutes = require('./routes/admin');
 app.use('/api/admin', adminRoutes);

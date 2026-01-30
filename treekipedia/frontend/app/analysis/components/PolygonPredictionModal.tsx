@@ -156,7 +156,7 @@ export default function PolygonPredictionModal({ geometry, onClose, map }: Polyg
       setMessage('Sampling AlphaEarth satellite data (this may take 30-60 seconds)...');
       setProgress(30);
 
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
 
       const response = await fetch(`${apiUrl}/api/prediction/polygon`, {
         method: 'POST',

@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Loader2, MapPin, Sparkles, Leaf, AlertTriangle, Globe } from 'lucide-react';
 import Link from 'next/link';
+import { getTopCommonNames } from '@/utils/commonNames';
 import L from 'leaflet';
 
 interface AlternateHabitat {
@@ -17,7 +18,8 @@ interface AlternateHabitat {
 
 interface SpeciesPrediction {
   taxon_id: string;
-  species_scientific_name: string;
+  taxon_full?: string;
+  species_scientific_name?: string;
   family: string;
   common_name: string | null;
   cluster_id: number;
@@ -175,11 +177,8 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
       console.log('📡 Fetching from GEE service...');
       const fetchStartTime = Date.now();
 
-      const response = await fetch('http://localhost:5002/sample', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon, year: 2024 })
-      });
+      const apiBase = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
+      const response = await fetch(`${apiBase}/api/prediction/sample?lat=${lat}&lon=${lon}`);
 
       const fetchDuration = ((Date.now() - fetchStartTime) / 1000).toFixed(1);
       console.log(`✅ GEE fetch completed in ${fetchDuration}s`);
@@ -227,13 +226,13 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
       console.log('🔍 Searching for similar species...');
       const predictionStartTime = Date.now();
 
-      const predictionResponse = await fetch('http://localhost:5001/api/embeddings/predict', {
+      const predictionResponse = await fetch(`${apiBase}/api/prediction/from-embedding`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           embedding: samplingResult.embedding,
           limit: 10,
-          lat,  // Pass location for native status determination
+          lat,
           lon
         })
       });
@@ -417,48 +416,24 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                     <div key={`${pred.taxon_id}-${index}`} className="bg-black/30 backdrop-blur-sm border border-emerald-500/20 rounded-xl hover:border-emerald-400/40 transition-all">
                       <Link href={`/species/${pred.taxon_id}`} className="block p-4 hover:bg-black/40 transition-all cursor-pointer">
                         <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">
-                                {index + 1}
-                              </span>
-                              <h4 className="text-white font-medium italic">
-                                {pred.species_scientific_name}
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold flex-shrink-0">
+                              {index + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <h4 className="text-white font-medium italic truncate">
+                                {pred.taxon_full || pred.species_scientific_name}
                               </h4>
-                              {/* Native Status Badge */}
-                              {pred.native_status === 'native' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 text-xs">
-                                  <Leaf className="h-2.5 w-2.5" />
-                                  Native
-                                </span>
-                              )}
-                              {pred.native_status === 'introduced' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-xs">
-                                  <Globe className="h-2.5 w-2.5" />
-                                  Introduced
-                                </span>
-                              )}
-                              {pred.native_status === 'invasive' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-xs">
-                                  <AlertTriangle className="h-2.5 w-2.5" />
-                                  Invasive
-                                </span>
-                              )}
-                              {pred.native_status === 'native_and_introduced' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs">
-                                  <Leaf className="h-2.5 w-2.5" />
-                                  Native+Intro
-                                </span>
+                              {pred.common_name && (
+                                <p className="text-sm text-emerald-300/70 truncate">
+                                  {getTopCommonNames(pred.common_name, 3, 80)}
+                                </p>
                               )}
                             </div>
-                            <p className="text-sm text-emerald-300/70 ml-8">
-                              {pred.family}
-                              {pred.common_name && ` • ${pred.common_name}`}
-                            </p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0 ml-3">
                             <div className="text-lg font-bold text-emerald-400">
-                              {(pred.confidence * 100).toFixed(1)}%
+                              {(pred.confidence * 100).toFixed(0)}%
                             </div>
                             <div className="text-xs text-emerald-300/50">
                               {pred.habitat_count && pred.habitat_count > 1 ? `${pred.habitat_count} habitats` : 'confidence'}
@@ -467,23 +442,11 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                         </div>
 
                         {/* Confidence Bar */}
-                        <div className="h-1.5 bg-emerald-950/50 rounded-full overflow-hidden mb-3">
+                        <div className="h-1.5 bg-emerald-950/50 rounded-full overflow-hidden ml-8">
                           <div
                             className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-300"
                             style={{ width: `${pred.confidence * 100}%` }}
                           />
-                        </div>
-
-                        {/* Primary Habitat Metadata */}
-                        <div className="flex items-center justify-between text-xs text-emerald-200/50">
-                          <span>
-                            {pred.total_occurrences.toLocaleString()} total occurrences
-                            {pred.habitat_count && pred.habitat_count > 1 && ` • ${pred.cluster_size} in primary habitat`}
-                          </span>
-                          <span>
-                            <MapPin className="inline h-3 w-3 mr-1" />
-                            {pred.representative_lat.toFixed(2)}, {pred.representative_lon.toFixed(2)}
-                          </span>
                         </div>
                       </Link>
 

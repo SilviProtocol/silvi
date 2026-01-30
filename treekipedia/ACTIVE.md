@@ -1,6 +1,6 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: January 20, 2026
+**Last Updated**: January 28, 2026
 **System Health**: Operational
 
 ---
@@ -12,10 +12,12 @@
 |--------|-------|----------|
 | **Total Species** | 67,927 | 50,797 species + 16,946 subspecies |
 | **Primary Keys** | `taxon_id` + `taxon_full` | `-00` suffix = species, `-01`+ = subspecies |
-| **Fields per Species** | 130+ | v10 schema + research versioning (7 new metadata fields Jan 2026) |
+| **Fields per Species** | 140+ | v10 schema + v11 research fields (10 new _ai columns Jan 2026, incl. propagation_methods_ai) |
 | **Images** | 31,796 | 13,609 species (22.1% coverage) |
-| **Researched Species** | 19 | With AI-generated data |
-| **Research Architecture** | Insights-based | Confidence scoring, source tracking, versioning |
+| **Researched Species** | 20 | With AI-generated data + atomic insights (1 via CLI skill, 19 via Grok) |
+| **Research Queue** | 24 pending | Ecoregion 806 pilot batch (Sicily/Southern Italy) |
+| **Research Architecture** | Atomic insights v2 | Two parallel Grok calls, 35 fields, 50-80+ insights/species, per-claim confidence |
+| **pgvector** | 0.8.0 | Enabled for AlphaEarth embedding similarity search |
 
 ### Geospatial Data
 | Metric | Value |
@@ -69,21 +71,46 @@
 
 ### Geospatial
 - `POST /api/geospatial/analyze-plot` - Polygon-based species analysis
-- `GET/POST /api/geospatial/leaf/score` - **LEAF™ species recommendations** (NEW)
+- `GET/POST /api/geospatial/leaf/score` - **LEAF™ species recommendations**
+- `GET /api/geospatial/ecoregions/search?q=` - **Ecoregion autocomplete search** (NEW)
 - `GET /api/geospatial/ecoregions/:ecoregion_id/species` - Species in ecoregion
 - `GET /api/geospatial/ecoregions/at-point` - Ecoregion at coordinates
 - `POST /api/geospatial/ecoregions/intersect` - Ecoregion intersection
 - `GET /api/geospatial/ecoregions/native-species/:ecoregion_name` - Native species (API key required)
 
-### Research
-- `POST /species/:taxon_id/research` - Trigger Grok-powered AI research with confidence scoring
-- `GET /research/:taxon_id` - Retrieve research data
+### Ecoregion Guides (NEW)
+- `GET /api/guides/ecoregion/:eco_id` - **Reforestation guide** with LEAF-ranked species + synthesized content
+- `POST /api/guides/ecoregion/:eco_id/synthesize` - Trigger Grok synthesis (supports `?force=true`)
+
+### Research & Insights
+- `POST /species/:taxon_id/research` - Trigger Grok instant AI research (creates insights → syncs to _ai columns)
+- `GET /species/:taxon_id/insights` - Atomic insights with metadata, confidence, sources
+- `POST /research/fund-research` - Add species to research queue (free, async)
+- `GET /research/queue/status` - Queue monitoring
+- `GET /research/queue/next` - Get next pending species from queue
+- `POST /research/queue/{id}/start` - Lock species for processing
+- `POST /research/queue/{id}/complete` - Mark research complete
+- `POST /research/queue/bulk-add` - Batch-add species to queue
+- `GET /research/{taxon_id}/context` - Research context (first vs re-research, priority fields, gaps)
+- `POST /research/{taxon_id}/save` - Save atomic insights from CLI research
+- `GET /research/insights/{taxon_id}/gaps` - Find missing/low-confidence fields
 
 **Research Process** (Updated Jan 2026):
-- Uses Grok 4.1 Fast with agentic web search
-- Returns 25 AI fields with confidence scores (0-1.0)
+- **Instant path**: Grok 4.1 Fast atomic v2 — two parallel calls, 35 fields, 50-80+ insights → sync to _ai columns
+- **Queue path**: CLI skill pulls from research_queue → web research → 50-80+ atomic insights → save via API
+- Queue supports multi-session coordination (local VM + remote Claude Code sessions)
+- All endpoints accessible at `https://treekipedia-api.silvi.earth/research/...`
+- Returns 35 AI fields with confidence scores (0-1.0)
 - Tracks research version, date, sources, and token usage
-- Stores metadata in `research_version`, `research_confidence`, `research_sources` columns
+- Insights endpoint returns `has_insights`, `metadata` (version, confidence, model, sources), and flat insights array
+
+### Prediction (NEW from djimo merge)
+- `GET/POST /api/prediction/*` - Species suitability prediction using AlphaEarth embeddings
+- Pending: v4 parquet data + clustering pipeline
+
+### Admin
+- `GET /api/admin/*` - Admin endpoints (new from djimo merge)
+- `GET /api/embeddings/*` - Embedding management (new from djimo merge)
 
 Full API documentation: See **API.md**
 
@@ -101,16 +128,19 @@ Full API documentation: See **API.md**
 7. **Geospatial Analysis** - Interactive map with polygon drawing and KML upload
 8. **LEAF Scoring** - Location-based species recommendations with native status integration
 9. **WCVP Native Status** - 97.5% species coverage for native/introduced filtering
-10. **Ecoregion Queries** - 7 endpoints for ecological context
-11. **Public API Access** - API key authentication for external integrations
-12. **Admin Dashboard** - Password-protected server stats
-13. **Habitat Biomes** - Derived from occurrence data, replaces unreliable SBTN land cover
+10. **Ecoregion Queries** - 8 endpoints for ecological context
+11. **Ecoregion Guides** - `/guide` search + `/guide/[eco_id]` reforestation guides with LEAF scoring
+12. **Public API Access** - API key authentication for external integrations
+13. **Admin Dashboard** - Password-protected server stats
+14. **Habitat Biomes** - Derived from occurrence data, replaces unreliable SBTN land cover
 
 ### Known Issues
-- `performResearch is not a function` errors in logs (non-critical)
 - Database parameter validation ("null" strings vs NULL values)
 - `/scripts/research/` contains 48 test files (4.1MB) - can be archived
 - ~180K tiles without ecoregion assignment (ocean, Antarctica, remote areas)
+- AlphaEarth v4 parquet not on server (was on djimo's local machine, pending transfer)
+- `orchestrator/` contains debug scripts and logs that should be pruned
+- Research queue write endpoints (save, start, complete, bulk-add) have no API key auth yet
 
 ---
 

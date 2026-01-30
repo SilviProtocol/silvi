@@ -6,6 +6,97 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-01-28 - Ecoregion Reforestation Guides
+
+**Planning Doc**: [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md)
+
+**Backend API** (`backend/controllers/guides.js`, `backend/routes/guides.js`)
+- `GET /api/guides/ecoregion/:eco_id` — Returns ecoregion metadata, synthesized content, LEAF-ranked species grouped by tier, top 10 enriched with _ai fields
+- `POST /api/guides/ecoregion/:eco_id/synthesize` — Triggers Grok 4.1 Fast synthesis, stores in `ecoregion_guides` table; supports `?force=true` regeneration
+- `GET /api/geospatial/ecoregions/search?q=` — ILIKE search on eco_name for autocomplete (added to geospatial.js)
+
+**Database** (`database/09_ecoregion_guides_table.sql`)
+- New `ecoregion_guides` table: eco_id (PK), overview_intro, planting_strategy, climate_context, conservation_notes, generated_at, model_used, synthesis_version, species_count, source_data (JSONB)
+
+**Guide Synthesis Service** (`backend/services/guideSynthesis.js`)
+- Grok 4.1 Fast generates 4 structured sections from ecoregion metadata + top 20 species _ai summaries
+- Returns JSON with overview_intro, planting_strategy, climate_context, conservation_notes
+
+**Frontend Pages** (`frontend/app/guide/`)
+- `/guide` — Ecoregion search with 300ms debounced autocomplete, info cards (LEAF Scoring, AI Research, 847 Ecoregions)
+- `/guide/[eco_id]` — Accordion-style guide: Overview, Top Species (2-col cards), All Species by Tier (compact rows), Planting Strategy, Climate, Conservation, Methodology
+- Components: Accordion (useState + ChevronDown/Up), TierBadge, SpeciesCard, CompactSpeciesRow
+- Links species cards to `/species/[taxon_id]`
+
+**API Types** (`frontend/lib/api.ts`)
+- Added: `EcoregionSearchResult`, `EcoregionGuideSpecies`, `EcoregionGuideSynthesized`, `EcoregionGuideResponse`
+- Functions: `searchEcoregions()`, `getEcoregionGuide()`
+
+**Verification**
+- Ecoregion 806 (Tyrrhenian-Adriatic): 1,208 species scored, 122 BEST, 241 GOOD
+- Ecoregion 331 (Appalachian-Blue Ridge): 2,835 species scored
+- Backend live at `https://treekipedia-api.silvi.earth/api/guides/...`
+
+---
+
+## 2026-01-27 - Atomic Grok Research (v2)
+
+**Grok research upgraded from 25 flat fields to 35 fields with multi-value array support**
+- Two parallel Grok API calls via `Promise.allSettled`: Call 1 (Identity + Ecological, 14 fields), Call 2 (Morphological + Stewardship, 21 fields)
+- 12 array fields return `[{text, context, region?, source_hint?}]` — one insight row per array element
+- 23 single-value fields (string/number) — one insight row each
+- Expected output: 50-80+ atomic insights per well-documented species (was exactly 25)
+- Per-insight confidence: 0.80 with source_hint, 0.70 without, 0.75 for string/numeric fields
+- Old insights marked `is_current = FALSE` before inserting new batch (clean supersession)
+- Partial success handling: if one call fails, results from other still saved; response includes `calls_succeeded` and `partial` flag
+- 10 new fields covered: etymology, synonyms, identification_features, climate_tolerance, tolerances, associated_species, propagation_methods, timber_value, non_timber_products, nutritional_caloric_value
+- Added `propagation_methods_ai` column to species table (was missing)
+- Token usage tracked per species in `research_token_usage` with agent `grok-research-atomic`
+- Legacy `performResearch()` (v1) preserved for backward compatibility
+- Files: `backend/services/grokResearch.js`, `backend/controllers/species.js`
+
+---
+
+## 2026-01-27 - djimotreekipedia Merge + Frontend Alignment
+
+**Full merge of djimotreekipedia branch into latest**
+- Frontend: adopted djimo's species page (DataField, tabs, page, hooks, ResearchMetadataPanel)
+- Backend: kept our species.js (Grok agentic research, insights flow, confidence scoring)
+- New from djimo: research.js controller (queue), admin.js, embeddings.js, prediction routes (1,214 lines), orchestrator service, python-microservice, v11 schema migrations, insights schema migrations
+- Backup: `latest-pre-merge` branch preserved
+- Added missing `multer` dependency for admin routes
+- Added 9 missing species columns: `etymology_ai`, `synonyms_ai`, `identification_features_ai`, `climate_tolerance_ai`, `tolerances_ai`, `associated_species_ai`, `timber_value_ai`, `non_timber_products_ai`, `nutritional_caloric_value_ai`
+
+**Insights endpoint fixed** - `GET /species/:taxon_id/insights`
+- Now returns `has_insights` boolean (was missing → Synthetic Knowledge panel never rendered)
+- Now returns `metadata` object: version, research_date, model, insight_count, field_count, avg_confidence, source_count
+- Returns `insights` as flat array (was grouped object → caused `.forEach is not a function` crash)
+- Retains `insights_grouped` for optional grouped access
+
+**Frontend data flow simplified** - `useSpeciesData.ts`
+- Reduced from 3 parallel queries to 2: species + insights (removed redundant `/research/:taxon_id` query)
+- `researchData` aliased to species query data for backwards compatibility with TabContainer
+- `getFieldValue()` priority chain unchanged: human → ai → legacy
+- Removed debug console.logs
+
+**Dead code removed**
+- Deleted `InsightField.tsx`, `InsightItem.tsx` (unused, different interface than API)
+- Deleted `useResearchProcess.ts` (legacy polling hook, never imported by page.tsx)
+
+**Infrastructure setup for AlphaEarth pipeline**
+- Installed pgvector 0.8.0 extension in PostgreSQL (`CREATE EXTENSION vector`)
+- Installed Python earthengine-api, scikit-learn, numpy, pandas, pyarrow
+- GEE authenticated with dev@silvi.earth, project `treekipedia` (86K AlphaEarth images accessible)
+- v4 parquet data pending (was on djimo's local machine)
+
+**Planning docs added**
+- `docs/todo/dual-research-integration.md` - NOWPayments crypto payment + dual research buttons
+- Updated TODO.md with dual research checklist and planning doc table
+
+Files: `backend/controllers/species.js`, `backend/controllers/research.js`, `frontend/app/species/[taxon_id]/hooks/useSpeciesData.ts`, `frontend/lib/api.ts`
+
+---
+
 ## 2026-01-23 - Insights Flow Integration
 
 **Research Flow Refactored** - Research now writes to insights table, then syncs to _ai columns

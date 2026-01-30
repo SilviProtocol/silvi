@@ -1760,6 +1760,36 @@ async function getLeafScore(req, res) {
   }
 }
 
+// Search ecoregions by name (autocomplete)
+async function searchEcoregions(req, res) {
+  try {
+    const { q } = req.query;
+    if (!q || q.length < 2) {
+      return res.status(400).json({ error: 'Query must be at least 2 characters' });
+    }
+
+    const result = await pool.query(`
+      SELECT eco_id, eco_name, biome_name, realm,
+             ST_Area(geom::geography) / 1000000 as area_km2
+      FROM ecoregions
+      WHERE eco_name ILIKE $1
+      ORDER BY eco_name
+      LIMIT 20
+    `, [`%${q}%`]);
+
+    res.json(result.rows.map(r => ({
+      eco_id: parseInt(r.eco_id),
+      eco_name: r.eco_name,
+      biome_name: r.biome_name,
+      realm: r.realm,
+      area_km2: Math.round(parseFloat(r.area_km2))
+    })));
+  } catch (error) {
+    console.error('Error in searchEcoregions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 return {
   findSpeciesNearby,
   getSpeciesDistribution,
@@ -1776,7 +1806,8 @@ return {
   getEcoregionBoundaries,
   getNativeSpeciesByEcoregionName,
   getIntactForestBoundaries,
-  getLeafScore
+  getLeafScore,
+  searchEcoregions
 };
 
 };

@@ -358,6 +358,117 @@ Example error:
 
 ---
 
+## Research Queue API — Batch Species Research
+
+Treekipedia uses an atomic insights model where AI research produces 50-80+ individual facts per species. The research queue coordinates batch processing across multiple sessions (local or remote).
+
+**Authentication**: None currently (planned: API key for write endpoints)
+
+### Queue Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/research/queue/next` | GET | Get next pending species from queue |
+| `/research/queue/{id}/start` | POST | Mark species as processing (locks it) |
+| `/research/queue/{id}/complete` | POST | Mark species as completed |
+| `/research/queue/bulk-add` | POST | Add multiple species to queue |
+| `/research/queue/status` | GET | Queue statistics and pending items |
+
+### Research Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/research/{taxon_id}/context` | GET | Get research context (first vs re-research, priority fields, gaps) |
+| `/research/{taxon_id}/save` | POST | Save atomic insights for a species |
+| `/research/insights/{taxon_id}/gaps` | GET | Find missing or low-confidence fields |
+
+### Workflow
+
+```bash
+API="https://treekipedia-api.silvi.earth"
+
+# 1. Get next species from queue
+curl -s $API/research/queue/next
+# → {"queue_id": 1, "taxon_id": "AngMaMyMyRt39690-00", "species_name": "Myrtus communis", ...}
+
+# 2. Lock it (prevents other sessions from picking it up)
+curl -s -X POST $API/research/queue/1/start
+
+# 3. Check what needs researching
+curl -s $API/research/AngMaMyMyRt39690-00/context
+# → {"is_first_research": true, "recommended_focus": "full", "priority_fields": [...]}
+
+# 4. Save research results (50-80+ atomic insights)
+curl -s -X POST $API/research/AngMaMyMyRt39690-00/save \
+  -H "Content-Type: application/json" \
+  -d '{"model_version": "claude-opus-4-5-20251101", "insights": [...]}'
+# → {"success": true, "insights_saved": 73, "average_confidence": 0.873, "version": 1}
+
+# 5. Mark complete
+curl -s -X POST $API/research/queue/1/complete
+```
+
+### Bulk Add Species to Queue
+
+```bash
+curl -s -X POST $API/research/queue/bulk-add \
+  -H "Content-Type: application/json" \
+  -d '{"taxon_ids": ["AngMaMyMyRt39690-00", "AngMaErRcCa06930-00"], "priority": 80}'
+# → {"success": true, "added": 2, "skipped": 0, "not_found": []}
+```
+
+### Insight JSON Structure
+
+Each insight is an atomic fact with sources:
+
+```json
+{
+  "claim_type": "habitat",
+  "claim_value": {
+    "text": "Dominant species in Mediterranean maquis shrubland",
+    "context": "maquis/woodland",
+    "region": "Mediterranean basin"
+  },
+  "methodology": "extraction",
+  "sources": [
+    {
+      "url": "https://www.euforgen.org/species/quercus-ilex",
+      "title": "EUFORGEN - Quercus ilex",
+      "type": "database",
+      "credibility": 0.90
+    }
+  ]
+}
+```
+
+### Context Response
+
+The context endpoint tells you whether this is first research or re-research:
+
+```json
+{
+  "taxon_id": "AngMaFaFgCx14759-00",
+  "species_name": "Quercus ilex",
+  "is_first_research": false,
+  "existing_version": 1,
+  "existing_insight_count": 73,
+  "recommended_focus": "gaps",
+  "missing_fields": ["propagation_methods"],
+  "low_confidence_fields": ["bark_characteristics"],
+  "priority_fields": ["propagation_methods", "bark_characteristics"],
+  "skip_fields": ["conservation_status", "general_description"]
+}
+```
+
+### 35 Research Fields
+
+**Identity**: popular_common_name, etymology, synonyms, identification_features
+**Ecological**: general_description, habitat, elevation_ranges, ecological_function, native_adapted_habitats, conservation_status, compatible_soil_types, climate_tolerance, tolerances, associated_species
+**Morphological**: growth_form, leaf_type, deciduous_evergreen, flower_color, fruit_type, bark_characteristics, maximum_height, maximum_diameter, lifespan, maximum_tree_age
+**Stewardship**: stewardship_best_practices, planting_recipes, pruning_maintenance, disease_pest_management, fire_management, propagation_methods, cultural_significance, agroforestry_use_cases, timber_value, non_timber_products, nutritional_caloric_value
+
+---
+
 ## Related Endpoints
 
 | Endpoint | Description |

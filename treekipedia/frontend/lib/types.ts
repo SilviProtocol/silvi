@@ -99,6 +99,33 @@ export interface TreeSpecies {
   maximum_tree_age_ai: number | null;
   maximum_tree_age_human: number | null;
   
+  // v2 AI/human fields (added Jan 2026)
+  etymology: string;
+  etymology_ai: string;
+  etymology_human: string;
+  synonyms_ai: string;
+  synonyms_human: string;
+  identification_features: string;
+  identification_features_ai: string;
+  identification_features_human: string;
+  climate_tolerance: string;
+  climate_tolerance_ai: string;
+  climate_tolerance_human: string;
+  tolerances_ai: string;
+  tolerances_human: string;
+  associated_species: string;
+  associated_species_ai: string;
+  associated_species_human: string;
+  propagation_methods: string;
+  propagation_methods_ai: string;
+  propagation_methods_human: string;
+  timber_value_ai: string;
+  timber_value_human: string;
+  non_timber_products_ai: string;
+  non_timber_products_human: string;
+  nutritional_caloric_value_ai: string;
+  nutritional_caloric_value_human: string;
+
   // Other fields without AI/human variants
   climate_change_vulnerability: string;
   national_conservation_status: string;

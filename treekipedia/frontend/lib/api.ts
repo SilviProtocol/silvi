@@ -487,6 +487,81 @@ export async function getErrorLogs() {
  * Geospatial API endpoints
  */
 
+/**
+ * Ecoregion Guide API endpoints
+ */
+
+export interface EcoregionSearchResult {
+  eco_id: number;
+  eco_name: string;
+  biome_name: string;
+  realm: string;
+  area_km2: number;
+}
+
+export interface EcoregionGuideSpecies {
+  taxon_id: string;
+  scientific_name: string | null;
+  common_name: string | null;
+  popular_common_name_ai?: string | null;
+  family: string | null;
+  genus: string | null;
+  leaf_score: number;
+  tier: 'BEST' | 'GOOD' | 'ACCEPTABLE' | 'LOW';
+  is_native: boolean;
+  occurrence_count: number;
+  tile_count: number;
+  general_description_ai?: string | null;
+  habitat_ai?: string | null;
+  ecological_function_ai?: string | null;
+  maximum_height_ai?: string | null;
+  conservation_status_ai?: string | null;
+}
+
+export interface EcoregionGuideSynthesized {
+  overview_intro: string | null;
+  planting_strategy: string | null;
+  climate_context: string | null;
+  conservation_notes: string | null;
+  generated_at: string;
+  model_used: string;
+  synthesis_version: number;
+  species_count: number;
+}
+
+export interface EcoregionGuideResponse {
+  ecoregion: EcoregionSearchResult;
+  synthesized_content: EcoregionGuideSynthesized | null;
+  statistics: {
+    total_species: number;
+    by_tier: { BEST: number; GOOD: number; ACCEPTABLE: number; LOW: number };
+  };
+  top_species: EcoregionGuideSpecies[];
+  species_by_tier: {
+    BEST: EcoregionGuideSpecies[];
+    GOOD: EcoregionGuideSpecies[];
+    ACCEPTABLE: EcoregionGuideSpecies[];
+    LOW: EcoregionGuideSpecies[];
+  };
+  countries: string[];
+}
+
+export const searchEcoregions = async (query: string): Promise<EcoregionSearchResult[]> => {
+  if (!query || query.length < 2) return [];
+  try {
+    const { data } = await apiClient.get(`/api/geospatial/ecoregions/search?q=${encodeURIComponent(query)}`);
+    return data;
+  } catch (error) {
+    console.error('Error searching ecoregions:', error);
+    return [];
+  }
+};
+
+export const getEcoregionGuide = async (eco_id: string | number): Promise<EcoregionGuideResponse> => {
+  const { data } = await apiClient.get(`/api/guides/ecoregion/${eco_id}`);
+  return data;
+};
+
 // Analyze species within a polygon plot
 export const analyzePlot = async (geometry: GeoJSONPolygon): Promise<PlotAnalysisResponse> => {
   try {

@@ -42,8 +42,8 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
   }
 
   return (
-    <div className="p-4 rounded-xl bg-gradient-to-br from-emerald-900/20 to-green-900/20 border border-emerald-500/20 backdrop-blur-sm">
-      <h3 className="text-lg font-semibold mb-4 text-emerald-300">Quick Facts</h3>
+    <div className="p-4 rounded-xl bg-black/40 backdrop-blur-md border border-white/15">
+      <h3 className="text-lg font-semibold mb-4 text-white/90">Quick Facts</h3>
 
       <div className="space-y-4">
         {/* Climate Zones */}
@@ -98,7 +98,7 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
               {visibleBiomes.map((biome, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/20 text-green-300 border border-green-600/30"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-500/30"
                   title={`${biome.occurrences.toLocaleString()} occurrences in ${biome.tiles.toLocaleString()} tiles`}
                 >
                   {biome.biome}
@@ -107,7 +107,7 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
               {!showAllBiomes && remainingBiomes > 0 && (
                 <button
                   onClick={() => setShowAllBiomes(true)}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-400 border border-green-600/20 hover:bg-green-600/20 transition-colors"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
                 >
                   +{remainingBiomes} more
                 </button>
@@ -115,7 +115,7 @@ export function SpeciesInfobox({ species }: SpeciesInfoboxProps) {
               {showAllBiomes && habitatBiomes.length > 3 && (
                 <button
                   onClick={() => setShowAllBiomes(false)}
-                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-600/10 text-green-400 border border-green-600/20 hover:bg-green-600/20 transition-colors"
+                  className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition-colors"
                 >
                   Show less
                 </button>

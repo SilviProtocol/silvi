@@ -157,18 +157,6 @@ export default function SpeciesDetailsPage() {
   return (
     <div className="min-h-screen py-8">
       <div className="max-w-7xl w-full mx-auto px-4">
-        {/* Data Source Legend */}
-        <div className="flex items-center justify-end gap-4 mb-4 text-sm text-white/80">
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-emerald-400"></span>
-            <span>Verified Knowledge</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="inline-block w-3 h-3 rounded-full bg-violet-400"></span>
-            <span>Synthetic Knowledge</span>
-          </div>
-        </div>
-
         {/* Back Button + Research Button */}
         <div className="mb-6 flex items-center gap-3">
           <Button
@@ -206,7 +194,7 @@ export default function SpeciesDetailsPage() {
             <Button
               onClick={() => handleResearch(true)}
               disabled={isResearching}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-violet-600/60 hover:bg-violet-600/80 border border-violet-400/30"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600/60 hover:bg-emerald-600/80 border border-emerald-400/30"
             >
               {isResearching ? (
                 <>
@@ -233,40 +221,45 @@ export default function SpeciesDetailsPage() {
           )}
         </div>
 
-        {/* Two-column layout: Content + Image Sidebar */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr,400px] gap-6">
-          {/* Main Content Column */}
-          <div className="space-y-4">
-            {/* Research Metadata Panel - show if insights exist */}
-            {hasInsights && (
-              <ResearchMetadataPanel
-                metadata={insightsMetadata}
-                isLoading={isInsightsLoading}
-              />
-            )}
+        {/* Two-column layout: Content + Sidebar (when sidebar has content) */}
+        {(() => {
+          const hasSidebar = hasInsights || (species.image_count && species.image_count > 0);
+          return (
+            <div className={`grid grid-cols-1 ${hasSidebar ? 'lg:grid-cols-[1fr,400px]' : ''} gap-6`}>
+              {/* Main Content Column */}
+              <div className="space-y-4">
+                <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-4 text-white">
+                  <SpeciesHeader species={species} />
 
-            <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-4 text-white">
-              <SpeciesHeader species={species} />
+                  {/* Tab Navigation */}
+                  <TabContainer
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    species={species}
+                    researchData={researchData}
+                    isResearched={isResearched}
+                    getFieldValue={getFieldValue}
+                    getInsightForField={getInsightForField}
+                    getInsightsForField={getInsightsForField}
+                  />
+                </div>
+              </div>
 
-              {/* Tab Navigation */}
-              <TabContainer
-                activeTab={activeTab}
-                setActiveTab={setActiveTab}
-                species={species}
-                researchData={researchData}
-                isResearched={isResearched}
-                getFieldValue={getFieldValue}
-                getInsightForField={getInsightForField}
-                getInsightsForField={getInsightsForField}
-              />
+              {/* Sidebar - sticky on desktop, only rendered when there's content */}
+              {hasSidebar && (
+                <div className="lg:sticky lg:top-6 lg:self-start space-y-4">
+                  {hasInsights && (
+                    <ResearchMetadataPanel
+                      metadata={insightsMetadata}
+                      isLoading={isInsightsLoading}
+                    />
+                  )}
+                  <ImageCarousel taxonId={taxonId} />
+                </div>
+              )}
             </div>
-          </div>
-
-          {/* Image Sidebar - sticky on desktop, shows at top on mobile */}
-          <div className="lg:sticky lg:top-6 lg:self-start order-first lg:order-last">
-            <ImageCarousel taxonId={taxonId} />
-          </div>
-        </div>
+          );
+        })()}
       </div>
     </div>
   );

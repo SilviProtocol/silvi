@@ -161,9 +161,9 @@
 - `synonyms` - Alternative names
 
 ### Common Names (3)
-- `common_name` - Common names (semicolon-separated)
+- `common_name` - Common names (semicolon-separated, multilingual, messy — e.g., `"; Myrtle; Arrayán; ミルツス..."`)
 - `common_countries` - Countries where common names apply
-- `popular_common_name_ai` - AI-selected popular common name
+- `popular_common_name_ai` - **Single clean English name** selected by AI research (e.g., `"Common Myrtle"`). Use this for UI display, guides, and search results instead of parsing `common_name`.
 
 ### Geographic & Distribution (9)
 - `countries_native` - Native countries (GBIF-derived, 26% coverage)

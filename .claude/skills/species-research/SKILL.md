@@ -82,112 +82,72 @@ If you only have ~35 insights (one per field), **you are doing it wrong**.
 
 ---
 
+## API Base URL
+
+**Local (on VM):** `http://localhost:3000`
+**Remote (Djimo / external):** `https://treekipedia-api.silvi.earth`
+
+All examples below use `$API` as placeholder. Set it before starting:
+```bash
+API="http://localhost:3000"        # on the VM
+API="https://treekipedia-api.silvi.earth"  # remote
+```
+
+---
+
 ## Adaptive Research Workflow
 
-The orchestrator provides **context-aware research**. Before researching, check if existing insights exist.
+### Mode 1: Queue-driven (preferred for batch)
 
-### STEP 1: Get Next Species from Queue
+Pull from queue, research, save, mark complete. Prevents duplicate work across sessions.
+
+**STEP 1: Get next species**
 ```bash
-curl -s http://localhost:5003/queue/next
+curl -s $API/research/queue/next
 ```
-Response: `{"queue_id": 123, "taxon_id": "GymGiGiGnKg50344-00", "species_name": "Ginkgo biloba", ...}`
+Response: `{"queue_id": 1, "taxon_id": "AngMaMyMyRt39690-00", "species_name": "Myrtus communis", ...}`
 
-### STEP 2: Mark as Processing
+If `queue_empty: true`, all species are done.
+
+**STEP 2: Mark as processing** (locks it so other sessions skip it)
 ```bash
-curl -s -X POST http://localhost:5003/queue/{queue_id}/start
+curl -s -X POST $API/research/queue/{queue_id}/start
 ```
 
-### STEP 3: Get Research Context (IMPORTANT!)
+**STEP 3: Get research context**
 ```bash
-curl -s http://localhost:5003/research/{taxon_id}/context
+curl -s $API/research/{taxon_id}/context
+```
+Returns `recommended_focus` ("full" for first research, "gaps" for re-research), `priority_fields`, `skip_fields`, and existing insight count.
+
+**STEP 4: Conduct research** — web search all 35 fields, build atomic insights (see below).
+
+**STEP 5: Save insights**
+```bash
+curl -s -X POST $API/research/{taxon_id}/save \
+  -H "Content-Type: application/json" \
+  -d '{"model_version": "claude-opus-4-5-20251101", "insights": [...]}'
+```
+Response: `{"success": true, "insights_saved": 73, "average_confidence": 0.873, "version": 1}`
+
+**STEP 6: Mark complete**
+```bash
+curl -s -X POST $API/research/queue/{queue_id}/complete
 ```
 
-Response tells you HOW to research:
-```json
-{
-  "taxon_id": "GymGiGiGnKg50344-00",
-  "species_name": "Ginkgo biloba",
-  "is_first_research": true,
-  "existing_version": 0,
-  "existing_insight_count": 0,
-  "recommended_focus": "full",
-  "priority_fields": ["all 35 fields"],
-  "skip_fields": []
-}
-```
+**STEP 7: Loop** — go back to STEP 1 until queue is empty.
 
-OR for re-research:
-```json
-{
-  "is_first_research": false,
-  "existing_version": 1,
-  "existing_insight_count": 65,
-  "recommended_focus": "gaps",
-  "high_confidence_fields": ["conservation_status", "maximum_height", ...],
-  "low_confidence_fields": ["cultural_significance", "tolerances"],
-  "missing_fields": ["fire_management", "propagation_methods"],
-  "controversial_fields": [],
-  "priority_fields": ["cultural_significance", "tolerances", "fire_management"],
-  "skip_fields": ["conservation_status", "maximum_height"]
-}
-```
+### Mode 2: Direct (for a specific taxon_id)
 
-### Research Modes
+If ARGUMENTS provides a taxon_id, skip the queue and research that species directly (steps 3-5 only). Useful for one-off research or re-research.
+
+### Research Modes (from context endpoint)
 
 | Mode | When | What to Do |
 |------|------|------------|
 | `full` | First research | Research ALL 35 fields, generate 50-80+ insights |
 | `gaps` | Re-research | Focus on `priority_fields`, skip `skip_fields` |
-| `deep_dive` | Controversies | Deep research on `controversial_fields` with multiple sources |
 | `refresh` | Old data | Light refresh of time-sensitive fields (conservation_status) |
-
-### STEP 4: Conduct Research
-
-Based on `recommended_focus`:
-
-**For "full" mode**: Research all 35 fields comprehensively.
-
-**For "gaps" mode**:
-- SKIP fields in `skip_fields` (already high confidence)
-- PRIORITIZE fields in `priority_fields` (low confidence or missing)
-- Generate new insights that will SUPERSEDE old ones
-
-### STEP 5: Save Insights
-
-```bash
-curl -s -X POST http://localhost:5003/research/{taxon_id}/save \
-  -H "Content-Type: application/json" \
-  -d '{
-    "session_id": "claude_cli_2026_01_16",
-    "model_version": "claude-opus-4-5-20251101",
-    "insights": [...]
-  }'
-```
-
-The orchestrator will:
-1. Calculate evidence-based confidence scores (NOT your self-assessment)
-2. Mark old insights as `is_current = FALSE` (superseded)
-3. Save new insights with `is_current = TRUE`
-4. Update species table `avg_confidence` field
-
-Response:
-```json
-{
-  "success": true,
-  "taxon_id": "GymGiGiGnKg50344-00",
-  "insights_saved": 72,
-  "average_confidence": 0.847,
-  "version": 1,
-  "superseded_count": 0
-}
-```
-
-### STEP 6: Mark Complete
-```bash
-curl -s -X POST http://localhost:5003/queue/{queue_id}/complete
-```
-
-### STEP 7: Loop until queue empty
 
 ---
 
@@ -300,16 +260,18 @@ curl -s -X POST http://localhost:5003/queue/{queue_id}/complete
 
 ---
 
-## Key Endpoints (port 5003)
+## Key Endpoints ($API = http://localhost:3000 or https://treekipedia-api.silvi.earth)
 
 | Endpoint | Method | Purpose |
 |----------|--------|---------|
-| `/queue/next` | GET | Get next pending species |
-| `/queue/{id}/start` | POST | Mark as processing |
-| `/queue/{id}/complete` | POST | Mark as completed |
-| `/research/{taxon_id}/context` | GET | **NEW**: Get research context (first vs re-research) |
-| `/research/{taxon_id}/save` | POST | Save insights (auto-calculates confidence) |
-| `/insights/{taxon_id}/gaps` | GET | **NEW**: Get gaps in existing insights |
+| `$API/research/queue/next` | GET | Get next pending species |
+| `$API/research/queue/{id}/start` | POST | Mark as processing (locks it) |
+| `$API/research/queue/{id}/complete` | POST | Mark as completed |
+| `$API/research/queue/bulk-add` | POST | Add multiple species `{"taxon_ids": [...]}` |
+| `$API/research/queue/status` | GET | Queue stats and pending items |
+| `$API/research/{taxon_id}/context` | GET | Research context (first vs re-research) |
+| `$API/research/{taxon_id}/save` | POST | Save insights (auto-calculates confidence) |
+| `$API/research/insights/{taxon_id}/gaps` | GET | Gaps in existing insights |
 
 ---
 
@@ -318,7 +280,8 @@ curl -s -X POST http://localhost:5003/queue/{queue_id}/complete
 1. **ATOMIC INSIGHTS** - Split multi-value fields into separate insights
 2. **50-80+ insights expected** per well-documented species
 3. **If you only have ~35 insights, you're doing it wrong**
-4. **CHECK CONTEXT FIRST** - Call `/research/{taxon_id}/context` before researching
+4. **CHECK CONTEXT FIRST** - Call `$API/research/{taxon_id}/context` before researching
 5. **ADAPT your research** based on `recommended_focus`
 6. **Don't include confidence** - orchestrator calculates it from sources
 7. Search HARDER for poorly documented species
+8. **USE THE QUEUE** for batch work — it prevents duplicate effort across sessions

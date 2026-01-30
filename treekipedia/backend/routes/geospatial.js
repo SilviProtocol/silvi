@@ -19,6 +19,10 @@ const publicCors = cors({
   credentials: false
 });
 
+// Search ecoregions by name (autocomplete)
+// GET /api/geospatial/ecoregions/search?q=tyrrh
+router.get('/ecoregions/search', geospatialController.searchEcoregions);
+
 // Find species near a location
 // GET /api/geospatial/species/nearby?lat=37.7749&lng=-122.4194&radius=5
 router.get('/species/nearby', geospatialController.findSpeciesNearby);

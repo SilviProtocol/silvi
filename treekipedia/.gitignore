@@ -90,6 +90,7 @@ blazegraph/blazegraph.jnl
 data/*.parquet
 data/*.csv
 *.parquet
+habitat_centroids_export.sql
 test_tile_compressed.csv
 
 # Large GeoJSON files
