@@ -1,8 +1,8 @@
 # Ecoregion Reforestation Guides
 
-**Status**: Phases 2-3 complete — backend API + frontend pages live. Phase 1 species research ongoing.
+**Status**: Phases 1-3 complete — species researched, guide v4 synthesized, frontend live.
 **Added**: January 27, 2026
-**Updated**: January 28, 2026
+**Updated**: February 4, 2026
 **First Target**: Tyrrhenian-Adriatic sclerophyllous and mixed forests (eco_id 806, Sicily/Southern Italy)
 
 ---
@@ -61,35 +61,38 @@ Each ecoregion guide contains:
 
 ### Top 25 LEAF Species — Research Tracker
 
-**Progress**: 2/25 researched (8%) | 23 pending in research queue
+**Progress**: 29/25 researched (116%) | Guide v4 synthesized | All queue species + top LEAF species complete
 
 | # | Species | taxon_id | Common Name | Affinity | Research Status |
 |---|---------|----------|-------------|----------|-----------------|
-| 1 | *Myrtus communis* | AngMaMyMyRt39690-00 | Common Myrtle | 4,132,746 | **Researched** v1 — 67 insights, 0.84 confidence |
-| 2 | *Arbutus unedo* | AngMaErRcCa06930-00 | Strawberry Tree | 1,396,136 | Queued (queue #2) |
-| 3 | *Quercus ilex* | AngMaFaFgCx14759-00 | Holm Oak | 1,040,372 | **Researched** v1 — 73 insights, 0.87 confidence |
-| 4 | *Olea europaea* | AngMaLaLcXx20795-00 | European Olive | 802,190 | Queued (queue #3) |
-| 5 | *Ceratonia siliqua* | AngMaFaFbCx10351-00 | Carob Tree | 559,710 | Queued (queue #4) |
-| 6 | *Rhamnus alaternus* | AngMaRoRhMn44052-00 | Italian Buckthorn | 453,200 | Queued (queue #5) |
-| 7 | *Pinus halepensis* | GymPiPiPnCx50774-00 | Aleppo Pine | 332,100 | Queued (queue #6) |
-| 8 | *Viburnum tinus* | AngMaDiVbRn04478-00 | Laurustinus | 323,136 | Queued (queue #7) |
-| 9 | *Pyrus spinosa* | AngMaRoRsCx44614-00 | Almond-Leaved Pear | 249,696 | Queued (queue #8) |
-| 10 | *Erica arborea* | AngMaErRcCa06994-00 | Tree Heath | 190,500 | Queued (queue #9) |
-| 11 | *Chamaerops humilis* | AngNAPaRcCx49866-00 | European Fan Palm | 178,407 | Queued (queue #10) |
-| 12 | *Pinus pinaster* | GymPiPiPnCx50811-00 | Maritime Pine | 172,666 | Queued (queue #11) |
-| 13 | *Tamarix africana* | AngMaCaTmRc03532-00 | African Tamarisk | 112,752 | Queued (queue #12) |
-| 14 | *Euphorbia dendroides* | AngMaMaPhRb29612-00 | Tree Spurge | 100,386 | Queued (queue #13) |
-| 15 | *Phillyrea latifolia* | AngMaLaLcXx20828-00 | Mock Privet | 93,936 | Queued (queue #14) |
-| 16 | *Quercus suber* | AngMaFaFgCx14925-00 | Cork Oak | 84,868 | Queued (queue #15) |
-| 17 | *Vitex agnus-castus* | AngMaLaLmCx21234-00 | Chaste Tree | 79,206 | Queued (queue #16) |
-| 18 | *Laurus nobilis* | AngMaLaLrCx22770-00 | Bay Laurel | 78,364 | Queued (queue #17) |
-| 19 | *Quercus pubescens* | AngMaFaFgCx14877-00 | Downy Oak | 53,055 | Queued (queue #18) |
-| 20 | *Celtis australis* | AngMaRoCnNb42825-00 | European Nettle Tree | 44,528 | Queued (queue #19) |
-| 21 | *Taxus baccata* | GymPiPiTxCx50907-00 | English Yew | 41,992 | Queued (queue #20) |
-| 22 | *Prunus spinosa* | AngMaRoRsCx44529-00 | Blackthorn | 32,980 | Queued (queue #21) |
-| 23 | *Cercis siliquastrum* | AngMaFaFbCx10360-00 | Judas Tree | 32,552 | Queued (queue #22) |
-| 24 | *Pinus pinea* | GymPiPiPnCx50813-00 | Italian Stone Pine | 27,924 | Queued (queue #23) |
-| 25 | *Fraxinus ornus* | AngMaLaLcXx20652-00 | Manna Ash | 19,240 | Queued (queue #24) |
+| 1 | *Pistacia lentiscus* | AngMaSaNcRd46762-00 | Mastic Tree | — | ✅ **Researched** v1 — 68 insights |
+| 2 | *Myrtus communis* | AngMaMyMyRt39690-00 | Common Myrtle | 4,132,746 | ✅ **Researched** v2 — 68 insights |
+| 3 | *Quercus ilex* | AngMaFaFgCx14759-00 | Holm Oak | 1,040,372 | ✅ **Researched** v2 — 73 insights |
+| 4 | *Arbutus unedo* | AngMaErRcCa06930-00 | Strawberry Tree | 1,396,136 | ✅ **Researched** — 91 insights |
+| 5 | *Juniperus phoenicea* | GymPiPiCpRs50433-06 | Phoenician Juniper | — | ✅ **Researched** v1 — 63 insights |
+| 6 | *Juniperus oxycedrus* | GymPiPiCpRs50432-00 | Prickly Juniper | — | ✅ **Researched** v1 — 69 insights |
+| 7 | *Ceratonia siliqua* | AngMaFaFbCx10351-00 | Carob Tree | 559,710 | ✅ **Researched** — 82 insights |
+| 8 | *Rhamnus alaternus* | AngMaRoRhMn44052-00 | Mediterranean Buckthorn | 453,200 | ✅ **Researched** — 76 insights |
+| 9 | *Viburnum tinus* | AngMaDiVbRn04478-00 | Laurustinus | 323,136 | ✅ **Researched** — 67 insights |
+| 10 | *Pinus halepensis* | GymPiPiPnCx50774-00 | Aleppo Pine | 332,100 | ✅ **Researched** — 74 insights |
+| 11 | *Olea europaea* | AngMaLaLcXx20795-00 | European Olive | 802,190 | ✅ **Researched** — 223 insights |
+| 12 | *Pyrus spinosa* | AngMaRoRsCx44614-00 | Almond-Leaved Pear | 249,696 | ✅ **Researched** — 65 insights |
+| 13 | *Erica arborea* | AngMaErRcCa06994-00 | Tree Heath | 190,500 | ✅ **Researched** — 100 insights |
+| 14 | *Chamaerops humilis* | AngNAPaRcCx49866-00 | European Fan Palm | 178,407 | ✅ **Researched** — 84 insights |
+| 15 | *Pinus pinaster* | GymPiPiPnCx50811-00 | Maritime Pine | 172,666 | ✅ **Researched** — 85 insights |
+| 16 | *Tamarix africana* | AngMaCaTmRc03532-00 | African Tamarisk | 112,752 | ✅ **Researched** — 75 insights |
+| 17 | *Euphorbia dendroides* | AngMaMaPhRb29612-00 | Tree Spurge | 100,386 | ✅ **Researched** — 66 insights |
+| 18 | *Phillyrea latifolia* | AngMaLaLcXx20828-00 | Mock Privet | 93,936 | ✅ **Researched** — 66 insights |
+| 19 | *Quercus suber* | AngMaFaFgCx14925-00 | Cork Oak | 84,868 | ✅ **Researched** — 70 insights |
+| 20 | *Vitex agnus-castus* | AngMaLaLmCx21234-00 | Chaste Tree | 79,206 | ✅ **Researched** — 129 insights |
+| 21 | *Laurus nobilis* | AngMaLaLrCx22770-00 | Bay Laurel | 78,364 | ✅ **Researched** — 70 insights |
+| 22 | *Quercus pubescens* | AngMaFaFgCx14877-00 | Downy Oak | 53,055 | ✅ **Researched** — 66 insights |
+| 23 | *Celtis australis* | AngMaRoCnNb42825-00 | European Nettle Tree | 44,528 | ✅ **Researched** — 68 insights |
+| 24 | *Taxus baccata* | GymPiPiTxCx50907-00 | English Yew | 41,992 | ✅ **Researched** — 67 insights |
+| 25 | *Prunus spinosa* | AngMaRoRsCx44529-00 | Blackthorn | 32,980 | ✅ **Researched** — 66 insights |
+| 26 | *Cercis siliquastrum* | AngMaFaFbCx10360-00 | Judas Tree | 32,552 | ✅ **Researched** — 67 insights |
+| 27 | *Pinus pinea* | GymPiPiPnCx50813-00 | Italian Stone Pine | 27,924 | ✅ **Researched** — 68 insights |
+| 28 | *Fraxinus ornus* | AngMaLaLcXx20652-00 | Manna Ash | 19,240 | ✅ **Researched** — 68 insights |
 
 ### Research Approach
 - All 25 species added to `research_queue` table (queue IDs 1-24; Quercus ilex researched directly via API)
@@ -104,13 +107,14 @@ Each ecoregion guide contains:
 
 ## Implementation Phases
 
-### Phase 1: Research Species (current — 2/25 complete)
+### Phase 1: Research Species ✅ COMPLETE (29/25)
 - [x] Add 25 pilot species to research queue (queue IDs 1-24)
-- [x] Research Myrtus communis (67 insights, 0.84 confidence)
-- [x] Research Quercus ilex (73 insights, 0.87 confidence)
-- [ ] Research remaining 23 species (via queue workflow or direct Grok API)
-- [ ] Verify insights populated in database for all 25
-- [ ] Review quality of research output
+- [x] Research all 24 queue species (completed Jan 30, 2026)
+- [x] Research top LEAF species missing from queue: Pistacia lentiscus, Juniperus phoenicea, Juniperus oxycedrus
+- [x] Fix Myrtus communis sync issue (insights existed but weren't synced)
+- [x] Re-research Quercus ilex (v2)
+- [x] Verify insights populated — all species have 63-223 insights
+- [x] Synthesize guide v4 with updated species data (Feb 4, 2026)
 
 ### Phase 2: Backend API ✅ COMPLETE
 - [x] Create `GET /api/guides/ecoregion/:eco_id` endpoint

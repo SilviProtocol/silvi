@@ -6,6 +6,45 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-02-04 - Guide Synthesis & Unified Scoring Architecture
+
+**Planning Doc**: [docs/todo/leaf-alpha-unified-scoring.md](docs/todo/leaf-alpha-unified-scoring.md)
+
+**Species Research** — Researched missing top LEAF species for Tyrrhenian-Adriatic guide
+- Pistacia lentiscus (68 insights, v1) — LEAF rank #1
+- Quercus ilex (73 insights, v2) — LEAF rank #3
+- Juniperus phoenicea (63 insights, v1) — LEAF rank #5
+- Juniperus oxycedrus (69 insights, v1) — LEAF rank #6
+- Fixed Myrtus communis sync (67 insights existed but weren't synced to species._ai columns)
+- 5 species × ~67 insights = 341 total insights created
+
+**Guide Synthesis** — Regenerated Tyrrhenian-Adriatic guide v4 with updated species data
+- Overview now references: Holm Oak (Leccio/Chêne vert), Mastic Tree (Lentisco), Common Myrtle (Mirto), Strawberry Tree (Corbezzolo)
+- Planting strategy with stratification percentages and spacing recommendations
+- Climate context with Mediterranean-specific guidance
+- Conservation notes referencing Natura 2000, EU LIFE projects
+
+**LEAF + AlphaEarth Unified Scoring** — Expanded planning doc (~290 → ~550 lines)
+- Added two query modes: Ecoregion (current) vs Site-specific (new)
+- Added AOI support: Point, Small Plot (≤10ha), Medium Plot (≤100ha), Large Area (≤1000ha)
+- Added 6 restoration strategies: rewilding, agroforestry, riparian, carbon, biodiversity, general
+- Added strategy weight profiles (LEAF/Alpha/Functional/Biotic percentages)
+- Added functional trait scoring with boost/penalize lists per strategy
+- Added site environmental data: elevation, slope, aspect, tree cover
+- Added polygon processing flow with multi-point sampling
+- Added hard filters: native status, elevation compatibility, invasive flag
+- Linked to MASTER_PREDICTION_ARCHITECTURE_2.md (copied to docs/)
+
+**Documentation** — Copied MASTER_PREDICTION_ARCHITECTURE_2.md (45KB, 1,096 lines) to docs/
+- Full SAFE-B framework reference
+- Environmental variables inventory (climate, soil, topographic, hydrological, disturbance)
+- Clustering & bias correction algorithms
+- API design specifications
+
+Files: `docs/todo/leaf-alpha-unified-scoring.md`, `docs/MASTER_PREDICTION_ARCHITECTURE_2.md`, `backend/services/guideSynthesis.js`
+
+---
+
 ## 2026-01-28 - Ecoregion Reforestation Guides
 
 **Planning Doc**: [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md)

@@ -155,7 +155,7 @@ module.exports = (pool) => {
       filtered.sort((a, b) => b.leaf_score - a.leaf_score);
 
       // Get species details for top 10 (enriched) and all qualifying
-      const allTaxonIds = filtered.slice(0, 500).map(s => s.taxon_id);
+      const allTaxonIds = filtered.slice(0, 2500).map(s => s.taxon_id);
       const top10Ids = filtered.slice(0, 10).map(s => s.taxon_id);
 
       let detailsMap = new Map();
@@ -183,7 +183,7 @@ module.exports = (pool) => {
       const speciesByTier = { BEST: [], GOOD: [], ACCEPTABLE: [], LOW: [] };
       const top10Species = [];
 
-      for (const sp of filtered.slice(0, 500)) {
+      for (const sp of filtered.slice(0, 2500)) {
         const details = detailsMap.get(sp.taxon_id) || {};
         const enriched = enrichedMap.get(sp.taxon_id);
 
