@@ -9,7 +9,9 @@ import 'leaflet-draw';
 import 'leaflet.heat';
 import { analyzePlot } from '@/lib/api';
 import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
-import { Layers } from 'lucide-react';
+import { Layers, Sparkles } from 'lucide-react';
+import MapClickHandler from './MapClickHandler';
+import PolygonPredictionModal from './PolygonPredictionModal';
 
 // Fix Leaflet icon issues with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -230,6 +232,93 @@ function EcoregionLayer({ visible }: { visible: boolean }) {
       }
     };
   }, [visible]);
+
+  return null;
+}
+
+// Mangaroa Native Forests layer component (New Zealand)
+function MangaroaNativeForestsLayer({ visible, opacity }: { visible: boolean; opacity: number }) {
+  const map = useMap();
+  const layerRef = useRef<L.GeoJSON | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState<any>(null);
+
+  // Load GeoJSON data once
+  useEffect(() => {
+    const loadData = async () => {
+      if (data) return; // Already loaded
+
+      try {
+        setLoading(true);
+        const response = await fetch('/data/mangaroa_native_forests.geojson');
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        const geojsonData = await response.json();
+        setData(geojsonData);
+      } catch (error) {
+        console.error('Error loading Mangaroa native forests:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (visible && !data) {
+      loadData();
+    }
+  }, [visible, data]);
+
+  // Add/remove layer when visibility or data changes
+  useEffect(() => {
+    if (!visible || !data) {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+        layerRef.current = null;
+      }
+      return;
+    }
+
+    // Create the layer
+    layerRef.current = L.geoJSON(data, {
+      style: () => ({
+        color: '#166534', // Dark forest green border
+        weight: 1.5,
+        opacity: opacity,
+        fillOpacity: opacity * 0.5,
+        fillColor: '#22c55e' // Bright green fill
+      }),
+      onEachFeature: (feature, layer) => {
+        const props = feature.properties;
+        // Find a meaningful name from the properties
+        const name = props.Name || props.name || 'Native Forest Polygon';
+        layer.bindPopup(`
+          <div class="p-2">
+            <h3 class="font-semibold text-green-600">Mangaroa Native Forest</h3>
+            <p class="text-sm"><strong>Name:</strong> ${name}</p>
+            <p class="text-xs text-gray-500">Mangaroa Catchment, New Zealand</p>
+          </div>
+        `);
+      }
+    });
+
+    layerRef.current.addTo(map);
+
+    return () => {
+      if (layerRef.current) {
+        map.removeLayer(layerRef.current);
+      }
+    };
+  }, [visible, data, map, opacity]);
+
+  // Update opacity when it changes
+  useEffect(() => {
+    if (layerRef.current && visible) {
+      layerRef.current.setStyle({
+        opacity: opacity,
+        fillOpacity: opacity * 0.5
+      });
+    }
+  }, [opacity, visible]);
 
   return null;
 }
@@ -794,8 +883,9 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
   const [showInstructions, setShowInstructions] = useState(false);
   const [baseLayer, setBaseLayer] = useState<string>('carto-dark');
-  const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap'>('none');
+  const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests'>('none');
   const [layerOpacity, setLayerOpacity] = useState(0.6);
+  const [showPolygonPrediction, setShowPolygonPrediction] = useState(false);
 
   // Note: Removed auto-enable heatmap - user must manually select overlay layer from dropdown
 
@@ -837,7 +927,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         minZoom={2} // Prevent zooming out too far
         maxBounds={[[-85, -180], [85, 180]]} // Restrict to world boundaries
         maxBoundsViscosity={1.0} // Make bounds completely rigid
-        style={{ height: '100%', width: '100%' }}
+        style={{ height: '100%', width: '100%', cursor: 'crosshair' }}
         className="z-0"
       >
         <DynamicTileLayer baseLayerId={baseLayer} />
@@ -854,7 +944,11 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
 
         <EcoregionLayer visible={overlayLayer === 'ecoregions'} />
         <IntactForestLayer visible={overlayLayer === 'intact-forests'} opacity={layerOpacity} />
+        <MangaroaNativeForestsLayer visible={overlayLayer === 'mangaroa-forests'} opacity={layerOpacity} />
         <OccurrenceHeatmapLayer visible={overlayLayer === 'heatmap'} opacity={layerOpacity} polygon={drawnPolygon} onHeatmapLoadingChange={handleHeatmapLoadingChange} />
+
+        {/* Habitat Prediction - Click anywhere to predict species */}
+        <MapClickHandler enabled={true} />
       </MapContainer>
 
       {/* Loading overlays */}
@@ -881,6 +975,20 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
             <div className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full animate-spin"></div>
             <span className="text-white text-sm font-medium">Buffering...</span>
           </div>
+        </div>
+      )}
+
+      {/* Predict Species Action Bar - Show when polygon IS drawn */}
+      {drawnPolygon && !isAnalysisLoading && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1001]">
+          <button
+            onClick={() => setShowPolygonPrediction(true)}
+            className="group bg-black/90 hover:bg-emerald-900/90 backdrop-blur-md border border-emerald-500/40 hover:border-emerald-400/60 rounded-full shadow-xl px-5 py-2.5 text-white text-sm transition-all flex items-center gap-2"
+          >
+            <Sparkles className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
+            <span className="font-medium">Predict Suitable Species</span>
+            <span className="text-emerald-400/60 text-xs ml-1">AI-powered</span>
+          </button>
         </div>
       )}
 
@@ -931,12 +1039,13 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
             </label>
             <select
               value={overlayLayer}
-              onChange={(e) => setOverlayLayer(e.target.value as 'none' | 'ecoregions' | 'intact-forests' | 'heatmap')}
+              onChange={(e) => setOverlayLayer(e.target.value as 'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests')}
               className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500 transition-colors"
             >
               <option value="none">None</option>
               <option value="ecoregions">Ecoregions</option>
-              <option value="intact-forests">Intact Forests</option>
+              <option value="intact-forests">Intact Forests (Global)</option>
+              <option value="mangaroa-forests">Mangaroa Native Forests (NZ)</option>
               <option value="heatmap">Occurrence Heatmap</option>
             </select>
 
@@ -981,6 +1090,8 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
               <li>• Use the rectangle tool for simple rectangular areas</li>
               <li>• Edit or delete drawn shapes using the edit tools</li>
               <li>• Or upload a KML file in the sidebar</li>
+              <li>• Click anywhere to predict species for that point</li>
+              <li>• Draw a polygon, then click <span className="text-emerald-400">"Predict Suitable Species"</span> for area predictions</li>
             </ul>
           </div>
         ) : (
@@ -995,6 +1106,14 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
           </button>
         )}
       </div>
+
+      {/* Polygon Prediction Modal */}
+      {showPolygonPrediction && drawnPolygon && (
+        <PolygonPredictionModal
+          geometry={drawnPolygon}
+          onClose={() => setShowPolygonPrediction(false)}
+        />
+      )}
     </div>
   );
 }

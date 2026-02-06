@@ -20,12 +20,14 @@ export function useFieldDefinitions() {
     { label: "Scientific Name", key: "species_scientific_name" },
     { label: "Common Name", key: "common_name" },
     { label: "General Description", key: "general_description", hasAiHuman: true, isLongText: true },
+    { label: "Etymology", key: "etymology", hasAiHuman: true },
+    { label: "Identification Features", key: "identification_features", hasAiHuman: true, isLongText: true },
     { label: "Accepted Scientific Name", key: "accepted_scientific_name" },
     { label: "Family", key: "family" },
     { label: "Genus", key: "genus" },
     { label: "Subspecies", key: "subspecies" },
     { label: "Specific Epithet", key: "specific_epithet" },
-    { label: "Synonyms", key: "synonyms" },
+    { label: "Synonyms", key: "synonyms", hasAiHuman: true },
     { label: "Taxonomic Order", key: "taxonomic_order" },
     { label: "Class", key: "class" }
   ];
@@ -38,7 +40,8 @@ export function useFieldDefinitions() {
     { label: "Countries Invasive", key: "countries_invasive" },
     { label: "Common Countries", key: "common_countries" },
     { label: "Ecoregions", key: "ecoregions" },
-    { label: "Elevation Ranges", key: "elevation_ranges", hasAiHuman: true }
+    { label: "Elevation Ranges", key: "elevation_ranges", hasAiHuman: true },
+    { label: "Climate Tolerance", key: "climate_tolerance", hasAiHuman: true, isLongText: true }
   ];
 
   // Ecological tab fields
@@ -52,9 +55,9 @@ export function useFieldDefinitions() {
     { label: "Wetland Type", key: "wetland_type" },
     { label: "Urban Setting", key: "urban_setting" },
     { label: "Climate Change Vulnerability", key: "climate_change_vulnerability" },
-    { label: "Associated Species", key: "associated_species" },
+    { label: "Associated Species", key: "associated_species", hasAiHuman: true, isLongText: true },
     { label: "Successional Stage", key: "successional_stage" },
-    { label: "Tolerances", key: "tolerances" },
+    { label: "Tolerances", key: "tolerances", hasAiHuman: true, isLongText: true },
     { label: "Forest Layers", key: "forest_layers" },
     { label: "Threats", key: "threats" }
   ];
@@ -85,10 +88,11 @@ export function useFieldDefinitions() {
     { label: "Disease & Pest Management", key: "disease_pest_management", hasAiHuman: true, isLongText: true },
     { label: "Fire Management", key: "fire_management", hasAiHuman: true, isLongText: true },
     { label: "Cultural Significance", key: "cultural_significance", hasAiHuman: true, isLongText: true },
-    { label: "Timber Value", key: "timber_value" },
-    { label: "Non-Timber Products", key: "non_timber_products" },
+    { label: "Propagation Methods", key: "propagation_methods", hasAiHuman: true, isLongText: true },
+    { label: "Timber Value", key: "timber_value", hasAiHuman: true },
+    { label: "Non-Timber Products", key: "non_timber_products", hasAiHuman: true, isLongText: true },
     { label: "Cultivars", key: "cultivars" },
-    { label: "Nutritional/Caloric Value", key: "nutritional_caloric_value" },
+    { label: "Nutritional/Caloric Value", key: "nutritional_caloric_value", hasAiHuman: true },
     { label: "Cultivation Details", key: "cultivation_details" }
   ];
 

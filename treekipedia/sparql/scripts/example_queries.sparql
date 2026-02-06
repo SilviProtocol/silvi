@@ -1,0 +1,190 @@
+# Treekipedia SPARQL Example Queries
+# Use these with the Fuseki endpoint at http://localhost:3030/treekipedia/sparql
+
+PREFIX tkp: <https://treekipedia.silvi.earth/ontology#>
+PREFIX dwc: <http://rs.tdwg.org/dwc/terms/>
+PREFIX dcterms: <http://purl.org/dc/terms/>
+PREFIX prov: <http://www.w3.org/ns/prov#>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX treekipedia: <https://treekipedia.silvi.earth/species/>
+
+# ============================================================
+# QUERY 1: List all species with their scientific names
+# ============================================================
+# SELECT ?species ?scientificName
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+# }
+# LIMIT 100
+
+# ============================================================
+# QUERY 2: Find all insights for a specific species
+# ============================================================
+# SELECT ?claimType ?claimValue ?confidence ?source
+# WHERE {
+#   ?insight tkp:aboutTaxon treekipedia:AngMaFaFgCx14880-00 ;
+#            tkp:claimType ?claimType ;
+#            tkp:claimValue ?claimValue ;
+#            tkp:confidence ?confidence .
+#   OPTIONAL { ?insight dcterms:source ?source }
+# }
+# ORDER BY DESC(?confidence)
+
+# ============================================================
+# QUERY 3: High-confidence habitat information
+# ============================================================
+# SELECT ?species ?habitat ?confidence
+# WHERE {
+#   ?insight tkp:aboutTaxon ?species ;
+#            dwc:habitat ?habitat ;
+#            tkp:confidence ?confidence .
+#   FILTER(?confidence > 0.8)
+# }
+# ORDER BY DESC(?confidence)
+# LIMIT 50
+
+# ============================================================
+# QUERY 4: Species with conservation status
+# ============================================================
+# SELECT ?species ?scientificName ?conservationStatus
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            dwc:occurrenceStatus ?conservationStatus .
+#   FILTER(CONTAINS(LCASE(?conservationStatus), "endangered") ||
+#          CONTAINS(LCASE(?conservationStatus), "vulnerable") ||
+#          CONTAINS(LCASE(?conservationStatus), "critical"))
+# }
+
+# ============================================================
+# QUERY 5: Agroforestry use cases
+# ============================================================
+# SELECT ?species ?scientificName ?agroforestryUses ?confidence
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            tkp:agroforestryUses ?agroforestryUses ;
+#            tkp:confidence ?confidence .
+# }
+# ORDER BY DESC(?confidence)
+# LIMIT 100
+
+# ============================================================
+# QUERY 6: Count insights by claim type
+# ============================================================
+# SELECT ?claimType (COUNT(?insight) AS ?count)
+# WHERE {
+#   ?insight tkp:claimType ?claimType .
+# }
+# GROUP BY ?claimType
+# ORDER BY DESC(?count)
+
+# ============================================================
+# QUERY 7: Species with fire management information
+# ============================================================
+# SELECT ?species ?scientificName ?fireManagement
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            tkp:fireManagement ?fireManagement .
+# }
+
+# ============================================================
+# QUERY 8: Provenance - insights by research agent
+# ============================================================
+# SELECT ?agent (COUNT(?insight) AS ?insightCount)
+# WHERE {
+#   ?insight prov:wasGeneratedBy ?agent .
+# }
+# GROUP BY ?agent
+# ORDER BY DESC(?insightCount)
+
+# ============================================================
+# QUERY 9: Cross-species ecological functions
+# ============================================================
+# SELECT ?ecologicalFunction (COUNT(?species) AS ?speciesCount)
+#        (GROUP_CONCAT(DISTINCT ?scientificName; separator=", ") AS ?examples)
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            tkp:ecologicalFunction ?ecologicalFunction .
+# }
+# GROUP BY ?ecologicalFunction
+# ORDER BY DESC(?speciesCount)
+# LIMIT 20
+
+# ============================================================
+# QUERY 10: Species by growth form
+# ============================================================
+# SELECT ?growthForm (COUNT(?species) AS ?count)
+# WHERE {
+#   ?insight tkp:aboutTaxon ?species ;
+#            tkp:growthForm ?growthForm .
+# }
+# GROUP BY ?growthForm
+# ORDER BY DESC(?count)
+
+# ============================================================
+# QUERY 11: Species suitable for specific soil types
+# ============================================================
+# SELECT ?species ?scientificName ?soilTypes
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            tkp:compatibleSoilTypes ?soilTypes .
+#   FILTER(CONTAINS(LCASE(?soilTypes), "clay") ||
+#          CONTAINS(LCASE(?soilTypes), "sandy"))
+# }
+
+# ============================================================
+# QUERY 12: Recently researched species (with timestamps)
+# ============================================================
+# SELECT ?species ?scientificName ?researchDate
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   ?insight tkp:aboutTaxon ?species ;
+#            dcterms:created ?researchDate .
+# }
+# ORDER BY DESC(?researchDate)
+# LIMIT 50
+
+# ============================================================
+# QUERY 13: Federated query example (GBIF integration)
+# Note: Requires GBIF SPARQL endpoint to be accessible
+# ============================================================
+# SELECT ?species ?scientificName ?gbifOccurrence
+# WHERE {
+#   ?species dwc:scientificName ?scientificName .
+#   SERVICE <https://lod.gesis.org/sparql> {
+#     # Example federated query pattern
+#     # ?gbifOccurrence dwc:scientificName ?scientificName .
+#   }
+# }
+# LIMIT 10
+
+# ============================================================
+# QUERY 14: Confidence statistics
+# ============================================================
+# SELECT
+#   (AVG(?confidence) AS ?avgConfidence)
+#   (MIN(?confidence) AS ?minConfidence)
+#   (MAX(?confidence) AS ?maxConfidence)
+#   (COUNT(?insight) AS ?totalInsights)
+# WHERE {
+#   ?insight tkp:confidence ?confidence .
+# }
+
+# ============================================================
+# QUERY 15: Full species profile
+# ============================================================
+# SELECT ?property ?value
+# WHERE {
+#   {
+#     treekipedia:AngMaFaFgCx14880-00 ?property ?value .
+#   }
+#   UNION
+#   {
+#     ?insight tkp:aboutTaxon treekipedia:AngMaFaFgCx14880-00 ;
+#              ?property ?value .
+#   }
+# }

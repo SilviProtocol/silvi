@@ -1,0 +1,706 @@
+{
+  "matches": {
+    "AngMaMyMyRt37763-00": {
+      "gbif_key": 3176686,
+      "scientific_name": "Eucalyptus imitans L.A.S.Johnson & K.D.Hill",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx09089-00": {
+      "gbif_key": 2979334,
+      "scientific_name": "Acacia ancistrocarpa Maiden & Blakely",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx09287-00": {
+      "gbif_key": 3796311,
+      "scientific_name": "Acacia latior (R.S.Cowan & Maslin) Maslin & Buscumb",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx10362-00": {
+      "gbif_key": 2939927,
+      "scientific_name": "Chadsia magnifica R.Vig.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFgCx14337-00": {
+      "gbif_key": 5332866,
+      "scientific_name": "Lithocarpus cerifer (Hickel & A.Camus) A.Camus",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fagaceae"
+    },
+    "AngMaFaFgCx14941-00": {
+      "gbif_key": 2879102,
+      "scientific_name": "Quercus toxicodendrifolia Trel.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fagaceae"
+    },
+    "AngMaFaFbCx13088-00": {
+      "gbif_key": 2957129,
+      "scientific_name": "Senna aversiflora (Herb.) H.S.Irwin & Barneby",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38855-00": {
+      "gbif_key": 5416288,
+      "scientific_name": "Eugenia uxpanapensis P.E.S\u00e1nchez & L.M.Ortega",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39837-00": {
+      "gbif_key": 5420616,
+      "scientific_name": "Psidium tenuirame Urb.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt38123-00": {
+      "gbif_key": 3176177,
+      "scientific_name": "Eucalyptus verrucata Ladiges & Whiffin",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39495-00": {
+      "gbif_key": 10873906,
+      "scientific_name": "Myrcia pseudobrunneica (Parra-Os.) A.R.Louren\u00e7o & Parra-Os.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx09893-00": {
+      "gbif_key": 5361724,
+      "scientific_name": "Ateleia pterocarpa Sess\u00e9 & Moc. ex D.Dietr.",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx11957-00": {
+      "gbif_key": 2959564,
+      "scientific_name": "Lonchocarpus schiedeanus (Schltdl.) Harms",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt39422-00": {
+      "gbif_key": 10821595,
+      "scientific_name": "Myrcia neograndis K.Campbell & Peguero",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt40190-00": {
+      "gbif_key": 9249244,
+      "scientific_name": "Syzygium eymae Brambach, Byng & Culmsee",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx13607-00": {
+      "gbif_key": 3795646,
+      "scientific_name": "Vachellia acuifera (Benth.) Seigler & Ebinger",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38240-00": {
+      "gbif_key": 5938297,
+      "scientific_name": "Eugenia brunneopubescens Mazine",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "GymPiPiPnCx50716-00": {
+      "gbif_key": 5284870,
+      "scientific_name": "Picea koyamae Shiras.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Pinaceae"
+    },
+    "AngMaMyMyRt39355-00": {
+      "gbif_key": 3186353,
+      "scientific_name": "Myrcia lenheirensis Kiaersk.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx12798-00": {
+      "gbif_key": 2947786,
+      "scientific_name": "Poecilanthe grandiflora Benth.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38234-00": {
+      "gbif_key": 5416455,
+      "scientific_name": "Eugenia breedlovei Barrie",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39330-00": {
+      "gbif_key": 3173979,
+      "scientific_name": "Myrcia inaequiloba (DC.) Lem\u00e9e",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx10821-00": {
+      "gbif_key": 2968935,
+      "scientific_name": "Dalbergia polyadelpha Prain",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38961-00": {
+      "gbif_key": 3181758,
+      "scientific_name": "Leptospermum glaucescens S.Schauer",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMaSlCc32585-00": {
+      "gbif_key": 5373004,
+      "scientific_name": "Salix caroliniana Michx.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx11457-00": {
+      "gbif_key": 2951893,
+      "scientific_name": "Hymenolobium mesoamericanum H.C.Lima",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx12738-00": {
+      "gbif_key": 2962799,
+      "scientific_name": "Pithecellobium bipinnatum L.Rico",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32484-00": {
+      "gbif_key": 3879886,
+      "scientific_name": "Neosprucea wilburiana M.H.Alford",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx10857-00": {
+      "gbif_key": 2968657,
+      "scientific_name": "Dalbergia yunnanensis Franch.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx10975-00": {
+      "gbif_key": 2965721,
+      "scientific_name": "Dicymbe stipitata R.S.Cowan",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx12659-00": {
+      "gbif_key": 2952703,
+      "scientific_name": "Peltogyne catingae Ducke",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt39620-00": {
+      "gbif_key": 10741165,
+      "scientific_name": "Myrcia vexata (Mc Vaugh) K.Campbell & K.Samra",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx13824-00": {
+      "gbif_key": 5347369,
+      "scientific_name": "Zygia megistocarpa (C.Barbosa) L.Rico",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx09912-00": {
+      "gbif_key": 5352575,
+      "scientific_name": "Baphia angolensis Welw. ex Baker",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32773-00": {
+      "gbif_key": 2874119,
+      "scientific_name": "Xylosma flexuosa (Kunth) Hemsl.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx09740-00": {
+      "gbif_key": 2976621,
+      "scientific_name": "Anthonotha fragrans (Baker f.) Exell & Hillc.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32214-00": {
+      "gbif_key": 10883811,
+      "scientific_name": "Casearia panamensis T.Samar. & M.H.Alford",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaMyMyRt40564-00": {
+      "gbif_key": 3183598,
+      "scientific_name": "Syzygium purpuriflorum (Elmer) Merr.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx11748-00": {
+      "gbif_key": 5357751,
+      "scientific_name": "Inga virescens Benth.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38189-00": {
+      "gbif_key": 5416860,
+      "scientific_name": "Eugenia ardisioides Lundell",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx09744-00": {
+      "gbif_key": 7692047,
+      "scientific_name": "Anthonotha mouandzae Breteler",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx11006-00": {
+      "gbif_key": 2974283,
+      "scientific_name": "Dimorphandra parviflora Spruce ex Benth.",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt39122-00": {
+      "gbif_key": 3185836,
+      "scientific_name": "Myrceugenia brevipedicellata (Burret) D.Legrand & Kausel",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39820-00": {
+      "gbif_key": 5420359,
+      "scientific_name": "Psidium myrsinites DC.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt37525-00": {
+      "gbif_key": 3177165,
+      "scientific_name": "Eucalyptus behriana F.Muell.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39908-00": {
+      "gbif_key": 3181184,
+      "scientific_name": "Siphoneugena reitzii D.Legrand",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMaSlCc32612-00": {
+      "gbif_key": 5372658,
+      "scientific_name": "Salix geyeriana Andersson",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx11350-00": {
+      "gbif_key": 2959501,
+      "scientific_name": "Gleditsia fera (Lour.) Merr.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFgCx14837-00": {
+      "gbif_key": 2881259,
+      "scientific_name": "Quercus obconicus Z.K.Zhou",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fagaceae"
+    },
+    "AngMaMaSlCc32736-00": {
+      "gbif_key": 3878939,
+      "scientific_name": "Scolopia steenisiana Sleumer",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx13127-00": {
+      "gbif_key": 2957146,
+      "scientific_name": "Senna loretensis (Killip) H.S.Irwin & Barneby",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt37243-00": {
+      "gbif_key": 5419920,
+      "scientific_name": "Agonis flexuosa (Muhl. ex Willd.) Sweet",
+      "match_type": "EXACT",
+      "confidence": 98,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx13747-00": {
+      "gbif_key": 2965593,
+      "scientific_name": "Vataireopsis iglesiasii Ducke",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx09793-00": {
+      "gbif_key": 2941481,
+      "scientific_name": "Archidendron eberhardtii I.C.Nielsen",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx10260-00": {
+      "gbif_key": 3931877,
+      "scientific_name": "Campsiandra aymardii Stergios",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx12158-00": {
+      "gbif_key": 2976398,
+      "scientific_name": "Macrosamanea duckei (Huber) Barneby & J.W.Grimes",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "GymPiPiPnCx50730-00": {
+      "gbif_key": 5284876,
+      "scientific_name": "Picea retroflexa Mast.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Pinaceae"
+    },
+    "AngMaFaFbCx10934-00": {
+      "gbif_key": 2971014,
+      "scientific_name": "Dialium ovoideum Thwaites",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt37518-00": {
+      "gbif_key": 3176954,
+      "scientific_name": "Eucalyptus bancroftii (Maiden) Maiden",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt40550-00": {
+      "gbif_key": 3184375,
+      "scientific_name": "Syzygium prasiniflorum (Ridl.) Merr. & L.M.Perry",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMaSlCc32699-00": {
+      "gbif_key": 5582342,
+      "scientific_name": "Salix tracyi C.R.Ball",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx12501-00": {
+      "gbif_key": 5355482,
+      "scientific_name": "Ormosia glauca Wall.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx13537-00": {
+      "gbif_key": 3969384,
+      "scientific_name": "Tachigali rubiginosa (Mart. ex Tul.) Oliveira-Filho",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38465-00": {
+      "gbif_key": 5417732,
+      "scientific_name": "Eugenia indica (Wight) Chithra",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx10514-00": {
+      "gbif_key": 10894741,
+      "scientific_name": "Coulteria pumila (Britton & Rose) Sotuyo & G.P.Lewis",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt40767-00": {
+      "gbif_key": 3182094,
+      "scientific_name": "Syzygium vaughanii J.Gu\u00e9ho & A.J.Scott",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMaSlCc32576-00": {
+      "gbif_key": 5373055,
+      "scientific_name": "Salix bebbiana Sarg.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "GymPiPiPnCx50840-00": {
+      "gbif_key": 5285772,
+      "scientific_name": "Pinus tropicalis Morelet",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Pinaceae"
+    },
+    "AngMaFaFbCx12658-00": {
+      "gbif_key": 2952719,
+      "scientific_name": "Peltogyne campestris Huber ex Ducke",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx10791-00": {
+      "gbif_key": 3963894,
+      "scientific_name": "Dalbergia longepedunculata J.Linares & M.Sousa",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32610-00": {
+      "gbif_key": 5372966,
+      "scientific_name": "Salix floridana Chapm.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx09353-00": {
+      "gbif_key": 2980000,
+      "scientific_name": "Acacia olgana Maconochie",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt40066-00": {
+      "gbif_key": 3184675,
+      "scientific_name": "Syzygium capoasense (Merr.) Merr.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt37422-00": {
+      "gbif_key": 5418382,
+      "scientific_name": "Corymbia torta K.D.Hill & L.A.S.Johnson",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "GymPiPiPnCx50720-00": {
+      "gbif_key": 5284812,
+      "scientific_name": "Picea martinezii T.F.Patt.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Pinaceae"
+    },
+    "AngMaMyMyRt38146-00": {
+      "gbif_key": 3177079,
+      "scientific_name": "Eucalyptus wyolensis Boomsma",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx11181-00": {
+      "gbif_key": 5349707,
+      "scientific_name": "Erythrina leptopoda Urb. & Ekman",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt37515-00": {
+      "gbif_key": 3717445,
+      "scientific_name": "Eucalyptus baiophylla D.Nicolle & Brooker",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt38359-00": {
+      "gbif_key": 8791346,
+      "scientific_name": "Eugenia echinulata N.Snow",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt39645-00": {
+      "gbif_key": 10044345,
+      "scientific_name": "Myrcianthes lanosa Mc Vaugh",
+      "match_type": "EXACT",
+      "confidence": 98,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx13315-00": {
+      "gbif_key": 5351974,
+      "scientific_name": "Swartzia anomala R.S.Cowan",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx10021-00": {
+      "gbif_key": 2953003,
+      "scientific_name": "Bauhinia ovata (Bong.) Vogel",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx13720-00": {
+      "gbif_key": 7564113,
+      "scientific_name": "Vachellia sieberiana (DC.) Kyal. & Boatwr.",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32743-00": {
+      "gbif_key": 7796300,
+      "scientific_name": "Tetrathylacium johansenii Standl.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx10259-00": {
+      "gbif_key": 2933026,
+      "scientific_name": "Campsiandra angustifolia Spruce ex Benth.",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Fabaceae"
+    },
+    "AngMaFaFbCx11425-00": {
+      "gbif_key": 2962731,
+      "scientific_name": "Humboldtia laurifolia Vahl",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt40020-00": {
+      "gbif_key": 3184346,
+      "scientific_name": "Syzygium blumei (Steud.) Merr. & L.M.Perry",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx09473-00": {
+      "gbif_key": 3972804,
+      "scientific_name": "Acacia tingoorensis Pedley",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMaSlCc32510-00": {
+      "gbif_key": 3804440,
+      "scientific_name": "Populus glauca Haines",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaMaSlCc32093-00": {
+      "gbif_key": 3879130,
+      "scientific_name": "Bennettiodendron cordatum Merr.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaMaSlCc32777-00": {
+      "gbif_key": 3879916,
+      "scientific_name": "Xylosma hispidula Standl.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx10063-00": {
+      "gbif_key": 2971352,
+      "scientific_name": "Berlinia confusa Hoyle",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt39315-00": {
+      "gbif_key": 9247296,
+      "scientific_name": "Myrcia guildingiana (Griseb.) E.Lucas & C.E.Wilson",
+      "match_type": "EXACT",
+      "confidence": 97,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt40828-00": {
+      "gbif_key": 3188079,
+      "scientific_name": "Tristaniopsis ferruginea (C.T.White) Paul G.Wilson & J.T.Waterh.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaMyMyRt40459-00": {
+      "gbif_key": 3183710,
+      "scientific_name": "Syzygium nitrasirirakii Chantar. & J.Parn.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    },
+    "AngMaFaFbCx11781-00": {
+      "gbif_key": 2981770,
+      "scientific_name": "Julbernardia unijugata J.L\u00e9onard",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt37624-00": {
+      "gbif_key": 3176207,
+      "scientific_name": "Eucalyptus cunninghamii Sweet",
+      "match_type": "EXACT",
+      "confidence": 98,
+      "family": "Myrtaceae"
+    },
+    "AngMaMaSlCc32620-00": {
+      "gbif_key": 5372914,
+      "scientific_name": "Salix humboldtiana Willd.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Salicaceae"
+    },
+    "AngMaFaFbCx11720-00": {
+      "gbif_key": 5358084,
+      "scientific_name": "Inga striata Benth.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Fabaceae"
+    },
+    "AngMaMyMyRt38167-00": {
+      "gbif_key": 5416994,
+      "scientific_name": "Eugenia aherniana C.B.Rob.",
+      "match_type": "EXACT",
+      "confidence": 99,
+      "family": "Myrtaceae"
+    }
+  },
+  "failed": [],
+  "timestamp": "2025-10-27T04:33:25.328620"
+}

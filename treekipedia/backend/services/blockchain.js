@@ -1,3 +1,17 @@
+/**
+ * Blockchain Services - EAS Attestations and NFT Minting
+ *
+ * STATUS: DISABLED (Jan 2026)
+ *
+ * These functions are preserved for future use but are not currently called.
+ * Research is now performed by Claude Code CLI via queue-based workflow.
+ *
+ * To re-enable:
+ * 1. Set PRIVATE_KEY in .env
+ * 2. Import createAttestation/mintNFT in research controller
+ * 3. Call after research completes
+ */
+
 // Import required modules
 const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../../.env') });

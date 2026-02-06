@@ -31,8 +31,9 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
     const fetchSubspecies = async () => {
       try {
         setIsLoading(true);
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
         const response = await fetch(
-          `https://treekipedia-api.silvi.earth/species/${taxonId}/subspecies`
+          `${API_URL}/species/${taxonId}/subspecies`
         );
 
         if (!response.ok) {
@@ -76,7 +77,7 @@ export function SubspeciesSection({ taxonId }: SubspeciesSectionProps) {
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4 flex items-center">
-        <Leaf className="w-5 h-5 mr-2 text-green-400" />
+        <Leaf className="w-5 h-5 mr-2 text-emerald-400" />
         Subspecies & Varieties
         <span className="ml-2 text-sm text-white/60 font-normal">
           ({data.subspecies_count})

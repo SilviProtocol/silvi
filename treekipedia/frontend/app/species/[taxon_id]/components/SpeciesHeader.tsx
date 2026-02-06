@@ -14,7 +14,10 @@ export function SpeciesHeader({ species }: SpeciesHeaderProps) {
         {species?.species_scientific_name || species?.species}
       </h1>
       <div className="text-xl text-white/80">
-        <CommonNameDisplay commonNames={species?.common_name} />
+        <CommonNameDisplay
+          commonNames={species?.common_name}
+          popularCommonName={species?.popular_common_name_ai}
+        />
       </div>
     </div>
   );
@@ -22,38 +25,39 @@ export function SpeciesHeader({ species }: SpeciesHeaderProps) {
 
 interface CommonNameDisplayProps {
   commonNames?: string;
+  popularCommonName?: string | null;
 }
 
-export function CommonNameDisplay({ commonNames }: CommonNameDisplayProps) {
+export function CommonNameDisplay({ commonNames, popularCommonName }: CommonNameDisplayProps) {
   const [expanded, setExpanded] = useState(false);
 
-  if (!commonNames) return <span>No common names available</span>;
+  // If we have AI-researched popular common name, use it as the definitive primary
+  // Otherwise fall back to heuristic scoring of common_name field
+  let primary: string;
+  let others: string[];
 
-  // Use our optimized common names function to get most frequent names
-  // Use higher limits to ensure we capture all important names
-  const optimizedCommonNames = getTopCommonNames(commonNames, 15, 1000);
-  console.log(`Original common names (${commonNames.length} chars) vs optimized (${optimizedCommonNames.length} chars)`);
-  
-  // For species with over 1000 characters in common names, log more detailed info
-  if (commonNames.length > 1000) {
-    console.log(`First 100 chars of common names: ${commonNames.substring(0, 100)}...`);
-    console.log(`First optimized names: ${optimizedCommonNames.split(',').slice(0, 5).join(', ')}`);
-  }
-  
-  // Directly use the optimized and ordered names
-  // Split by commas (since our utility returns comma-separated values)
-  const allNames = optimizedCommonNames
-    .split(',')
-    .map((name) => name.trim())
-    .filter((name) => name.length > 0);
-    
-  // The first name is the most important one (like "Frangipani")
-  const primary = allNames.length > 0 ? allNames[0] : "Unknown";
-  const others = allNames.slice(1);
-  
-  // Log the primary name for debugging
-  if (commonNames.length > 1000) {
-    console.log(`Primary common name: "${primary}"`);
+  if (popularCommonName) {
+    // Use AI-selected name as primary
+    primary = popularCommonName;
+
+    // Get other names from common_name field, excluding the primary
+    const optimizedCommonNames = commonNames ? getTopCommonNames(commonNames, 15, 1000) : '';
+    others = optimizedCommonNames
+      .split(',')
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0 && name.toLowerCase() !== primary.toLowerCase());
+  } else if (commonNames) {
+    // Fall back to heuristic scoring
+    const optimizedCommonNames = getTopCommonNames(commonNames, 15, 1000);
+    const allNames = optimizedCommonNames
+      .split(',')
+      .map((name) => name.trim())
+      .filter((name) => name.length > 0);
+
+    primary = allNames.length > 0 ? allNames[0] : "Unknown";
+    others = allNames.slice(1);
+  } else {
+    return <span>No common names available</span>;
   }
 
   // If we have no additional names, just show the primary

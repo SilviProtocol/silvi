@@ -25,10 +25,10 @@ Active tasks and planned work. See CHANGELOG.md for completed features.
 
 **Integration Guide**: [docs/LEAF_INTEGRATION_GUIDE.md](docs/LEAF_INTEGRATION_GUIDE.md)
 
-**Tested on Appalachian-Blue Ridge:**
-- 3,292 species in pool (natives + occurrences)
-- 468 introduced species excluded (Tree of Heaven, Mimosa, etc.)
-- Top results: White Oak, Red Maple, Red Oak, Black Cherry (iconic natives)
+**Tested on Appalachian-Blue Ridge** (updated Jan 2026 with fresh data):
+- 3,332 species in pool (natives + occurrences)
+- 497 introduced species excluded (Tree of Heaven, Mimosa, etc.)
+- Top results: Red Maple, Tuliptree, White Oak, Black Gum, Black Cherry (iconic natives)
 
 **Algorithm:**
 ```
@@ -62,28 +62,63 @@ LEAF Score = percentile rank (0-100)
 
 ---
 
-## [IN PROGRESS] - Geohash Occurrence Data Import
+## [PLANNING] - LEAF + AlphaEarth Unified Scoring
 
-**Status**: Planning complete, ready for implementation
-**Priority**: HIGH - Blocks updated LEAF scoring with 10M+ new occurrences
+**Status**: Architecture complete, ready for implementation
+**Added**: January 28, 2026
+**Updated**: February 4, 2026
+**Priority**: High
+**Planning Doc**: [docs/todo/leaf-alpha-unified-scoring.md](docs/todo/leaf-alpha-unified-scoring.md)
+**Reference**: [docs/MASTER_PREDICTION_ARCHITECTURE_2.md](docs/MASTER_PREDICTION_ARCHITECTURE_2.md) — Full SAFE-B framework
+
+Combine LEAF (occurrence-based ecoregion scoring) with AlphaEarth (satellite embedding habitat prediction) into unified species recommendation system with strategy-aware scoring and site-specific queries.
+
+### Two Query Modes
+- **Ecoregion Mode**: Regional planning, LEAF-dominant scoring
+- **Site Mode**: Specific location with elevation, slope, aspect filtering
+
+### Six Restoration Strategies
+| Strategy | LEAF | Alpha | Functional | Biotic |
+|----------|------|-------|------------|--------|
+| general | 50% | 40% | 5% | 5% |
+| rewilding | 45% | 20% | 10% | 25% |
+| agroforestry | 25% | 25% | 45% | 5% |
+| riparian | 30% | 40% | 25% | 5% |
+| carbon | 25% | 25% | 45% | 5% |
+| biodiversity | 35% | 20% | 15% | 30% |
+
+### AOI Support
+- Point, Small Plot (≤10ha), Medium Plot (≤100ha), Large Area (≤1000ha), Ecoregion
+- Polygon sampling: centroid only for small, 3×3 grid for medium, 5×5 for large
+
+### Implementation Phases
+- [ ] **Phase 1**: Create `/api/prediction/unified` endpoint with mode parameter
+- [ ] **Phase 2**: Implement strategy weight profiles + functional trait scoring
+- [ ] **Phase 3**: Add site-specific elevation/slope filtering
+- [ ] **Phase 4**: Polygon/AOI support with multi-point sampling
+- [ ] **Phase 5**: Testing & weight calibration
+- [ ] **Phase 6**: Frontend integration (strategy selector, polygon drawing)
+- [ ] **Phase 7**: API documentation
+
+---
+
+## [COMPLETED] - Geohash Occurrence Data Import ✅
+
+**Status**: COMPLETED January 2026
 **Planning Doc**: [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md)
 
-Import system for updated compressed geohash occurrence data. Supports full refresh (current need) and incremental updates (future need).
+Full refresh of geohash occurrence data from BigQuery parquet export.
 
-**Current State**: 5.79M tiles, 94.4M occurrences, data ~1 year outdated
-**Target State**: ~6M+ tiles, 104M+ occurrences, new compression algorithm
+**Results**:
+- 6,458,119 tiles (was 5,786,835) - +11.6% increase
+- 96,512,768 occurrences (was 94,422,564) - +2.2% increase
+- 97.2% ecoregion coverage (6,278,540 tiles)
+- Zero import errors
 
-### Phase 1: Full Refresh Import (Current)
-- [ ] Create ecoregion cache backup SQL
-- [ ] Write `import_geohash_csv_v2.js` with array→object transformation
-- [ ] Add WKT geometry support (use pre-computed instead of ST_GeomFromGeoHash)
-- [ ] Add taxon_id validation against species table
-- [ ] Test on sample file (`test_tile_compressed.csv`)
-- [ ] Run full import on production data
-- [ ] Restore ecoregion assignments from cache
-- [ ] Run spatial assignment for new tiles only
-- [ ] Verify LEAF scoring still works
-- [ ] Update ACTIVE.md with new occurrence counts
+**Scripts Created**:
+- `scripts/import_geohash_parquet.py` - Parquet import with array→object transformation
+- `scripts/fix_geohash_geometries.py` - Geometry fix (source WKT was degenerate)
+- `scripts/assign_ecoregions_new_tiles.py` - Ecoregion assignment for new tiles
 
 ### Phase 2: Incremental Import Infrastructure (Future)
 - [ ] Create `merge_species_data()` PostgreSQL function
@@ -91,30 +126,72 @@ Import system for updated compressed geohash occurrence data. Supports full refr
 - [ ] Test merge logic with sample data
 - [ ] Document incremental import workflow
 
-**Key Transformation**:
-```
-CSV format:   [{"taxon_id": "ABC-00", "count": 5}, ...]  (array)
-DB format:    {"ABC-00": 5, ...}                         (object)
-```
+---
 
-**Ecoregion Preservation Strategy**:
-1. Cache 5.6M ecoregion assignments before truncate
-2. Restore via geohash lookup after import (fast, no spatial query)
-3. Only new tiles need expensive spatial assignment
+## [COMPLETE] - Research & Insights Architecture ✅
+
+**Status**: Backend + frontend aligned after djimo merge (Jan 27, 2026)
+**Added**: January 2026
+
+### Backend ✅
+- [x] Insights table and triggers created (`database/06_insights_architecture.sql`)
+- [x] Research creates atomic insights, then syncs to `_ai` columns
+- [x] `GET /species/:taxon_id/insights` returns `has_insights`, `metadata`, flat insights array
+- [x] Confidence scoring with breakdown (field_coverage, critical_fields, specificity, sources)
+- [x] Research versioning (`research_version`, `research_date`, `research_agent`, `research_confidence`)
+- [x] 9 new _ai columns: etymology, synonyms, identification_features, climate_tolerance, tolerances, associated_species, timber_value, non_timber_products, nutritional_caloric_value
+
+### Frontend ✅
+- [x] `useSpeciesData.ts` simplified to 2 queries (species + insights), removed redundant /research query
+- [x] Synthetic Knowledge panel (ResearchMetadataPanel) renders with confidence, version, model
+- [x] DataField shows per-field confidence bars and atomic insights
+- [x] Data priority: human → ai → legacy via `getFieldValue()`
+- [x] Dead code removed (InsightField.tsx, InsightItem.tsx, useResearchProcess.ts)
+
+### Remaining
+- [ ] Queue research path should also call `createInsightsFromResearch()` when processing completes
+- [ ] Restyle ResearchMetadataPanel (violet → existing design system, or keep as differentiation)
+
+### Dual Research Integration (NOWPayments + Grok)
+**Planning Doc**: [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md)
+
+Two research paths: instant ($1 crypto via NOWPayments) and free queue.
+
+- [ ] Sign up NOWPayments with dev@silvi.earth, get API key + IPN secret
+- [ ] Create `research_payments` table
+- [ ] Build `backend/controllers/payments.js` (invoice creation + webhook)
+- [ ] Build `backend/routes/payments.js` + register in server.js
+- [ ] Webhook: verify HMAC-SHA512, trigger Grok research on payment confirmation
+- [ ] Frontend: dual-button UI ("Research Instantly $1" / "Add to Queue (Free)")
+- [ ] Frontend: show "Re-research" with last research date for already-researched species
+- [ ] Install `@nowpaymentsio/nowpayments-api-js`
+- [ ] Test with NOWPayments sandbox
+- [ ] Future: admin role bypasses payment for instant research
+
+### Future: Insights Vector/Graph
+- [ ] Embed insights in vector database for semantic search
+- [ ] Transform insights into graph database triples
+- [ ] Build insight relationships across species
 
 ---
 
 ## [IN PROGRESS] - Frontend v10 Field Implementation
 
-**Status**: Backend v10 migration complete, frontend display pending
+**Status**: Backend v10 migration complete, some frontend updates done
 **Planning Doc**: [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md)
 
 ### Species Detail Page Updates
 - [ ] Implement ClimateProfile component display (Köppen-Geiger, temperature, precipitation)
 - [ ] Implement EcologicalInteractions component (GloBI data visualization)
-- [ ] Add SBTN land cover display to species pages
-- [ ] Update TypeScript types in `lib/types.ts` for new v10 fields
+- [x] ~~Add SBTN land cover display~~ → Replaced with derived Habitat Biomes (Jan 2026)
+- [x] Update TypeScript types in `lib/types.ts` for derived_biomes field
+- [x] Update TypeScript types for research versioning fields (Jan 2026)
 - [ ] Test all new field displays across species with varying data coverage
+
+**Habitat Biomes Feature** (Jan 2026):
+- Replaced unreliable `sbtn_landcover` with `derived_biomes` from occurrence data
+- API returns top 5 biomes with ≥10 occurrences per species
+- Frontend displays in SpeciesInfobox with occurrence counts on hover
 
 ### Ecoregion Frontend Integration
 - [ ] Display ecoregion data in CrossAnalysisSummary
@@ -159,6 +236,13 @@ DB format:    {"ABC-00": 5, ...}                         (object)
 - [ ] Complete remaining 3% of ecoregion tile assignments (171k tiles)
 - [ ] Monitor query performance with larger polygon analyses
 
+### Data Quality: taxon_id Collisions
+- [ ] Fix 27 duplicate taxon_ids affecting 54 species rows
+  - Same taxon_id assigned to different species (e.g., `AngMaApPtTs00060-00` = both *Pittosporum ellipticum* and *Pittosporum bicolor*)
+  - Collisions occur within same genus due to sequence number overlap
+  - Blocks adding UNIQUE constraint on taxon_id and FK from insights table
+  - Fix: Regenerate unique taxon_ids for affected rows or add disambiguating suffix
+
 ### Geospatial Data Enhancement
 - [ ] Add Natural Earth Admin-1 boundaries (states/provinces shapefile)
   - Enables precise state-ecoregion intersection queries
@@ -187,6 +271,51 @@ DB format:    {"ABC-00": 5, ...}                         (object)
 
 ---
 
+## [IN PROGRESS] - Ecoregion Reforestation Guides
+
+**Status**: Phases 2-3 complete, Phase 1 nearing completion. Guide v4 synthesized with researched species.
+**Added**: January 2026
+**Updated**: February 4, 2026
+**Planning Doc**: [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md)
+
+Auto-generated reforestation guides per ecoregion using LEAF scoring + AI-researched species data. Frontend pages at `/guide/[eco_id]`. Also feeds into ReFi Reforestation Playbook for Regen Coordination.
+
+**Pilot Ecoregion**: Tyrrhenian-Adriatic sclerophyllous and mixed forests (eco_id 806, Sicily)
+
+**Live Routes**: `/guide` (search), `/guide/806` (example guide — v4 synthesized)
+
+### Phase 1: Research Pilot Species (29/25 complete — exceeded target)
+- [x] Add 25 pilot species to research queue (queue IDs 1-24)
+- [x] Research Myrtus communis (68 insights, synced)
+- [x] Research Arbutus unedo (91 insights)
+- [x] Research Quercus ilex (73 insights)
+- [x] Research Pistacia lentiscus (68 insights) — LEAF rank #1
+- [x] Research Juniperus phoenicea (63 insights) — LEAF rank #5
+- [x] Research Juniperus oxycedrus (69 insights) — LEAF rank #6
+- [x] 24 queue species completed + 5 direct researched
+- [x] Guide v4 synthesized with updated species data
+
+### Phase 2: Backend API ✅ COMPLETE
+- [x] `GET /api/guides/ecoregion/:eco_id` — LEAF-ranked species + synthesized content
+- [x] `POST /api/guides/ecoregion/:eco_id/synthesize` — Grok synthesis trigger
+- [x] `GET /api/geospatial/ecoregions/search?q=` — Autocomplete search
+- [x] `ecoregion_guides` table + synthesis service
+- [x] Region-specific naming (Italian/French names in synthesis)
+
+### Phase 3: Frontend Guide Pages ✅ COMPLETE
+- [x] `/guide` search page with autocomplete
+- [x] `/guide/[eco_id]` accordion detail page
+- [ ] Add "Guides" to navbar (deferred)
+- [x] Species cards, tier badges, methodology section
+- [x] Uses `popular_common_name_ai` when available
+
+### Phase 4: Polish & Expand
+- [ ] Ecoregion map visualization
+- [ ] Planting strategy groupings (canopy, understory, pioneer)
+- [ ] Expand to 12 bioregional campaign ecoregions
+
+---
+
 ## [FUTURE] - Advanced Features
 
 ### Unified Zone Schema
@@ -205,9 +334,12 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 - [ ] Import additional datasets (ESA CCI Land Cover, Köppen-Geiger climate zones)
 
 ### AI Research Enhancement
-- [ ] Analyze Claude 3.5 Haiku vs Grok 3 Mini testing results
-- [ ] Decide on production integration strategy
-- [ ] Implement improved 3-group research strategy (Ecological, Morphological, Stewardship)
+- [x] ~~Decide on production integration strategy~~ → Using Grok 4.1 Fast with web search (Jan 2026)
+- [x] ~~Implement confidence scoring~~ → Implemented in grokResearch.js (Jan 2026)
+- [x] ~~Implement improved multi-group research strategy~~ → Atomic v2: 2 parallel calls (Identity+Ecological, Morphological+Stewardship), 35 fields, 50-80+ insights (Jan 2026)
+- [ ] Add Claude 3.5 Haiku as fallback/alternative research agent
+- [x] ~~Implement insights table population (store atomic claims with per-field confidence)~~ → `createAtomicInsights()` with per-claim confidence (Jan 2026)
+- [x] ~~Add `sync_insights_to_species()` function usage for multi-source aggregation~~ → Already in use since Jan 2026
 
 ### Blazegraph Knowledge Graph
 - [ ] Assess current Blazegraph instance vs Fuseki capabilities
@@ -259,6 +391,9 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 - [ ] eBird data for bird species
 - [ ] Forest inventory data from national databases
 
+### Infrastructure & Security
+- [ ] Migrate from root user to dedicated non-root user (create user, move project, reconfigure code-server/PM2/permissions)
+
 ### Open Data & Governance
 - [ ] Automated monthly exports to IPFS
 - [ ] Database schema documentation to EAS
@@ -269,12 +404,14 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 
 ## Priority Order
 
-1. **Geohash Occurrence Import** - Blocks LEAF scoring with fresh data (10M+ new occurrences)
-2. **LEAF™ Scoring Engine** - Critical for $100K bioregional campaigns
-3. **Frontend v10 Implementation** - Display new climate/ecological data
-4. **Documentation Updates** - API docs critical for users
-5. **Database Optimization** - Performance improvements
-6. **Advanced Features** - Long-term enhancements
+1. ~~**Geohash Occurrence Import**~~ ✅ COMPLETED (Jan 2026)
+2. ~~**Research Versioning Backend**~~ ✅ COMPLETED (Jan 2026) - Confidence scoring, source tracking
+3. **Research Metadata Frontend** - Display confidence, version, sources on species pages
+4. **LEAF Scoring Engine** - Critical for $100K bioregional campaigns (remaining: eco_id index, ecoregion testing, CSV export)
+5. **Frontend v10 Implementation** - Display new climate/ecological data
+6. **Documentation Updates** - API docs critical for users
+7. **Database Optimization** - Performance improvements, taxon_id collision fix
+8. **Advanced Features** - Long-term enhancements
 
 ---
 
@@ -283,12 +420,18 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 | Section | Planning Doc | Status |
 |---------|--------------|--------|
 | LEAF™ Scoring | [docs/todo/LEAF.md](docs/todo/LEAF.md) | Active |
+| LEAF + AlphaEarth Unified | [docs/todo/leaf-alpha-unified-scoring.md](docs/todo/leaf-alpha-unified-scoring.md) | Planning |
 | Geohash Import | [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md) | Active |
 | Frontend v10 | [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md) | Active |
+| Dual Research | [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md) | Planning |
+| Ecoregion Guides | [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md) | Active |
 | Unified Zone Schema | [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md) | Planning |
 
 **Reference Documentation** (in `docs/`):
+- **MASTER_PREDICTION_ARCHITECTURE_2.md** - Full SAFE-B framework, environmental variables, clustering
 - **RECOMMENDATION_SERVICE.md** - Species recommendation service specification
+- **LEAF_INTEGRATION_GUIDE.md** - LEAF API reference
+- **GUIDE_CREATION.md** - Ecoregion guide synthesis process
 - **SPECIES_NATIVE_STATUS_ROADMAP.md** - Native status scoring roadmap
 - **LIGHTPAPER.md** - Project vision
 - **SPEC_SHEET.md** - Feature specifications

@@ -81,15 +81,16 @@ As you work with the user, **maintain documentation discipline**:
 
 ## Quick Reference
 
-**Project Type**: Tree species knowledge database with AI research and blockchain integration
-**Architecture**: Next.js frontend + Node.js/Express backend + PostgreSQL/PostGIS + Multi-chain NFTs
-**Current Phase**: V10 data migration complete, frontend refinement, geospatial analysis features
+**Project Type**: Tree species knowledge database with AI research, geospatial analysis, and satellite embeddings
+**Architecture**: Next.js frontend + Node.js/Express backend + PostgreSQL/PostGIS/pgvector + AlphaEarth pipeline
+**Current Phase**: djimo merge complete, dual research integration planned, AlphaEarth prediction pipeline pending
 
 **Key Technologies**:
 - **Frontend**: Next.js 15, React 18, TypeScript, Tailwind, Wagmi v2, React-Leaflet
 - **Backend**: Node.js, Express, PostgreSQL, PostGIS, PM2
 - **Blockchain**: Celo, Base, Optimism, Arbitrum (multi-chain NFT minting)
-- **AI**: OpenAI, Perplexity API for research generation
+- **AI Research**: Grok 4.1 Fast (xAI) with agentic web search → atomic insights
+- **Prediction**: AlphaEarth satellite embeddings (GEE) + pgvector cosine similarity
 - **Storage**: IPFS (Lighthouse), EAS attestations
 
 **Key URLs**:
@@ -100,7 +101,7 @@ As you work with the user, **maintain documentation discipline**:
 **Database Stats**:
 - 67,927 species (130 fields per species)
 - 31,796 images across 13,609 species
-- 5.3M geohash tiles with 89M occurrences
+- 6.46M geohash tiles with 96.5M occurrences
 - 847 WWF ecoregions
 
 ---

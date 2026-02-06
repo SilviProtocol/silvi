@@ -2,7 +2,7 @@
 
 **For**: Silvi Protocol Integration
 **Endpoint**: `https://treekipedia-api.silvi.earth/api/geospatial/leaf/score`
-**Last Updated**: December 2025
+**Last Updated**: January 2026
 
 ---
 
@@ -13,9 +13,9 @@
 LEAF answers the question: **"What trees should I plant here?"**
 
 It provides scientifically-grounded species recommendations for any location on Earth, combining:
-- **89.3M GBIF species occurrences** (where species actually grow)
-- **WCVP native/introduced status** (authoritative Kew Gardens data)
-- **847 WWF ecoregions** (ecological boundaries)
+- **96.5M GBIF species occurrences** across 6.46M geohash tiles (where species actually grow)
+- **WCVP native/introduced status** (97.5% species coverage, authoritative Kew Gardens data)
+- **847 WWF ecoregions** (97.2% tile coverage)
 
 ---
 

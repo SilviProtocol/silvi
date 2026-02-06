@@ -59,8 +59,8 @@ export function SearchForm({ placeholder = "Search 67,743 tree species & subspec
       try {
         console.log(`Fetching suggestions for query: ${query}`);
         
-        // Use the confirmed working API URL with HTTPS
-        const API_URL = 'https://treekipedia-api.silvi.earth';
+        // Use environment variable, fallback to production for deployed builds
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
         const response = await fetch(
           `${API_URL}/species/suggest?query=${encodeURIComponent(query)}`,
           {

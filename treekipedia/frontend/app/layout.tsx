@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     template: '%s | Treekipedia'
   },
   description: 'Treekipedia is an open-source, comprehensive database of tree knowledge.',
-  keywords: ['Web3', 'Reforestation', 'Environment', 'Climate Change', 'Blockchain', 'NFT', 'Trees', 'Ecology'],
+  keywords: ['Trees', 'Ecology', 'Reforestation', 'Environment', 'Climate Change', 'Botany', 'Species Database', 'Conservation'],
 };
 
 // Viewport must be in a separate export as per Next.js 14+ recommendations

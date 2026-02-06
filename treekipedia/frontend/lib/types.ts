@@ -99,6 +99,33 @@ export interface TreeSpecies {
   maximum_tree_age_ai: number | null;
   maximum_tree_age_human: number | null;
   
+  // v2 AI/human fields (added Jan 2026)
+  etymology: string;
+  etymology_ai: string;
+  etymology_human: string;
+  synonyms_ai: string;
+  synonyms_human: string;
+  identification_features: string;
+  identification_features_ai: string;
+  identification_features_human: string;
+  climate_tolerance: string;
+  climate_tolerance_ai: string;
+  climate_tolerance_human: string;
+  tolerances_ai: string;
+  tolerances_human: string;
+  associated_species: string;
+  associated_species_ai: string;
+  associated_species_human: string;
+  propagation_methods: string;
+  propagation_methods_ai: string;
+  propagation_methods_human: string;
+  timber_value_ai: string;
+  timber_value_human: string;
+  non_timber_products_ai: string;
+  non_timber_products_human: string;
+  nutritional_caloric_value_ai: string;
+  nutritional_caloric_value_human: string;
+
   // Other fields without AI/human variants
   climate_change_vulnerability: string;
   national_conservation_status: string;
@@ -127,6 +154,19 @@ export interface TreeSpecies {
   data_sources: string;
   ipfs_cid: string;
   researched: boolean; // Flag to indicate if species has been researched
+
+  // Research versioning and metadata
+  research_version: number | null;
+  research_date: string | null;
+  research_agent: string | null;
+  research_confidence: number | null;
+  research_sources: string | null; // JSON string of sources array
+  research_flags: string | null; // JSON string of QC flags
+  research_token_cost: number | null;
+
+  // AI-generated common name
+  popular_common_name_ai: string | null;
+
   forest_type: string;
   wetland_type: string;
   urban_setting: string;
@@ -137,6 +177,16 @@ export interface TreeSpecies {
   last_updated_date: string;
   created_at: string;
   updated_at: string;
+
+  // Derived habitat biomes from occurrence data
+  derived_biomes?: DerivedBiome[];
+}
+
+// Derived biome data from geohash occurrence tiles
+export interface DerivedBiome {
+  biome: string;
+  occurrences: number;
+  tiles: number;
 }
 
 // Species image data structure

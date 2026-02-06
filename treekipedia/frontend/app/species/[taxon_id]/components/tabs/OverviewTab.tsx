@@ -1,6 +1,7 @@
 import React from "react";
 import { Leaf } from "lucide-react";
 import { TreeSpecies } from "@/lib/types";
+import { InsightDetail } from "@/lib/api";
 import { DataField } from "../DataField";
 import { FieldDefinition } from "../../hooks/useFieldDefinitions";
 import { SubspeciesSection } from "../SubspeciesSection";
@@ -10,10 +11,12 @@ interface OverviewTabProps {
   species: TreeSpecies;
   isResearched: boolean;
   getFieldValue: (fieldName: string) => { value: any; source: "human" | "ai" | "legacy" | null };
+  getInsightForField: (fieldName: string) => InsightDetail | null;
+  getInsightsForField: (fieldName: string) => InsightDetail[];
   fields: FieldDefinition[];
 }
 
-export function OverviewTab({ species, isResearched, getFieldValue, fields }: OverviewTabProps) {
+export function OverviewTab({ species, isResearched, getFieldValue, getInsightForField, getInsightsForField, fields }: OverviewTabProps) {
   // Get general description field
   const generalDescriptionField = fields.find(
     (field) => field.key === "general_description"
@@ -40,16 +43,14 @@ export function OverviewTab({ species, isResearched, getFieldValue, fields }: Ov
       {descriptionValue && descriptionValue !== "" && descriptionValue !== "NA" && (
         <div>
           <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <Leaf className="w-5 h-5 mr-2 text-green-400" />
+            <Leaf className="w-5 h-5 mr-2 text-emerald-400" />
             General Description
           </h2>
           <div className="p-4 rounded-xl bg-black/40 backdrop-blur-md border border-white/15">
             <div
               className={`text-white/85 leading-relaxed ${
                 descriptionSource === "ai"
-                  ? "bg-emerald-800/20 border-l-4 border-emerald-400 pl-3 py-1 rounded"
-                  : descriptionSource === "human"
-                  ? "border-l-4 border-blue-400 pl-3 py-1 rounded"
+                  ? "border-l-4 border-emerald-400 pl-3 py-1 rounded"
                   : ""
               }`}
             >
@@ -75,6 +76,8 @@ export function OverviewTab({ species, isResearched, getFieldValue, fields }: Ov
               getFieldValue={getFieldValue}
               isResearched={isResearched}
               isFieldResearched={() => true} // These fields aren't researched
+              insight={getInsightForField(field.key)}
+              insights={getInsightsForField(field.key)}
             />
           ))}
         </div>
