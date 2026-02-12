@@ -1447,7 +1447,7 @@ async function getNativeSpeciesByEcoregionName(req, res) {
  */
 async function getLeafScore(req, res) {
   try {
-    const { eco_id, eco_name, lat, lng, limit = 500, min_score = 0 } = req.query;
+    const { eco_id, eco_name, lat, lng, limit = 2500, min_score = 0 } = req.query;
     const geometry = req.body?.geometry;
 
     // Validate input - must have one of: eco_id, eco_name, lat/lng, or geometry
