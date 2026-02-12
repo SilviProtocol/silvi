@@ -33,7 +33,7 @@ POST /api/geospatial/leaf/score
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `limit` | integer | 500 | Max species to return |
+| `limit` | integer | 2500 | Max species to return |
 | `min_score` | float | 0 | Minimum LEAF score (0-100) |
 
 ---
@@ -159,7 +159,7 @@ data = response.json()
     "introduced_excluded": 497,
     "native_species": 2835,
     "unknown_status": 0,
-    "qualifying_species": 500
+    "qualifying_species": 2500
   },
   "species": [
     {
