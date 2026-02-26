@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { getEcoregionGuide, EcoregionGuideResponse, EcoregionGuideSpecies } from "@/lib/api";
 import Link from "next/link";
+import { useTour } from "@/context/tour-context";
 
 function Accordion({ id, title, defaultOpen = false, children, badge }: {
   id?: string;
@@ -111,9 +112,16 @@ export default function EcoregionGuidePage() {
   const params = useParams();
   const router = useRouter();
   const ecoId = params.eco_id as string;
+  const { autoStartTour } = useTour();
   const [guide, setGuide] = useState<EcoregionGuideResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!loading) {
+      autoStartTour('guide_detail');
+    }
+  }, [loading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     async function load() {
@@ -179,7 +187,7 @@ export default function EcoregionGuidePage() {
         </button>
 
         {/* Header */}
-        <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-6 mb-6">
+        <div data-tour="ecoregion-header" className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-6 mb-6">
           <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3">{ecoregion.eco_name}</h1>
           <div className="flex flex-wrap gap-2 text-xs sm:text-sm">
             <span className="bg-black/30 backdrop-blur-md px-2 sm:px-3 py-1 rounded-full text-white/80 border border-white/10">{ecoregion.biome_name}</span>
@@ -198,7 +206,7 @@ export default function EcoregionGuidePage() {
           </div>
 
           {/* Quick Jump Links */}
-          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
+          <div data-tour="quick-jump" className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-white/10">
             <span className="text-xs text-white/50 mr-1">Jump to:</span>
             <a href="#overview" className="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">Overview</a>
             <span className="text-white/20">·</span>
@@ -244,6 +252,7 @@ export default function EcoregionGuidePage() {
           </Accordion>
 
           {/* Top Recommended Species */}
+          <div data-tour="top-species">
           <Accordion id="top-species" title="Top Recommended Species" defaultOpen={true} badge={`${top_species.length} species`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {top_species.map((sp) => (
@@ -251,8 +260,10 @@ export default function EcoregionGuidePage() {
               ))}
             </div>
           </Accordion>
+          </div>
 
           {/* All Species by Tier */}
+          <div data-tour="all-species">
           <Accordion id="all-species" title="All Species by Tier" badge={`${statistics.total_species} total`}>
             {(["BEST", "GOOD", "ACCEPTABLE"] as const).map((tier) => {
               const tierSpecies = species_by_tier[tier];
@@ -277,6 +288,7 @@ export default function EcoregionGuidePage() {
               );
             })}
           </Accordion>
+          </div>
 
           {/* Planting Strategy */}
           {sc?.planting_strategy && (

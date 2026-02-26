@@ -4,9 +4,11 @@ import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search, TreePine, Brain, Globe, Leaf, ArrowRight } from "lucide-react";
 import { searchEcoregions, EcoregionSearchResult } from "@/lib/api";
+import { useTour } from "@/context/tour-context";
 
 export default function GuidePage() {
   const router = useRouter();
+  const { autoStartTour } = useTour();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<EcoregionSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -35,6 +37,10 @@ export default function GuidePage() {
     };
   }, [query]);
 
+  useEffect(() => {
+    autoStartTour('guide');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Close dropdown on outside click
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
@@ -51,7 +57,7 @@ export default function GuidePage() {
       <div className="container relative z-10 px-4 md:px-6 mx-auto">
         <div className="flex flex-col items-center justify-center space-y-8 text-center">
           {/* Title */}
-          <div className="flex flex-col items-center space-y-2">
+          <div className="flex flex-col items-center space-y-2" data-tour="guide-header">
             <h1 className="text-4xl font-bold tracking-tighter">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-green-200 to-teal-300">
                 Ecoregion Reforestation Guides
@@ -63,7 +69,7 @@ export default function GuidePage() {
           </div>
 
           {/* Search */}
-          <div className="w-full max-w-2xl relative" ref={dropdownRef}>
+          <div className="w-full max-w-2xl relative" ref={dropdownRef} data-tour="guide-search">
             <div className="relative">
               <input
                 type="text"
@@ -122,7 +128,7 @@ export default function GuidePage() {
           </div>
 
           {/* Info Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 max-w-4xl w-full">
+          <div data-tour="guide-info-cards" className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-12 max-w-4xl w-full">
             <div className="rounded-xl bg-black/40 backdrop-blur-md border border-white/15 p-6 text-left">
               <TreePine className="h-8 w-8 text-emerald-400 mb-3" />
               <h3 className="text-lg font-semibold text-emerald-300 mb-1">LEAF Scoring</h3>

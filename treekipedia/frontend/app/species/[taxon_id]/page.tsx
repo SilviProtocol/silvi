@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { useTour } from "@/context/tour-context";
 import { Button } from "@/components/ui/button";
 import { SpeciesHeader } from "./components/SpeciesHeader";
 import { TabContainer } from "./components/TabContainer";
@@ -19,8 +20,7 @@ export default function SpeciesDetailsPage() {
   const [isResearching, setIsResearching] = useState(false);
   const [researchMessage, setResearchMessage] = useState<string | null>(null);
   const [researchMessageType, setResearchMessageType] = useState<'success' | 'info' | 'error'>('info');
-
-  // taxonId from URL parameter
+  const { autoStartTour } = useTour();
 
   // Use our custom hook that handles data fetching and merging
   const {
@@ -40,6 +40,12 @@ export default function SpeciesDetailsPage() {
     refetchResearch,
     refetchInsights,
   } = useSpeciesData(taxonId);
+
+  useEffect(() => {
+    if (!isLoading) {
+      autoStartTour('species');
+    }
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Handle research button click
   const handleResearch = async (force: boolean = false) => {
@@ -160,6 +166,7 @@ export default function SpeciesDetailsPage() {
         {/* Back Button + Research Button */}
         <div className="mb-6 flex items-center gap-3">
           <Button
+            data-tour="back-to-search"
             onClick={() => router.push("/search")}
             variant="outline"
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-white hover:bg-black/60 transition-colors"
@@ -171,6 +178,7 @@ export default function SpeciesDetailsPage() {
           {/* Research Button - "Research" for new species */}
           {!hasInsights && (
             <Button
+              data-tour="research-button"
               onClick={() => handleResearch(false)}
               disabled={isResearching}
               className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600/80 hover:bg-emerald-600 border border-emerald-400/30"
@@ -192,6 +200,7 @@ export default function SpeciesDetailsPage() {
           {/* Re-research Button - for species with existing insights */}
           {hasInsights && (
             <Button
+              data-tour="research-button"
               onClick={() => handleResearch(true)}
               disabled={isResearching}
               className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600/60 hover:bg-emerald-600/80 border border-emerald-400/30"

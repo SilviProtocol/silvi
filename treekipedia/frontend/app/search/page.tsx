@@ -1,12 +1,22 @@
+"use client";
+
+import { useEffect } from "react";
 import { SearchForm } from "@/components/search-form";
+import { useTour } from "@/context/tour-context";
 
 export default function SearchPage() {
+  const { autoStartTour } = useTour();
+
+  useEffect(() => {
+    autoStartTour('search');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <section className="relative w-full min-h-[calc(100vh-80px)] flex items-center justify-center">
       <div className="container relative z-10 px-4 md:px-6 mx-auto">
         <div className="flex flex-col items-center justify-center space-y-8 text-center">
           {/* Logo and Subtitle Group */}
-          <div className="flex flex-col items-center">
+          <div className="flex flex-col items-center" data-tour="search-hero">
             <img
               src="/treekipedialogo.svg"
               alt="Treekipedia"

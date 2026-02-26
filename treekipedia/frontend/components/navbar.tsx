@@ -23,16 +23,25 @@ export function Navbar() {
       href: "/search",
       label: "Search",
       active: pathname === "/search" || pathname === "/",
+      tourId: "nav-search",
     },
     {
       href: "/analysis",
       label: "Analysis",
       active: pathname === "/analysis",
+      tourId: "nav-analysis",
+    },
+    {
+      href: "/guide",
+      label: "Guides",
+      active: pathname === "/guide" || pathname.startsWith("/guide/"),
+      tourId: "nav-guide",
     },
     {
       href: "/about",
       label: "About",
       active: pathname === "/about",
+      tourId: "nav-about",
     },
   ]
   
@@ -61,6 +70,7 @@ export function Navbar() {
                 <Link
                   key={route.href}
                   href={route.href}
+                  data-tour={route.tourId}
                   className={cn(
                     "text-white hover:text-emerald-300 font-medium transition-colors",
                     route.active && "text-emerald-300"
@@ -75,7 +85,7 @@ export function Navbar() {
           {/* Right side: Wallet */}
           <div className="flex items-center space-x-4">
             {/* Wallet Connection */}
-            <div className="wallet-container relative">
+            <div className="wallet-container relative" data-tour="wallet-button">
               <WalletConnectButton />
             </div>
 
