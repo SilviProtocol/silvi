@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { useTour } from '@/context/tour-context';
 import { PlotAnalysisResponse } from '@/lib/types';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
@@ -22,6 +23,7 @@ import FileUpload from './components/FileUpload';
 import ResultsList from './components/ResultsList';
 
 export default function AnalysisPage() {
+  const { autoStartTour } = useTour();
   const [analysisResults, setAnalysisResults] = useState<PlotAnalysisResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
@@ -66,6 +68,10 @@ export default function AnalysisPage() {
     // This could be used for additional logic if needed
   };
 
+  useEffect(() => {
+    autoStartTour('analysis');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Handle showing KML panel
   const handleShowKMLPanel = () => {
     setShowKMLPanel(true);
@@ -75,7 +81,7 @@ export default function AnalysisPage() {
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <div className="bg-black/30 backdrop-blur-md border-b border-white/20 flex-shrink-0">
+      <div data-tour="analysis-header" className="bg-black/30 backdrop-blur-md border-b border-white/20 flex-shrink-0">
         <div className="max-w-full px-4 sm:px-6 lg:px-8">
           <div className="py-2.5">
             <div className="flex items-center justify-between">
@@ -96,7 +102,7 @@ export default function AnalysisPage() {
       </div>
 
       {/* Full-screen map with overlay panels */}
-      <div className="flex-1 relative">
+      <div data-tour="analysis-map" className="flex-1 relative">
         <Map
           onAnalysisComplete={handleAnalysisComplete}
           onAnalysisError={handleAnalysisError}

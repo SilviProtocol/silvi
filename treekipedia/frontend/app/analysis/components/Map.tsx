@@ -997,6 +997,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         {/* KML Upload Button - Show when no polygon is drawn */}
         {!drawnPolygon && !isAnalysisLoading && (
           <button
+            data-tour="upload-kml"
             onClick={onShowKMLPanel}
             className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg px-4 py-3 text-white text-sm hover:bg-black/90 transition-colors flex items-center gap-2"
           >
@@ -1008,7 +1009,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         )}
 
         {/* Layer control panel */}
-        <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg p-3 min-w-[200px]">
+        <div data-tour="map-layers" className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg p-3 min-w-[200px]">
           <div className="flex items-center gap-2 mb-3">
             <Layers className="w-5 h-5 text-emerald-300" />
             <span className="text-sm font-medium text-white">Map Layers</span>
@@ -1070,7 +1071,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
       </div>
 
       {/* Collapsible instructions overlay */}
-      <div className="absolute bottom-4 left-4 z-10">
+      <div data-tour="map-instructions" className="absolute bottom-4 left-4 z-10">
         {showInstructions ? (
           <div className="bg-black/80 backdrop-blur-md border border-white/20 rounded-xl shadow-lg p-4 max-w-sm">
             <div className="flex items-center justify-between mb-2">

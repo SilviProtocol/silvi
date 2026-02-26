@@ -234,10 +234,11 @@ export function SearchForm({ placeholder = "Search 67,743 tree species & subspec
 
   return (
     <div className="relative z-10 mb-16">
-      <form onSubmit={handleSubmit} className="flex gap-2">
+      <form onSubmit={handleSubmit} className="flex gap-2" data-tour="search-form">
         <div className="max-w-2xl mx-auto w-full relative">
           <div className="relative">
             <input
+              data-tour="search-input"
               type="text"
               placeholder={placeholder}
               value={query}

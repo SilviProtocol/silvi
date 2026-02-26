@@ -1,6 +1,16 @@
+"use client";
+
+import { useEffect } from "react";
 import { Navbar } from "@/components/navbar";
+import { useTour } from "@/context/tour-context";
 
 export default function AboutPage() {
+  const { autoStartTour } = useTour();
+
+  useEffect(() => {
+    autoStartTour('about');
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   return (
     <div className="min-h-screen">
       <Navbar />
@@ -9,7 +19,7 @@ export default function AboutPage() {
           className="min-h-screen py-16 px-4 sm:px-6"
         >
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-4xl font-bold tracking-tighter mb-8 text-white text-center">
+            <h1 data-tour="about-header" className="text-4xl font-bold tracking-tighter mb-8 text-white text-center">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-300 via-green-200 to-teal-300 animate-gradient-x">
                 The Tree Intelligence Commons
               </span>
@@ -17,7 +27,7 @@ export default function AboutPage() {
 
             <div className="grid gap-6">
               {/* Overview Section */}
-              <div className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
+              <div data-tour="about-overview" className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
                 <div className="flex flex-col">
                   <div className="flex items-center mb-3">
                     <div className="text-5xl mr-3">🌐</div>
@@ -87,7 +97,7 @@ export default function AboutPage() {
               </div>
 
               {/* How It Works Section */}
-              <div className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
+              <div data-tour="about-how-it-works" className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
                 <div className="flex flex-col">
                   <div className="flex items-center mb-3">
                     <div className="text-5xl mr-3">⚙️</div>
@@ -137,7 +147,7 @@ export default function AboutPage() {
               </div>
 
               {/* Technical Infrastructure Section */}
-              <div className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
+              <div data-tour="about-tech" className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
                 <div className="flex flex-col">
                   <div className="flex items-center mb-3">
                     <div className="text-5xl mr-3">⛓️</div>
@@ -167,7 +177,7 @@ export default function AboutPage() {
               </div>
 
               {/* Data Foundation Section */}
-              <div className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
+              <div data-tour="about-data" className="p-5 rounded-xl bg-black/30 backdrop-blur-md border border-white/20 text-white">
                 <div className="flex flex-col">
                   <div className="flex items-center mb-3">
                     <div className="text-5xl mr-3">📊</div>
