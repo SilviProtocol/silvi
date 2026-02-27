@@ -8,6 +8,25 @@ import { tourStyles } from '@/lib/tours/styles';
 
 const STORAGE_PREFIX = 'treekipedia_tour_seen_';
 
+// Save original scrollIntoView so we can restore it
+const originalScrollIntoView = typeof window !== 'undefined'
+  ? Element.prototype.scrollIntoView
+  : null;
+
+function disableScrollIntoView() {
+  if (typeof window !== 'undefined') {
+    Element.prototype.scrollIntoView = function () {
+      // no-op: block driver.js from scrolling the page
+    };
+  }
+}
+
+function restoreScrollIntoView() {
+  if (typeof window !== 'undefined' && originalScrollIntoView) {
+    Element.prototype.scrollIntoView = originalScrollIntoView;
+  }
+}
+
 interface TourContextValue {
   startTour: (pageId: string) => void;
   stopTour: () => void;
@@ -35,6 +54,16 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Cleanup helper that restores everything
+  const cleanup = useCallback(() => {
+    restoreScrollIntoView();
+    document.documentElement.classList.remove('driver-active');
+    if (safetyTimerRef.current) {
+      clearTimeout(safetyTimerRef.current);
+      safetyTimerRef.current = null;
+    }
+  }, []);
+
   const hasSeenTour = useCallback((pageId: string): boolean => {
     if (typeof window === 'undefined') return true;
     return localStorage.getItem(`${STORAGE_PREFIX}${pageId}`) === 'true';
@@ -47,17 +76,13 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const stopTour = useCallback(() => {
-    document.documentElement.classList.remove('driver-active');
-    if (safetyTimerRef.current) {
-      clearTimeout(safetyTimerRef.current);
-      safetyTimerRef.current = null;
-    }
+    cleanup();
     if (driverRef.current) {
       try { driverRef.current.destroy(); } catch (_) {}
       driverRef.current = null;
     }
     currentPageRef.current = null;
-  }, []);
+  }, [cleanup]);
 
   const startTour = useCallback((pageId: string) => {
     // Prevent starting if already running
@@ -65,10 +90,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       try { driverRef.current.destroy(); } catch (_) {}
       driverRef.current = null;
     }
-    if (safetyTimerRef.current) {
-      clearTimeout(safetyTimerRef.current);
-      safetyTimerRef.current = null;
-    }
+    cleanup();
 
     const tourSteps = getTourSteps(pageId);
     if (tourSteps.length === 0) return;
@@ -85,7 +107,11 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
     currentPageRef.current = pageId;
 
-    // Lock page scroll to prevent driver.js scrollIntoView from crashing the browser
+    // Block scrollIntoView completely — this is the root cause of the crash.
+    // driver.js calls element.scrollIntoView() on every step transition,
+    // which fights with Leaflet maps and fixed-position elements causing
+    // an infinite scroll/resize/repaint loop that freezes the browser.
+    disableScrollIntoView();
     document.documentElement.classList.add('driver-active');
 
     try {
@@ -108,11 +134,7 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
         popoverOffset: 14,
         steps: validSteps,
         onDestroyed: () => {
-          document.documentElement.classList.remove('driver-active');
-          if (safetyTimerRef.current) {
-            clearTimeout(safetyTimerRef.current);
-            safetyTimerRef.current = null;
-          }
+          cleanup();
           if (currentPageRef.current) {
             markTourAsSeen(currentPageRef.current);
           }
@@ -123,9 +145,9 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
       driverRef.current = driverObj;
 
-      // Safety timeout: auto-destroy tour after 2 minutes to prevent memory leaks
+      // Safety timeout: auto-destroy after 2 minutes
       safetyTimerRef.current = setTimeout(() => {
-        document.documentElement.classList.remove('driver-active');
+        cleanup();
         if (driverRef.current) {
           try { driverRef.current.destroy(); } catch (_) {}
           driverRef.current = null;
@@ -136,11 +158,11 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
       driverObj.drive();
     } catch (err) {
       console.error('Tour failed to start:', err);
-      document.documentElement.classList.remove('driver-active');
+      cleanup();
       driverRef.current = null;
       currentPageRef.current = null;
     }
-  }, [markTourAsSeen]);
+  }, [markTourAsSeen, cleanup]);
 
   // Safe auto-start that only fires once per page per session
   const autoStartTour = useCallback((pageId: string) => {
@@ -150,7 +172,6 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
 
     autoStartedRef.current.add(pageId);
 
-    // Delay to let the page fully render before starting
     setTimeout(() => {
       startTour(pageId);
     }, 1500);
