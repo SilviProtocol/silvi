@@ -1,31 +1,10 @@
 'use client';
 
-import React, { createContext, useContext, useCallback, useRef, useEffect, useMemo } from 'react';
-import { driver, type Driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
+import React, { createContext, useContext, useCallback, useRef, useMemo, useState, useEffect } from 'react';
 import { getTourSteps } from '@/lib/tours';
 import { tourStyles } from '@/lib/tours/styles';
 
 const STORAGE_PREFIX = 'treekipedia_tour_seen_';
-
-// Save original scrollIntoView so we can restore it
-const originalScrollIntoView = typeof window !== 'undefined'
-  ? Element.prototype.scrollIntoView
-  : null;
-
-function disableScrollIntoView() {
-  if (typeof window !== 'undefined') {
-    Element.prototype.scrollIntoView = function () {
-      // no-op: block driver.js from scrolling the page
-    };
-  }
-}
-
-function restoreScrollIntoView() {
-  if (typeof window !== 'undefined' && originalScrollIntoView) {
-    Element.prototype.scrollIntoView = originalScrollIntoView;
-  }
-}
 
 interface TourContextValue {
   startTour: (pageId: string) => void;
@@ -34,34 +13,37 @@ interface TourContextValue {
   markTourAsSeen: (pageId: string) => void;
   resetTour: (pageId: string) => void;
   autoStartTour: (pageId: string) => void;
+  currentStep: number;
+  totalSteps: number;
+  currentStepData: StepData | null;
+  nextStep: () => void;
+  prevStep: () => void;
+  isRunning: boolean;
+}
+
+interface StepData {
+  title: string;
+  description: string;
+  rect: DOMRect | null; // null = centered popover (no element)
 }
 
 const TourContext = createContext<TourContextValue | undefined>(undefined);
 
 export function TourProvider({ children }: { children: React.ReactNode }) {
-  const driverRef = useRef<Driver | null>(null);
-  const currentPageRef = useRef<string | null>(null);
+  const [isRunning, setIsRunning] = useState(false);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [totalSteps, setTotalSteps] = useState(0);
+  const [currentStepData, setCurrentStepData] = useState<StepData | null>(null);
+  const stepsRef = useRef<any[]>([]);
+  const pageIdRef = useRef<string | null>(null);
   const autoStartedRef = useRef<Set<string>>(new Set());
-  const safetyTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Inject custom styles once on mount
+  // Inject styles
   useEffect(() => {
     const style = document.createElement('style');
     style.textContent = tourStyles;
     document.head.appendChild(style);
-    return () => {
-      style.remove();
-    };
-  }, []);
-
-  // Cleanup helper that restores everything
-  const cleanup = useCallback(() => {
-    restoreScrollIntoView();
-    document.documentElement.classList.remove('driver-active');
-    if (safetyTimerRef.current) {
-      clearTimeout(safetyTimerRef.current);
-      safetyTimerRef.current = null;
-    }
+    return () => { style.remove(); };
   }, []);
 
   const hasSeenTour = useCallback((pageId: string): boolean => {
@@ -75,103 +57,82 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const stopTour = useCallback(() => {
-    cleanup();
-    if (driverRef.current) {
-      try { driverRef.current.destroy(); } catch (_) {}
-      driverRef.current = null;
+  const showStep = useCallback((index: number) => {
+    const steps = stepsRef.current;
+    if (index < 0 || index >= steps.length) return;
+
+    const step = steps[index];
+    let rect: DOMRect | null = null;
+
+    if (typeof step.element === 'string') {
+      const el = document.querySelector(step.element);
+      if (el) {
+        rect = el.getBoundingClientRect();
+      }
     }
-    currentPageRef.current = null;
-  }, [cleanup]);
+
+    setCurrentStep(index);
+    setCurrentStepData({
+      title: step.popover?.title || '',
+      description: step.popover?.description || '',
+      rect,
+    });
+  }, []);
+
+  const stopTour = useCallback(() => {
+    if (pageIdRef.current) {
+      markTourAsSeen(pageIdRef.current);
+    }
+    setIsRunning(false);
+    setCurrentStepData(null);
+    setCurrentStep(0);
+    setTotalSteps(0);
+    stepsRef.current = [];
+    pageIdRef.current = null;
+  }, [markTourAsSeen]);
+
+  const nextStep = useCallback(() => {
+    const next = currentStep + 1;
+    if (next >= stepsRef.current.length) {
+      stopTour();
+    } else {
+      showStep(next);
+    }
+  }, [currentStep, showStep, stopTour]);
+
+  const prevStep = useCallback(() => {
+    if (currentStep > 0) {
+      showStep(currentStep - 1);
+    }
+  }, [currentStep, showStep]);
 
   const startTour = useCallback((pageId: string) => {
-    // Prevent starting if already running
-    if (driverRef.current) {
-      try { driverRef.current.destroy(); } catch (_) {}
-      driverRef.current = null;
-    }
-    cleanup();
-
     const tourSteps = getTourSteps(pageId);
     if (tourSteps.length === 0) return;
 
-    // Filter steps whose targets don't exist in the DOM
+    // Filter to only steps with existing DOM elements
     const validSteps = tourSteps.filter((step) => {
       if (typeof step.element === 'string') {
         return document.querySelector(step.element) !== null;
       }
-      return true;
+      return true; // steps with no element (centered popovers) are always valid
     });
 
     if (validSteps.length === 0) return;
 
-    currentPageRef.current = pageId;
+    stepsRef.current = validSteps;
+    pageIdRef.current = pageId;
+    setTotalSteps(validSteps.length);
+    setIsRunning(true);
+    showStep(0);
+  }, [showStep]);
 
-    // Block scrollIntoView completely — this is the root cause of the crash.
-    // driver.js calls element.scrollIntoView() on every step transition,
-    // which fights with Leaflet maps and fixed-position elements causing
-    // an infinite scroll/resize/repaint loop that freezes the browser.
-    disableScrollIntoView();
-    document.documentElement.classList.add('driver-active');
-
-    try {
-      const driverObj = driver({
-        animate: false,
-        overlayColor: 'rgb(0, 0, 0)',
-        overlayOpacity: 0.75,
-        stagePadding: 12,
-        stageRadius: 12,
-        allowClose: true,
-        smoothScroll: false,
-        allowKeyboardControl: true,
-        showProgress: true,
-        progressText: '{{current}} of {{total}}',
-        showButtons: ['next', 'previous', 'close'],
-        nextBtnText: 'Next →',
-        prevBtnText: '← Back',
-        doneBtnText: 'Done ✓',
-        popoverClass: 'treekipedia-tour',
-        popoverOffset: 14,
-        steps: validSteps,
-        onDestroyed: () => {
-          cleanup();
-          if (currentPageRef.current) {
-            markTourAsSeen(currentPageRef.current);
-          }
-          driverRef.current = null;
-          currentPageRef.current = null;
-        },
-      });
-
-      driverRef.current = driverObj;
-
-      // Safety timeout: auto-destroy after 2 minutes
-      safetyTimerRef.current = setTimeout(() => {
-        cleanup();
-        if (driverRef.current) {
-          try { driverRef.current.destroy(); } catch (_) {}
-          driverRef.current = null;
-          currentPageRef.current = null;
-        }
-      }, 120000);
-
-      driverObj.drive();
-    } catch (err) {
-      console.error('Tour failed to start:', err);
-      cleanup();
-      driverRef.current = null;
-      currentPageRef.current = null;
-    }
-  }, [markTourAsSeen, cleanup]);
-
-  // Safe auto-start that only fires once per page per session
   const autoStartTour = useCallback((pageId: string) => {
     if (autoStartedRef.current.has(pageId)) return;
     if (typeof window === 'undefined') return;
     if (localStorage.getItem(`${STORAGE_PREFIX}${pageId}`) === 'true') return;
 
     autoStartedRef.current.add(pageId);
-
     setTimeout(() => {
       startTour(pageId);
     }, 1500);
@@ -191,12 +152,151 @@ export function TourProvider({ children }: { children: React.ReactNode }) {
     markTourAsSeen,
     resetTour,
     autoStartTour,
-  }), [startTour, stopTour, hasSeenTour, markTourAsSeen, resetTour, autoStartTour]);
+    currentStep,
+    totalSteps,
+    currentStepData,
+    nextStep,
+    prevStep,
+    isRunning,
+  }), [startTour, stopTour, hasSeenTour, markTourAsSeen, resetTour, autoStartTour, currentStep, totalSteps, currentStepData, nextStep, prevStep, isRunning]);
 
   return (
     <TourContext.Provider value={contextValue}>
       {children}
+      {isRunning && currentStepData && (
+        <TourOverlay
+          step={currentStepData}
+          current={currentStep}
+          total={totalSteps}
+          onNext={nextStep}
+          onPrev={prevStep}
+          onClose={stopTour}
+        />
+      )}
     </TourContext.Provider>
+  );
+}
+
+// ---- Overlay + Popover rendered as a portal-free React component ----
+
+function TourOverlay({
+  step,
+  current,
+  total,
+  onNext,
+  onPrev,
+  onClose,
+}: {
+  step: StepData;
+  current: number;
+  total: number;
+  onNext: () => void;
+  onPrev: () => void;
+  onClose: () => void;
+}) {
+  const isLast = current === total - 1;
+  const isFirst = current === 0;
+  const hasElement = step.rect !== null;
+
+  // Spotlight cutout style
+  const cutout = hasElement && step.rect ? {
+    top: step.rect.top - 8,
+    left: step.rect.left - 8,
+    width: step.rect.width + 16,
+    height: step.rect.height + 16,
+  } : null;
+
+  // Position popover near the highlighted element or center it
+  const popoverStyle: React.CSSProperties = hasElement && step.rect
+    ? {
+        position: 'fixed',
+        top: step.rect.bottom + 16,
+        left: Math.max(16, Math.min(step.rect.left, window.innerWidth - 420)),
+        zIndex: 10002,
+      }
+    : {
+        position: 'fixed',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        zIndex: 10002,
+      };
+
+  // If popover would go below viewport, show it above the element
+  if (hasElement && step.rect && step.rect.bottom + 250 > window.innerHeight) {
+    popoverStyle.top = Math.max(16, step.rect.top - 16);
+    (popoverStyle as any).transform = 'translateY(-100%)';
+  }
+
+  return (
+    <>
+      {/* Dark overlay with cutout */}
+      <div
+        style={{ position: 'fixed', inset: 0, zIndex: 10000, pointerEvents: 'none' }}
+      >
+        <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
+          <defs>
+            <mask id="tour-mask">
+              <rect width="100%" height="100%" fill="white" />
+              {cutout && (
+                <rect
+                  x={cutout.left}
+                  y={cutout.top}
+                  width={cutout.width}
+                  height={cutout.height}
+                  rx={12}
+                  fill="black"
+                />
+              )}
+            </mask>
+          </defs>
+          <rect
+            width="100%"
+            height="100%"
+            fill="rgba(0,0,0,0.75)"
+            mask="url(#tour-mask)"
+          />
+        </svg>
+      </div>
+
+      {/* Clickable backdrop to close */}
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, zIndex: 10001, cursor: 'pointer' }}
+      />
+
+      {/* Popover */}
+      <div
+        className="treekipedia-tour-popover"
+        style={popoverStyle}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close button */}
+        <button
+          onClick={onClose}
+          className="tour-close-btn"
+        >
+          ×
+        </button>
+
+        <div className="tour-title">{step.title}</div>
+        <div className="tour-description">{step.description}</div>
+
+        <div className="tour-footer">
+          <span className="tour-progress">{current + 1} of {total}</span>
+          <div className="tour-nav-btns">
+            {!isFirst && (
+              <button onClick={onPrev} className="tour-btn-back">
+                ← Back
+              </button>
+            )}
+            <button onClick={onNext} className="tour-btn-next">
+              {isLast ? 'Done ✓' : 'Next →'}
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }
 

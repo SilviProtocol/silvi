@@ -1,5 +1,3 @@
-import type { DriveStep } from 'driver.js';
-
 export type TourPageId =
   | 'search'
   | 'species'
@@ -8,4 +6,12 @@ export type TourPageId =
   | 'guide_detail'
   | 'about';
 
-export type TourStep = DriveStep;
+export interface TourStep {
+  element?: string;
+  popover?: {
+    title: string;
+    description: string;
+    side?: string;
+    align?: string;
+  };
+}
