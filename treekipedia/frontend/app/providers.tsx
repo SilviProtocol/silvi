@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState } from 'react'
+import { SessionProvider } from 'next-auth/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createConfig, http, WagmiProvider, createStorage } from 'wagmi'
 import { injected } from 'wagmi/connectors'
@@ -57,15 +58,16 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   }))
 
   return (
-    // Use ThemeProvider without modifying HTML attributes to avoid hydration issues
-    <ThemeProvider disableTransitionOnChange skipInitialClientCheck>
-      <WagmiProvider config={config}>
-        <QueryClientProvider client={queryClient}>
-          {children}
-          <Toaster position="top-right" />
-          <SonnerToaster position="top-right" />
-        </QueryClientProvider>
-      </WagmiProvider>
-    </ThemeProvider>
+    <SessionProvider>
+      <ThemeProvider disableTransitionOnChange skipInitialClientCheck>
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+            <Toaster position="top-right" />
+            <SonnerToaster position="top-right" />
+          </QueryClientProvider>
+        </WagmiProvider>
+      </ThemeProvider>
+    </SessionProvider>
   )
 }

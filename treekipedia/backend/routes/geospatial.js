@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { validateApiKey, rateLimitByApiKey } = require('../middleware/apiAuth');
+const { authenticateUser } = require('../middleware/userAuth');
 
 module.exports = (pool) => {
 const router = express.Router();
@@ -49,7 +50,8 @@ router.get('/stats', geospatialController.getGeospatialStats);
 
 // Analyze species within a polygon plot
 // POST /api/geospatial/analyze-plot
-router.post('/analyze-plot', geospatialController.analyzePlot);
+// Requires authentication and credits (use ?estimate=true for cost preview without auth)
+router.post('/analyze-plot', authenticateUser, geospatialController.analyzePlot);
 
 // Get species within a specific ecoregion
 // GET /api/geospatial/ecoregions/:ecoregion_id/species

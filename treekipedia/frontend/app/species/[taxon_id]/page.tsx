@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ArrowLeft, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SpeciesHeader } from "./components/SpeciesHeader";
@@ -10,15 +11,20 @@ import { ImageCarousel } from "./components/ImageCarousel";
 import { ResearchMetadataPanel } from "./components/ResearchMetadataPanel";
 import { useSpeciesData } from "./hooks/useSpeciesData";
 import { triggerResearch } from "@/lib/api";
+import { useCredits } from "@/hooks/useCredits";
+import { CreditGate } from "@/components/CreditGate";
 
 export default function SpeciesDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const taxonId = params.taxon_id as string;
   const [activeTab, setActiveTab] = useState("overview");
+  const { status } = useSession();
+  const { balance, refreshBalance } = useCredits();
   const [isResearching, setIsResearching] = useState(false);
   const [researchMessage, setResearchMessage] = useState<string | null>(null);
   const [researchMessageType, setResearchMessageType] = useState<'success' | 'info' | 'error'>('info');
+  const [showResearchGate, setShowResearchGate] = useState(false);
 
   // taxonId from URL parameter
 
@@ -41,9 +47,18 @@ export default function SpeciesDetailsPage() {
     refetchInsights,
   } = useSpeciesData(taxonId);
 
-  // Handle research button click
+  // Show credit gate or redirect to login
+  const initiateResearch = (force: boolean = false) => {
+    if (status !== 'authenticated') {
+      router.push('/login');
+      return;
+    }
+    setShowResearchGate(true);
+  };
+
+  // Actually perform research after credit gate confirmation
   const handleResearch = async (force: boolean = false) => {
-    console.log(`[Page] handleResearch called with force=${force}, hasInsights=${hasInsights}`);
+    setShowResearchGate(false);
     setIsResearching(true);
     setResearchMessage(null);
     setResearchMessageType('info');
@@ -53,21 +68,24 @@ export default function SpeciesDetailsPage() {
 
       if (result.success) {
         if (result.queued) {
-          // Species was added to research queue
           setResearchMessage(result.message || 'Added to research queue');
           setResearchMessageType('info');
         } else {
-          // Research data synced from insights (shouldn't happen with force=true)
           await Promise.all([refetchSpecies(), refetchResearch(), refetchInsights()]);
           setResearchMessage(result.message || `Research synced! ${result.insights_count || 0} insights loaded.`);
           setResearchMessageType('success');
         }
+        refreshBalance();
       } else {
         setResearchMessage(result.error || result.message || 'Research failed');
         setResearchMessageType('error');
       }
-    } catch (err) {
-      setResearchMessage(err instanceof Error ? err.message : 'Research failed');
+    } catch (err: any) {
+      if (err?.response?.status === 402) {
+        setResearchMessage('Insufficient credits');
+      } else {
+        setResearchMessage(err instanceof Error ? err.message : 'Research failed');
+      }
       setResearchMessageType('error');
     } finally {
       setIsResearching(false);
@@ -171,7 +189,7 @@ export default function SpeciesDetailsPage() {
           {/* Research Button - "Research" for new species */}
           {!hasInsights && (
             <Button
-              onClick={() => handleResearch(false)}
+              onClick={() => initiateResearch(false)}
               disabled={isResearching}
               className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600/80 hover:bg-emerald-600 border border-emerald-400/30"
             >
@@ -183,7 +201,7 @@ export default function SpeciesDetailsPage() {
               ) : (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  Research
+                  Research (25 credits)
                 </>
               )}
             </Button>
@@ -192,7 +210,7 @@ export default function SpeciesDetailsPage() {
           {/* Re-research Button - for species with existing insights */}
           {hasInsights && (
             <Button
-              onClick={() => handleResearch(true)}
+              onClick={() => initiateResearch(true)}
               disabled={isResearching}
               className="flex items-center gap-2 px-4 py-2 rounded-xl backdrop-blur-md text-white font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600/60 hover:bg-emerald-600/80 border border-emerald-400/30"
             >
@@ -204,7 +222,7 @@ export default function SpeciesDetailsPage() {
               ) : (
                 <>
                   <RefreshCw className="w-4 h-4" />
-                  Re-research
+                  Re-research (25 credits)
                 </>
               )}
             </Button>
@@ -220,6 +238,20 @@ export default function SpeciesDetailsPage() {
             </span>
           )}
         </div>
+
+        {/* Credit Gate for Research */}
+        {showResearchGate && (
+          <div className="mb-4">
+            <CreditGate
+              cost={25}
+              productLabel="Species Research"
+              balance={balance}
+              onConfirm={() => handleResearch(hasInsights)}
+              onCancel={() => setShowResearchGate(false)}
+              isLoading={isResearching}
+            />
+          </div>
+        )}
 
         {/* Two-column layout: Content + Sidebar (when sidebar has content) */}
         {(() => {

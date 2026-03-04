@@ -6,6 +6,7 @@
 const { buildWcvpNativeCondition, buildWcvpIntroducedExclusion } = require('../utils/wcvpRegions');
 
 module.exports = (pool) => {
+const creditService = require('../services/creditService')(pool);
 
 // Find species near a specific location
 async function findSpeciesNearby(req, res) {
@@ -405,7 +406,35 @@ async function analyzePlot(req, res) {
     
     // Convert GeoJSON polygon to PostGIS format
     const geoJsonString = JSON.stringify(geometry);
-    
+
+    // Calculate area and credit cost
+    const areaResult = await pool.query(
+      'SELECT ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000 AS hectares',
+      [geoJsonString]
+    );
+    const hectares = parseFloat(areaResult.rows[0].hectares);
+    const creditCost = creditService.calculateSiteAnalysisCost(hectares);
+
+    // Deduct credits
+    const deduction = await creditService.deductCredits(
+      req.user.id,
+      creditCost,
+      'site_analysis',
+      null,
+      { area_hectares: Math.round(hectares * 100) / 100, geometry },
+      `site_analysis_${req.user.id}_${Date.now()}`
+    );
+
+    if (!deduction.success) {
+      return res.status(402).json({
+        error: 'Insufficient credits',
+        required: deduction.required,
+        balance: deduction.balance,
+        area_hectares: Math.round(hectares * 100) / 100,
+        cost_credits: creditCost
+      });
+    }
+
     // Get WCVP region patterns for countries in the polygon
     const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
 
@@ -597,6 +626,8 @@ async function analyzePlot(req, res) {
       totalSpecies: processedRows.length,
       totalOccurrences: totalOccurrences,
       crossAnalysis: crossAnalysis,
+      credits_charged: creditCost,
+      balance_after: deduction.balance_after,
       species: processedRows.map(row => ({
         taxon_id: row.taxon_id,
         scientific_name: row.scientific_name || `Unknown (${row.taxon_id})`,

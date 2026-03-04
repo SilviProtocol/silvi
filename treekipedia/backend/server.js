@@ -70,8 +70,12 @@ app.use(session({
   }
 }));
 
-// Import admin auth middleware
+// Import auth middleware
+const { optionalAuth } = require('./middleware/userAuth');
 const { requireAdminAuth } = require('./middleware/adminAuth');
+
+// User auth: sets req.user from Django JWT if Authorization header present
+app.use(optionalAuth);
 
 // PostgreSQL Connection
 const pool = new Pool({
@@ -162,6 +166,12 @@ app.use('/api/geospatial', geospatialRoutes);
 
 const guidesRoutes = require('./routes/guides')(pool);
 app.use('/api/guides', guidesRoutes);
+
+const creditsRoutes = require('./routes/credits')(pool);
+app.use('/api/credits', creditsRoutes);
+
+const paymentsRoutes = require('./routes/payments')(pool);
+app.use('/api/payments', paymentsRoutes);
 
 // GraphFlow Admin Routes (for ontology generation, sync, SPARQL, etc.)
 const adminRoutes = require('./routes/admin');

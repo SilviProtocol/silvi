@@ -1,8 +1,10 @@
 const express = require('express');
 const { v4: uuidv4 } = require('uuid');
+const { authenticateUser } = require('../middleware/userAuth');
 
 module.exports = (pool) => {
   const router = express.Router();
+  const creditService = require('../services/creditService')(pool);
 
   // ============================================================================
   // INSIGHT MANAGEMENT FUNCTIONS
@@ -684,13 +686,11 @@ module.exports = (pool) => {
    * Includes research versioning, confidence scoring, and source tracking
    * Route params: taxon_id - The unique identifier for the species
    */
-  router.post('/:taxon_id/research', async (req, res) => {
+  router.post('/:taxon_id/research', authenticateUser, async (req, res) => {
     const { taxon_id } = req.params;
 
     try {
-      console.log(`POST /species/${taxon_id}/research - Starting AI research (insights flow)`);
-
-      // Get species info including current research version
+      // Validate species exists before charging credits
       const speciesQuery = `
         SELECT taxon_id, species_scientific_name, common_name,
                COALESCE(research_version, 0) as research_version
@@ -702,6 +702,27 @@ module.exports = (pool) => {
       if (speciesResult.rows.length === 0) {
         return res.status(404).json({ success: false, error: 'Species not found' });
       }
+
+      // Deduct 25 credits for species research
+      const deduction = await creditService.deductCredits(
+        req.user.id,
+        25,
+        'species_research',
+        taxon_id,
+        { taxon_id },
+        `species_research_${req.user.id}_${taxon_id}_${Date.now()}`
+      );
+
+      if (!deduction.success) {
+        return res.status(402).json({
+          error: 'Insufficient credits',
+          required: deduction.required,
+          balance: deduction.balance,
+          cost_credits: 25
+        });
+      }
+
+      console.log(`POST /species/${taxon_id}/research - Starting AI research (insights flow)`);
 
       const species = speciesResult.rows[0];
       const scientificName = species.species_scientific_name;
@@ -796,7 +817,9 @@ module.exports = (pool) => {
         sources: result.sources,
         model: result.model,
         duration_ms: result.duration_ms,
-        session_id: insightResult.sessionId
+        session_id: insightResult.sessionId,
+        credits_charged: 25,
+        balance_after: deduction.balance_after
       });
 
     } catch (error) {

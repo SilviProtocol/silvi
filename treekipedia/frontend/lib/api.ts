@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { getSession } from 'next-auth/react';
 import { TreeSpecies, ResearchData, SpeciesImagesResponse, SpeciesInsightsResponse, GeoJSONPolygon, PlotAnalysisResponse } from './types';
 
 // Set base URL for API - use the confirmed HTTPS endpoint
@@ -10,6 +11,20 @@ const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json'
   }
+});
+
+// Add auth interceptor: attaches Django JWT from NextAuth session
+apiClient.interceptors.request.use(async (config) => {
+  try {
+    const session = await getSession();
+    const token = (session?.user as any)?.access;
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  } catch {
+    // No session available — continue without auth
+  }
+  return config;
 });
 
 // Define API endpoints based on new backend structure

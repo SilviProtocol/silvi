@@ -5,9 +5,11 @@
 
 const express = require('express');
 const { synthesizeGuide, getLocalLanguages } = require('../services/guideSynthesis');
+const { authenticateUser } = require('../middleware/userAuth');
 
 module.exports = (pool) => {
   const router = express.Router();
+  const creditService = require('../services/creditService')(pool);
 
   /**
    * GET /api/guides/ecoregion/:eco_id
@@ -248,12 +250,23 @@ module.exports = (pool) => {
    * POST /api/guides/ecoregion/:eco_id/synthesize
    * Triggers LLM synthesis for the ecoregion guide
    */
-  router.post('/ecoregion/:eco_id/synthesize', async (req, res) => {
+  router.post('/ecoregion/:eco_id/synthesize', authenticateUser, async (req, res) => {
     try {
       const { eco_id } = req.params;
       const { force } = req.query;
 
-      // Check for existing synthesis
+      // Validate ecoregion exists before charging credits
+      const ecoResult = await pool.query(`
+        SELECT eco_id, eco_name, biome_name, realm,
+               ST_Area(geom::geography) / 1000000 as area_km2
+        FROM ecoregions WHERE eco_id = $1
+      `, [eco_id]);
+
+      if (ecoResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Ecoregion not found' });
+      }
+
+      // Check for existing synthesis before charging credits
       if (force !== 'true') {
         const existing = await pool.query(
           'SELECT generated_at FROM ecoregion_guides WHERE eco_id = $1', [eco_id]
@@ -267,15 +280,23 @@ module.exports = (pool) => {
         }
       }
 
-      // Get ecoregion metadata
-      const ecoResult = await pool.query(`
-        SELECT eco_id, eco_name, biome_name, realm,
-               ST_Area(geom::geography) / 1000000 as area_km2
-        FROM ecoregions WHERE eco_id = $1
-      `, [eco_id]);
+      // Deduct 200 credits for guide synthesis
+      const deduction = await creditService.deductCredits(
+        req.user.id,
+        200,
+        'guide',
+        eco_id,
+        { eco_id },
+        `guide_${req.user.id}_${eco_id}_${Date.now()}`
+      );
 
-      if (ecoResult.rows.length === 0) {
-        return res.status(404).json({ error: 'Ecoregion not found' });
+      if (!deduction.success) {
+        return res.status(402).json({
+          error: 'Insufficient credits',
+          required: deduction.required,
+          balance: deduction.balance,
+          cost_credits: 200
+        });
       }
 
       const ecoregion = ecoResult.rows[0];
@@ -363,7 +384,9 @@ module.exports = (pool) => {
         eco_id: parseInt(eco_id),
         sections_generated: Object.keys(content).filter(k => content[k]).length,
         species_used: topSpecies.length,
-        model: 'grok-4-1-fast-reasoning'
+        model: 'grok-4-1-fast-reasoning',
+        credits_charged: 200,
+        balance_after: deduction.balance_after
       });
 
     } catch (error) {

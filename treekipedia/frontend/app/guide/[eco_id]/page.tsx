@@ -2,8 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { ArrowLeft, ChevronDown, ChevronUp, Loader2, Sparkles } from "lucide-react";
 import { getEcoregionGuide, EcoregionGuideResponse, EcoregionGuideSpecies } from "@/lib/api";
+import { fetchJsonWithAuth } from "@/lib/auth-api";
+import { useCredits } from "@/hooks/useCredits";
+import { CreditGate } from "@/components/CreditGate";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 function Accordion({ id, title, defaultOpen = false, children, badge }: {
@@ -110,10 +115,15 @@ function CompactSpeciesRow({ species }: { species: EcoregionGuideSpecies }) {
 export default function EcoregionGuidePage() {
   const params = useParams();
   const router = useRouter();
+  const { status } = useSession();
+  const { balance, refreshBalance } = useCredits();
   const ecoId = params.eco_id as string;
   const [guide, setGuide] = useState<EcoregionGuideResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showSynthesisGate, setShowSynthesisGate] = useState(false);
+  const [isSynthesizing, setIsSynthesizing] = useState(false);
+  const [synthesisError, setSynthesisError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -237,9 +247,56 @@ export default function EcoregionGuidePage() {
                 {sc.overview_intro.split("\n").map((p, i) => <p key={i} className="text-white/80 mb-3">{p}</p>)}
               </div>
             ) : (
-              <p className="text-white/50 italic">
-                AI synthesis not yet generated for this ecoregion. The species data below is available based on LEAF scoring.
-              </p>
+              <div className="space-y-4">
+                <p className="text-white/50 italic">
+                  AI synthesis not yet generated for this ecoregion. The species data below is available based on LEAF scoring.
+                </p>
+                {showSynthesisGate ? (
+                  <CreditGate
+                    cost={200}
+                    productLabel="Reforestation Guide"
+                    balance={balance}
+                    onConfirm={async () => {
+                      setIsSynthesizing(true);
+                      setSynthesisError(null);
+                      try {
+                        await fetchJsonWithAuth(`/api/guides/ecoregion/${ecoId}/synthesize`, { method: 'POST' });
+                        const data = await getEcoregionGuide(ecoId);
+                        setGuide(data);
+                        setShowSynthesisGate(false);
+                        refreshBalance();
+                      } catch (err: any) {
+                        if (err?.message?.includes('402') || err?.message?.includes('Insufficient')) {
+                          setSynthesisError('Insufficient credits');
+                        } else {
+                          setSynthesisError(err instanceof Error ? err.message : 'Synthesis failed');
+                        }
+                      } finally {
+                        setIsSynthesizing(false);
+                      }
+                    }}
+                    onCancel={() => setShowSynthesisGate(false)}
+                    isLoading={isSynthesizing}
+                  />
+                ) : (
+                  <Button
+                    onClick={() => {
+                      if (status !== 'authenticated') {
+                        router.push('/login');
+                        return;
+                      }
+                      setShowSynthesisGate(true);
+                    }}
+                    className="bg-emerald-600/80 hover:bg-emerald-600 text-white"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Generate Reforestation Guide (200 credits)
+                  </Button>
+                )}
+                {synthesisError && (
+                  <p className="text-sm text-red-400">{synthesisError}</p>
+                )}
+              </div>
             )}
           </Accordion>
 
