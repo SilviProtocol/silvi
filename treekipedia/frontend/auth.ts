@@ -42,11 +42,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       credentials: {
         access: { label: 'Access Token', type: 'text' },
         refresh: { label: 'Refresh Token', type: 'text' },
+        email: { label: 'Email', type: 'text' },
       },
       async authorize(credentials) {
         if (credentials?.access && credentials?.refresh) {
           return {
             id: 'token-user',
+            email: (credentials.email as string) || null,
+            name: (credentials.email as string) || null,
             access: credentials.access as string,
             refresh: credentials.refresh as string,
           } as any

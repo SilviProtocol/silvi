@@ -71,6 +71,7 @@ export default function LoginPage() {
       const result = await signIn("token-login", {
         access,
         refresh,
+        email: email.trim(),
         redirect: false,
         callbackUrl,
       })
