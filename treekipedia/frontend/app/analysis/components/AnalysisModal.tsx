@@ -737,16 +737,16 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
           </Stagger>
           <div className="grid grid-cols-2 gap-2.5">
             {STRATEGIES.map((s, idx) => (
-              <Stagger key={s.key} delay={60 + idx * 40}>
+              <Stagger key={s.key} delay={60 + idx * 40} className="h-full">
                 <button
                   onClick={() => requireAuthAndCredits(25, `${s.label} Recommendation`, () => runRecommendation(s.key))}
-                  className="group relative overflow-hidden rounded-xl border border-white/[0.06] p-4 text-left transition-all duration-200 hover:border-emerald-500/20 hover:bg-white/[0.02]"
+                  className="group relative overflow-hidden rounded-xl border border-white/[0.06] p-4 text-left transition-all duration-200 hover:border-emerald-500/20 hover:bg-white/[0.02] w-full h-full flex flex-col"
                 >
                   <div className="text-emerald-400/60 group-hover:text-emerald-300 transition-colors mb-2">
                     {s.icon}
                   </div>
                   <div className="text-white/80 text-sm font-medium mb-0.5">{s.label}</div>
-                  <div className="text-white/25 text-xs leading-relaxed">{s.desc}</div>
+                  <div className="text-white/25 text-xs leading-relaxed flex-1">{s.desc}</div>
                 </button>
               </Stagger>
             ))}
