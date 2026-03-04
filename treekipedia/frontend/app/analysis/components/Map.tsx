@@ -8,7 +8,6 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-draw';
 import 'leaflet.heat';
 import { analyzePlot } from '@/lib/api';
-import { estimateAnalysisCost, AnalysisCostEstimate } from '@/lib/credits';
 import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
 import { Layers, Sparkles } from 'lucide-react';
 import MapClickHandler from './MapClickHandler';
@@ -30,11 +29,10 @@ interface MapProps {
   onClear: () => void;
   isAnalysisLoading?: boolean;
   onShowKMLPanel?: () => void;
-  onCostEstimate?: (estimate: AnalysisCostEstimate, geometry: GeoJSONPolygon) => void;
 }
 
 // Drawing control component that uses the map instance
-function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange, onCostEstimate }: MapProps & { onPolygonChange?: (polygon: GeoJSONPolygon | null) => void }) {
+function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange }: MapProps & { onPolygonChange?: (polygon: GeoJSONPolygon | null) => void }) {
   const map = useMap();
   const drawnItemsRef = useRef<L.FeatureGroup>(new L.FeatureGroup());
   
@@ -69,7 +67,7 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
 
     map.addControl(drawControl);
 
-    // Handle drawing completion — estimate cost, let parent handle credit gating
+    // Handle drawing completion — run analysis directly (free endpoint)
     const onDrawCreated = async (e: any) => {
       const { layer } = e;
       // Force clear all existing layers and results before adding new one
@@ -87,28 +85,7 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
       // Notify parent component of polygon change
       onPolygonChange?.(geometry);
 
-      // If cost estimation callback exists, estimate cost and let parent handle gating
-      if (onCostEstimate) {
-        try {
-          const estimate = await estimateAnalysisCost(geometry);
-          onCostEstimate(estimate, geometry);
-        } catch (error) {
-          console.error('Cost estimation error:', error);
-          // Fall through to direct analysis if estimation fails
-          try {
-            onLoadingChange(true);
-            const results = await analyzePlot(geometry);
-            onAnalysisComplete(results);
-          } catch (err) {
-            onAnalysisError(err instanceof Error ? err.message : 'Failed to analyze plot');
-          } finally {
-            onLoadingChange(false);
-          }
-        }
-        return;
-      }
-
-      // Fallback: direct analysis (no credit gating)
+      // Run analysis directly
       try {
         onLoadingChange(true);
         const results = await analyzePlot(geometry);
@@ -142,23 +119,14 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
 
         onPolygonChange?.(geometry);
 
-        if (onCostEstimate) {
-          try {
-            const estimate = await estimateAnalysisCost(geometry);
-            onCostEstimate(estimate, geometry);
-          } catch (error) {
-            console.error('Cost estimation error on edit:', error);
-          }
-        } else {
-          try {
-            onLoadingChange(true);
-            const results = await analyzePlot(geometry);
-            onAnalysisComplete(results);
-          } catch (error) {
-            onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
-          } finally {
-            onLoadingChange(false);
-          }
+        try {
+          onLoadingChange(true);
+          const results = await analyzePlot(geometry);
+          onAnalysisComplete(results);
+        } catch (error) {
+          onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
+        } finally {
+          onLoadingChange(false);
         }
       });
     };
@@ -902,7 +870,7 @@ function DynamicTileLayer({ baseLayerId }: { baseLayerId: string }) {
   return null;
 }
 
-export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, isAnalysisLoading, onShowKMLPanel, onCostEstimate }: MapProps) {
+export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, isAnalysisLoading, onShowKMLPanel }: MapProps) {
   const [externalGeometry, setExternalGeometry] = useState<GeoJSONPolygon | null>(null);
   const [drawnPolygon, setDrawnPolygon] = useState<GeoJSONPolygon | null>(null);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
@@ -931,23 +899,14 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
     setExternalGeometry(geometry);
     setDrawnPolygon(geometry);
 
-    if (onCostEstimate) {
-      try {
-        const estimate = await estimateAnalysisCost(geometry);
-        onCostEstimate(estimate, geometry);
-      } catch (error) {
-        console.error('Cost estimation error:', error);
-      }
-    } else {
-      try {
-        onLoadingChange(true);
-        const results = await analyzePlot(geometry);
-        onAnalysisComplete(results);
-      } catch (error) {
-        onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
-      } finally {
-        onLoadingChange(false);
-      }
+    try {
+      onLoadingChange(true);
+      const results = await analyzePlot(geometry);
+      onAnalysisComplete(results);
+    } catch (error) {
+      onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
+    } finally {
+      onLoadingChange(false);
     }
   };
 
@@ -970,7 +929,6 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
           onLoadingChange={onLoadingChange}
           onClear={onClear}
           onPolygonChange={handlePolygonChange}
-          onCostEstimate={onCostEstimate}
         />
 
         <ExternalPolygonLayer geometry={externalGeometry} />

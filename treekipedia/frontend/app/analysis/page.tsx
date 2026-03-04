@@ -2,13 +2,8 @@
 
 import { useState } from 'react';
 import dynamic from 'next/dynamic';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
 import { analyzePlot } from '@/lib/api';
-import { AnalysisCostEstimate } from '@/lib/credits';
-import { useCredits } from '@/hooks/useCredits';
-import { CreditGate } from '@/components/CreditGate';
 import { X, ChevronDown, ChevronUp } from 'lucide-react';
 
 // Import components - Map dynamically to avoid SSR issues with Leaflet
@@ -28,18 +23,10 @@ import FileUpload from './components/FileUpload';
 import ResultsList from './components/ResultsList';
 
 export default function AnalysisPage() {
-  const { status } = useSession();
-  const router = useRouter();
-  const { balance, refreshBalance } = useCredits();
   const [analysisResults, setAnalysisResults] = useState<PlotAnalysisResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Credit gating state
-  const [costEstimate, setCostEstimate] = useState<AnalysisCostEstimate | null>(null);
-  const [pendingGeometry, setPendingGeometry] = useState<GeoJSONPolygon | null>(null);
-  const [showCreditGate, setShowCreditGate] = useState(false);
 
   // Panel visibility states
   const [showResultsPanel, setShowResultsPanel] = useState(false);
@@ -52,8 +39,6 @@ export default function AnalysisPage() {
     setError(null);
     setShowResultsPanel(true);
     setIsResultsMinimized(false);
-    setShowCreditGate(false);
-    refreshBalance();
   };
 
   const handleAnalysisError = (errorMessage: string) => {
@@ -75,46 +60,6 @@ export default function AnalysisPage() {
     setIsHeatmapLoading(false);
     setShowResultsPanel(false);
     setShowKMLPanel(false);
-    setShowCreditGate(false);
-    setCostEstimate(null);
-    setPendingGeometry(null);
-  };
-
-  // Handle cost estimate from Map — show credit gate
-  const handleCostEstimate = (estimate: AnalysisCostEstimate, geometry: GeoJSONPolygon) => {
-    if (status !== 'authenticated') {
-      router.push('/login');
-      return;
-    }
-    setCostEstimate(estimate);
-    setPendingGeometry(geometry);
-    setShowCreditGate(true);
-  };
-
-  // User confirmed credit spend — run the actual analysis
-  const handleConfirmAnalysis = async () => {
-    if (!pendingGeometry) return;
-    setShowCreditGate(false);
-    setIsLoading(true);
-    try {
-      const results = await analyzePlot(pendingGeometry);
-      handleAnalysisComplete(results);
-    } catch (err: any) {
-      if (err?.response?.status === 402) {
-        const data = err.response.data;
-        handleAnalysisError(`Insufficient credits. Need ${data.required}, have ${data.balance}.`);
-      } else {
-        handleAnalysisError(err instanceof Error ? err.message : 'Failed to analyze plot');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleCancelAnalysis = () => {
-    setShowCreditGate(false);
-    setCostEstimate(null);
-    setPendingGeometry(null);
   };
 
   // Handle showing KML panel
@@ -156,28 +101,10 @@ export default function AnalysisPage() {
           onClear={clearResults}
           isAnalysisLoading={isLoading}
           onShowKMLPanel={handleShowKMLPanel}
-          onCostEstimate={handleCostEstimate}
         />
 
         {/* Floating panels */}
         <div className="absolute top-4 left-16 z-[1000] space-y-4 max-w-md">
-          {/* Credit Gate Panel */}
-          {showCreditGate && costEstimate && (
-            <div className="rounded-xl bg-black/80 backdrop-blur-md border border-white/20 shadow-2xl p-4">
-              <div className="text-sm text-white/60 mb-3">
-                {costEstimate.area_hectares.toLocaleString()} hectares detected
-              </div>
-              <CreditGate
-                cost={costEstimate.cost_credits}
-                productLabel="Site Analysis"
-                balance={balance}
-                onConfirm={handleConfirmAnalysis}
-                onCancel={handleCancelAnalysis}
-                isLoading={isLoading}
-              />
-            </div>
-          )}
-
           {/* Species Analysis Panel */}
           {showResultsPanel && (
             <div className="rounded-xl bg-black/80 backdrop-blur-md border border-white/20 shadow-2xl">

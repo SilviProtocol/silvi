@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const { validateApiKey, rateLimitByApiKey } = require('../middleware/apiAuth');
-const { authenticateUser } = require('../middleware/userAuth');
+const { authenticateUser, optionalAuth } = require('../middleware/userAuth');
 
 module.exports = (pool) => {
 const router = express.Router();
@@ -50,8 +50,8 @@ router.get('/stats', geospatialController.getGeospatialStats);
 
 // Analyze species within a polygon plot
 // POST /api/geospatial/analyze-plot
-// Requires authentication and credits (use ?estimate=true for cost preview without auth)
-router.post('/analyze-plot', authenticateUser, geospatialController.analyzePlot);
+// Public endpoint (optionalAuth for tracking)
+router.post('/analyze-plot', optionalAuth, geospatialController.analyzePlot);
 
 // Get species within a specific ecoregion
 // GET /api/geospatial/ecoregions/:ecoregion_id/species
@@ -96,8 +96,8 @@ router.get('/intact-forests/boundaries', geospatialController.getIntactForestBou
 // GET /api/geospatial/leaf/score?lat=35.5&lng=-82.5 (point lookup)
 // POST /api/geospatial/leaf/score with { geometry: {...} } (polygon)
 // Optional query params: limit=500, min_score=0
-router.get('/leaf/score', geospatialController.getLeafScore);
-router.post('/leaf/score', geospatialController.getLeafScore);
+router.get('/leaf/score', authenticateUser, geospatialController.getLeafScore);
+router.post('/leaf/score', authenticateUser, geospatialController.getLeafScore);
 
 return router;
 };

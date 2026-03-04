@@ -5,7 +5,6 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { Menu, X, User, LogOut, ChevronDown } from "lucide-react"
-import { WalletConnectButton } from "./wallet-connect-button"
 import { CreditBalance } from "./CreditBalance"
 import { cn } from "@/lib/utils"
 
@@ -88,16 +87,11 @@ export function Navbar() {
             </div>
           </div>
 
-          {/* Right side: Auth + Wallet */}
+          {/* Right side: Auth + Credits */}
           <div className="flex items-center space-x-3">
             {/* Credit Balance */}
             <div className="hidden md:block">
               <CreditBalance />
-            </div>
-
-            {/* Wallet Connection */}
-            <div className="wallet-container relative hidden md:block">
-              <WalletConnectButton />
             </div>
 
             {/* Auth UI */}
@@ -190,10 +184,6 @@ export function Navbar() {
           ))}
 
           <div className="pt-4 border-t border-white/20 space-y-3">
-            <div className="flex justify-center" onClick={() => setMobileMenuOpen(false)}>
-              <WalletConnectButton />
-            </div>
-
             {isAuthenticated ? (
               <button
                 onClick={() => {

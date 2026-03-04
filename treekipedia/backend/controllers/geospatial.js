@@ -407,34 +407,6 @@ async function analyzePlot(req, res) {
     // Convert GeoJSON polygon to PostGIS format
     const geoJsonString = JSON.stringify(geometry);
 
-    // Calculate area and credit cost
-    const areaResult = await pool.query(
-      'SELECT ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000 AS hectares',
-      [geoJsonString]
-    );
-    const hectares = parseFloat(areaResult.rows[0].hectares);
-    const creditCost = creditService.calculateSiteAnalysisCost(hectares);
-
-    // Deduct credits
-    const deduction = await creditService.deductCredits(
-      req.user.id,
-      creditCost,
-      'site_analysis',
-      null,
-      { area_hectares: Math.round(hectares * 100) / 100, geometry },
-      `site_analysis_${req.user.id}_${Date.now()}`
-    );
-
-    if (!deduction.success) {
-      return res.status(402).json({
-        error: 'Insufficient credits',
-        required: deduction.required,
-        balance: deduction.balance,
-        area_hectares: Math.round(hectares * 100) / 100,
-        cost_credits: creditCost
-      });
-    }
-
     // Get WCVP region patterns for countries in the polygon
     const { getWcvpRegionsForCountry } = require('../utils/wcvpRegions');
 
@@ -1485,6 +1457,38 @@ async function getLeafScore(req, res) {
     if (!eco_id && !eco_name && !(lat && lng) && !geometry) {
       return res.status(400).json({
         error: 'Must provide one of: eco_id, eco_name, lat/lng coordinates, or GeoJSON geometry in request body'
+      });
+    }
+
+    // Credit gating: polygon requests use area-based cost, others flat 10 credits
+    let creditCost = 10;
+    let metadata = { request_type: geometry ? 'polygon' : (lat && lng) ? 'point' : 'ecoregion' };
+
+    if (geometry) {
+      const areaResult = await pool.query(
+        'SELECT ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000 AS hectares',
+        [JSON.stringify(geometry)]
+      );
+      const hectares = parseFloat(areaResult.rows[0].hectares);
+      creditCost = creditService.calculateSiteAnalysisCost(hectares);
+      metadata.area_hectares = Math.round(hectares * 100) / 100;
+    }
+
+    const deduction = await creditService.deductCredits(
+      req.user.id,
+      creditCost,
+      'leaf_score',
+      null,
+      metadata,
+      `leaf_score_${req.user.id}_${Date.now()}`
+    );
+
+    if (!deduction.success) {
+      return res.status(402).json({
+        error: 'Insufficient credits',
+        required: deduction.required,
+        balance: deduction.balance,
+        cost_credits: creditCost
       });
     }
 
