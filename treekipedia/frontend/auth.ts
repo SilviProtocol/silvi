@@ -91,13 +91,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, account, trigger }: any) {
       if (trigger === "signOut") return {}
 
-      // Initial sign in — store tokens
+      // Initial sign in — store tokens + user info
       if (account && user) {
         return {
           ...token,
           access: (user as any).access,
           refresh: (user as any).refresh,
           expires: (user as any).accessExpires || Math.floor(Date.now() / 1000) + (5 * 60),
+          name: user.name || token.name,
+          email: user.email || token.email,
         }
       }
 
@@ -130,6 +132,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             ...session.user,
             access: token.access,
             refresh: token.refresh,
+            name: token.name || session.user?.name,
+            email: token.email || session.user?.email,
           },
           error: token.error,
         }
