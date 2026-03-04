@@ -4,13 +4,11 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { searchTreeSpecies } from "@/lib/api";
 import Link from "next/link";
-import { useAccount } from "wagmi";
 import { Loader2 } from "lucide-react";
 
 export function SearchResults() {
   const searchParams = useSearchParams();
   const query = searchParams.get("q");
-  const { isConnected } = useAccount();
 
   const { data: results = [], isLoading } = useQuery({
     queryKey: ["trees", query],

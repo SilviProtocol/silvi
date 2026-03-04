@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Leaf, Loader2, Search } from "lucide-react";
-import { useAccount } from 'wagmi';
 import { toast } from "react-hot-toast";
 import { getSpeciesSuggestions } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
@@ -26,7 +25,6 @@ export function SearchForm({ placeholder = "Search 67,743 tree species & subspec
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState(searchParams.get("q") || "");
-  const { isConnected } = useAccount();
   const [isFocused, setIsFocused] = useState(false);
   const [forceKeepOpen, setForceKeepOpen] = useState(false);
 
