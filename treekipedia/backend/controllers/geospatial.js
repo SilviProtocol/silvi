@@ -598,8 +598,6 @@ async function analyzePlot(req, res) {
       totalSpecies: processedRows.length,
       totalOccurrences: totalOccurrences,
       crossAnalysis: crossAnalysis,
-      credits_charged: creditCost,
-      balance_after: deduction.balance_after,
       species: processedRows.map(row => ({
         taxon_id: row.taxon_id,
         scientific_name: row.scientific_name || `Unknown (${row.taxon_id})`,
