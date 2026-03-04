@@ -8,10 +8,8 @@ import 'leaflet-draw/dist/leaflet.draw.css';
 import 'leaflet-draw';
 import 'leaflet.heat';
 import { analyzePlot } from '@/lib/api';
-import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
-import { Layers, Sparkles } from 'lucide-react';
-import MapClickHandler from './MapClickHandler';
-import PolygonPredictionModal from './PolygonPredictionModal';
+import { PlotAnalysisResponse, GeoJSONPolygon, AOIDefinition } from '@/lib/types';
+import { Layers } from 'lucide-react';
 
 // Fix Leaflet icon issues with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -29,10 +27,24 @@ interface MapProps {
   onClear: () => void;
   isAnalysisLoading?: boolean;
   onShowKMLPanel?: () => void;
+  onAOIDefined?: (aoi: AOIDefinition, summary: PlotAnalysisResponse) => void;
+}
+
+// Buffer a point to a ~1km polygon for point-click analysis
+function bufferPointToPolygon(lat: number, lng: number, radiusKm = 1): GeoJSONPolygon {
+  const points = 32;
+  const coords: number[][] = [];
+  for (let i = 0; i <= points; i++) {
+    const angle = (i / points) * 2 * Math.PI;
+    const dLat = (radiusKm / 111.32) * Math.cos(angle);
+    const dLng = (radiusKm / (111.32 * Math.cos(lat * Math.PI / 180))) * Math.sin(angle);
+    coords.push([lng + dLng, lat + dLat]);
+  }
+  return { type: 'Polygon', coordinates: [coords] };
 }
 
 // Drawing control component that uses the map instance
-function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange }: MapProps & { onPolygonChange?: (polygon: GeoJSONPolygon | null) => void }) {
+function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange, onAOIDefined }: MapProps & { onPolygonChange?: (polygon: GeoJSONPolygon | null) => void }) {
   const map = useMap();
   const drawnItemsRef = useRef<L.FeatureGroup>(new L.FeatureGroup());
   
@@ -90,6 +102,10 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
         onLoadingChange(true);
         const results = await analyzePlot(geometry);
         onAnalysisComplete(results);
+        // Open unified modal
+        if (onAOIDefined) {
+          onAOIDefined({ type: 'polygon', geometry }, results);
+        }
       } catch (error) {
         console.error('Analysis error:', error);
         onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
@@ -123,6 +139,9 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
           onLoadingChange(true);
           const results = await analyzePlot(geometry);
           onAnalysisComplete(results);
+          if (onAOIDefined) {
+            onAOIDefined({ type: 'polygon', geometry }, results);
+          }
         } catch (error) {
           onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
         } finally {
@@ -144,7 +163,7 @@ function DrawControl({ onAnalysisComplete, onAnalysisError, onLoadingChange, onC
       map.removeControl(drawControl);
       map.removeLayer(drawnItems);
     };
-  }, [map, onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange]);
+  }, [map, onAnalysisComplete, onAnalysisError, onLoadingChange, onClear, onPolygonChange, onAOIDefined]);
 
   return null;
 }
@@ -870,7 +889,57 @@ function DynamicTileLayer({ baseLayerId }: { baseLayerId: string }) {
   return null;
 }
 
-export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, isAnalysisLoading, onShowKMLPanel }: MapProps) {
+// Point click handler — buffers clicked point to a 1km polygon
+function PointClickHandler({ onAOIDefined, onAnalysisComplete, onAnalysisError, onLoadingChange }: {
+  onAOIDefined?: (aoi: AOIDefinition, summary: PlotAnalysisResponse) => void;
+  onAnalysisComplete: (results: PlotAnalysisResponse) => void;
+  onAnalysisError: (error: string) => void;
+  onLoadingChange: (loading: boolean) => void;
+}) {
+  const [isDrawing, setIsDrawing] = useState(false);
+  const map = useMap();
+
+  useEffect(() => {
+    const onDrawStart = () => setIsDrawing(true);
+    const onDrawStop = () => setIsDrawing(false);
+    const onCreated = () => setIsDrawing(false);
+
+    map.on(L.Draw.Event.DRAWSTART, onDrawStart);
+    map.on(L.Draw.Event.DRAWSTOP, onDrawStop);
+    map.on(L.Draw.Event.CREATED, onCreated);
+
+    return () => {
+      map.off(L.Draw.Event.DRAWSTART, onDrawStart);
+      map.off(L.Draw.Event.DRAWSTOP, onDrawStop);
+      map.off(L.Draw.Event.CREATED, onCreated);
+    };
+  }, [map]);
+
+  useMapEvents({
+    click: async (e) => {
+      if (isDrawing) return;
+      const { lat, lng } = e.latlng;
+      const geometry = bufferPointToPolygon(lat, lng);
+
+      try {
+        onLoadingChange(true);
+        const results = await analyzePlot(geometry);
+        onAnalysisComplete(results);
+        if (onAOIDefined) {
+          onAOIDefined({ type: 'point', geometry, center: { lat, lng } }, results);
+        }
+      } catch (error) {
+        onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze point');
+      } finally {
+        onLoadingChange(false);
+      }
+    }
+  });
+
+  return null;
+}
+
+export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChange, onHeatmapLoadingChange, onClear, isAnalysisLoading, onShowKMLPanel, onAOIDefined }: MapProps) {
   const [externalGeometry, setExternalGeometry] = useState<GeoJSONPolygon | null>(null);
   const [drawnPolygon, setDrawnPolygon] = useState<GeoJSONPolygon | null>(null);
   const [isHeatmapLoading, setIsHeatmapLoading] = useState(false);
@@ -878,7 +947,6 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   const [baseLayer, setBaseLayer] = useState<string>('carto-dark');
   const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests'>('none');
   const [layerOpacity, setLayerOpacity] = useState(0.6);
-  const [showPolygonPrediction, setShowPolygonPrediction] = useState(false);
 
   // Note: Removed auto-enable heatmap - user must manually select overlay layer from dropdown
 
@@ -894,7 +962,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   };
 
   // Function to handle externally provided geometry (from KML upload)
-  const handleExternalGeometry = async (geometry: GeoJSONPolygon) => {
+  const handleExternalGeometry = async (geometry: GeoJSONPolygon, label?: string) => {
     onClear();
     setExternalGeometry(geometry);
     setDrawnPolygon(geometry);
@@ -903,6 +971,10 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
       onLoadingChange(true);
       const results = await analyzePlot(geometry);
       onAnalysisComplete(results);
+      // Open unified modal
+      if (onAOIDefined) {
+        onAOIDefined({ type: 'kml', geometry, label }, results);
+      }
     } catch (error) {
       onAnalysisError(error instanceof Error ? error.message : 'Failed to analyze plot');
     } finally {
@@ -927,8 +999,10 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
           onAnalysisComplete={onAnalysisComplete}
           onAnalysisError={onAnalysisError}
           onLoadingChange={onLoadingChange}
+          onHeatmapLoadingChange={onHeatmapLoadingChange}
           onClear={onClear}
           onPolygonChange={handlePolygonChange}
+          onAOIDefined={onAOIDefined}
         />
 
         <ExternalPolygonLayer geometry={externalGeometry} />
@@ -938,8 +1012,8 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         <MangaroaNativeForestsLayer visible={overlayLayer === 'mangaroa-forests'} opacity={layerOpacity} />
         <OccurrenceHeatmapLayer visible={overlayLayer === 'heatmap'} opacity={layerOpacity} polygon={drawnPolygon} onHeatmapLoadingChange={handleHeatmapLoadingChange} />
 
-        {/* Habitat Prediction - Click anywhere to predict species */}
-        <MapClickHandler enabled={true} />
+        {/* Point click handler — buffers to 1km polygon and opens modal */}
+        <PointClickHandler onAOIDefined={onAOIDefined} onAnalysisComplete={onAnalysisComplete} onAnalysisError={onAnalysisError} onLoadingChange={onLoadingChange} />
       </MapContainer>
 
       {/* Loading overlays */}
@@ -969,19 +1043,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         </div>
       )}
 
-      {/* Predict Species Action Bar - Show when polygon IS drawn */}
-      {drawnPolygon && !isAnalysisLoading && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1001]">
-          <button
-            onClick={() => setShowPolygonPrediction(true)}
-            className="group bg-black/90 hover:bg-emerald-900/90 backdrop-blur-md border border-emerald-500/40 hover:border-emerald-400/60 rounded-full shadow-xl px-5 py-2.5 text-white text-sm transition-all flex items-center gap-2"
-          >
-            <Sparkles className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
-            <span className="font-medium">Predict Suitable Species</span>
-            <span className="text-emerald-400/60 text-xs ml-1">AI-powered</span>
-          </button>
-        </div>
-      )}
+      {/* Predict button removed — prediction now handled via AnalysisModal */}
 
       {/* KML Upload Button and Layer control panel */}
       <div className="absolute top-4 right-4 z-10 flex items-start gap-3">
@@ -1098,13 +1160,6 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         )}
       </div>
 
-      {/* Polygon Prediction Modal */}
-      {showPolygonPrediction && drawnPolygon && (
-        <PolygonPredictionModal
-          geometry={drawnPolygon}
-          onClose={() => setShowPolygonPrediction(false)}
-        />
-      )}
     </div>
   );
 }

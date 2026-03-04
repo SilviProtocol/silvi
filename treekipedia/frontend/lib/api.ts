@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { getSession } from 'next-auth/react';
-import { TreeSpecies, ResearchData, SpeciesImagesResponse, SpeciesInsightsResponse, GeoJSONPolygon, PlotAnalysisResponse } from './types';
+import { TreeSpecies, ResearchData, SpeciesImagesResponse, SpeciesInsightsResponse, GeoJSONPolygon, PlotAnalysisResponse, BulkResearchStatusResponse, SavedAnalysis } from './types';
 
 // Set base URL for API - use the confirmed HTTPS endpoint
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://treekipedia-api.silvi.earth';
@@ -586,5 +586,71 @@ export const analyzePlot = async (geometry: GeoJSONPolygon): Promise<PlotAnalysi
     console.error('Error analyzing plot:', error);
     throw error;
   }
+};
+
+// ============================================
+// Unified Analysis Modal API Functions
+// ============================================
+
+/**
+ * Predict suitable species for a polygon area (AlphaEarth satellite-based)
+ */
+export const predictPolygonSpecies = async (
+  geometry: GeoJSONPolygon,
+  sampleCount: number = 9
+) => {
+  const { data } = await apiClient.post('/api/prediction/polygon', {
+    geometry,
+    sample_count: sampleCount,
+    strategy: 'grid',
+    min_similarity: 0.70
+  });
+  return data;
+};
+
+/**
+ * Get LEAF recommendation for a polygon (ecological scoring)
+ */
+export const getLeafRecommendation = async (geometry: GeoJSONPolygon, strategy?: string) => {
+  const params: Record<string, any> = { geometry };
+  if (strategy) params.strategy = strategy;
+  const { data } = await apiClient.post('/api/prediction/polygon', {
+    ...params,
+    sample_count: 9,
+    min_similarity: 0.70
+  });
+  return data;
+};
+
+/**
+ * Check research status for multiple species at once
+ */
+export const checkBulkResearchStatus = async (taxonIds: string[]): Promise<BulkResearchStatusResponse> => {
+  const { data } = await apiClient.post('/species/bulk-research-status', { taxon_ids: taxonIds });
+  return data;
+};
+
+/**
+ * Save an analysis session
+ */
+export const saveAnalysis = async (analysisData: Partial<SavedAnalysis>): Promise<SavedAnalysis> => {
+  const { data } = await apiClient.post('/api/analyses', analysisData);
+  return data;
+};
+
+/**
+ * Get user's saved analyses
+ */
+export const getUserAnalyses = async (): Promise<SavedAnalysis[]> => {
+  const { data } = await apiClient.get('/api/analyses');
+  return data;
+};
+
+/**
+ * Update a saved analysis with new results
+ */
+export const updateAnalysis = async (id: number, updates: Partial<SavedAnalysis>): Promise<SavedAnalysis> => {
+  const { data } = await apiClient.patch(`/api/analyses/${id}`, updates);
+  return data;
 };
 

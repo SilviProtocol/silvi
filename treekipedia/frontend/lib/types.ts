@@ -332,6 +332,49 @@ export interface GeoJSONPolygon {
   coordinates: number[][][];
 }
 
+// ============================================
+// Unified Analysis Modal Types
+// ============================================
+
+export type AOIType = 'polygon' | 'point' | 'kml';
+
+export interface AOIDefinition {
+  type: AOIType;
+  geometry: GeoJSONPolygon;
+  center?: { lat: number; lng: number };
+  label?: string;
+}
+
+export type AnalysisPhase = 'summary' | 'prediction' | 'recommendation' | 'research';
+
+export type RecommendationStrategy =
+  | 'general'
+  | 'rewilding'
+  | 'agroforestry'
+  | 'riparian'
+  | 'carbon'
+  | 'biodiversity';
+
+export type SpeciesResearchStatus = 'researched' | 'partial' | 'unresearched';
+
+export interface BulkResearchStatusResponse {
+  [taxon_id: string]: SpeciesResearchStatus;
+}
+
+export interface SavedAnalysis {
+  id: number;
+  aoi_type: AOIType;
+  aoi_label?: string;
+  area_hectares?: number;
+  summary_data?: PlotAnalysisResponse;
+  prediction_data?: any;
+  recommendation_data?: any;
+  recommendation_strategy?: RecommendationStrategy;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 // Plot analysis request/response types
 export interface PlotAnalysisRequest {
   geometry: GeoJSONPolygon;

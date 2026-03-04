@@ -828,5 +828,62 @@ module.exports = (pool) => {
     }
   });
 
+  // ============================================================================
+  // BULK RESEARCH STATUS
+  // ============================================================================
+
+  /**
+   * POST /species/bulk-research-status
+   * Check research status for multiple species at once.
+   * Public, read-only endpoint.
+   *
+   * Body: { taxon_ids: string[] }
+   * Returns: { [taxon_id]: 'researched' | 'partial' | 'unresearched' }
+   */
+  router.post('/bulk-research-status', async (req, res) => {
+    try {
+      const { taxon_ids } = req.body;
+
+      if (!Array.isArray(taxon_ids) || taxon_ids.length === 0) {
+        return res.status(400).json({ error: 'taxon_ids must be a non-empty array' });
+      }
+
+      if (taxon_ids.length > 500) {
+        return res.status(400).json({ error: 'Maximum 500 taxon_ids per request' });
+      }
+
+      // Count insights per taxon_id
+      const result = await pool.query(`
+        SELECT taxon_id, COUNT(*) as insight_count
+        FROM insights
+        WHERE taxon_id = ANY($1)
+        GROUP BY taxon_id
+      `, [taxon_ids]);
+
+      // Build status map
+      const countMap = {};
+      for (const row of result.rows) {
+        countMap[row.taxon_id] = parseInt(row.insight_count);
+      }
+
+      const statuses = {};
+      for (const id of taxon_ids) {
+        const count = countMap[id] || 0;
+        if (count >= 30) {
+          statuses[id] = 'researched';
+        } else if (count > 0) {
+          statuses[id] = 'partial';
+        } else {
+          statuses[id] = 'unresearched';
+        }
+      }
+
+      res.json(statuses);
+    } catch (error) {
+      console.error('Error in bulk-research-status:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
+
   return router;
 };

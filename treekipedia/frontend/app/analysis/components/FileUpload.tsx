@@ -2,12 +2,13 @@
 
 import { useState, useRef } from 'react';
 import { analyzePlot } from '@/lib/api';
-import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
+import { PlotAnalysisResponse, GeoJSONPolygon, AOIDefinition } from '@/lib/types';
 
 interface FileUploadProps {
   onAnalysisComplete: (results: PlotAnalysisResponse) => void;
   onAnalysisError: (error: string) => void;
   onLoadingChange: (loading: boolean) => void;
+  onAOIDefined?: (aoi: AOIDefinition, summary: PlotAnalysisResponse) => void;
 }
 
 // Simple KML to GeoJSON converter
@@ -96,7 +97,7 @@ function parseKMLToGeoJSON(kmlContent: string): GeoJSONPolygon[] {
   return polygons;
 }
 
-export default function FileUpload({ onAnalysisComplete, onAnalysisError, onLoadingChange }: FileUploadProps) {
+export default function FileUpload({ onAnalysisComplete, onAnalysisError, onLoadingChange, onAOIDefined }: FileUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -127,6 +128,10 @@ export default function FileUpload({ onAnalysisComplete, onAnalysisError, onLoad
       // Analyze the plot
       const results = await analyzePlot(geometry);
       onAnalysisComplete(results);
+      // Open unified modal
+      if (onAOIDefined) {
+        onAOIDefined({ type: 'kml', geometry, label: file.name }, results);
+      }
       
     } catch (error) {
       console.error('KML processing error:', error);

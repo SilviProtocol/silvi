@@ -19,12 +19,14 @@ const express = require('express');
 const router = express.Router();
 const { Pool } = require('pg');
 const axios = require('axios');
+const { authenticateUser } = require('../middleware/userAuth');
 
 // Configuration
 const LOCATION_PREDICTOR_URL = process.env.LOCATION_PREDICTOR_URL || 'http://localhost:5002';
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL || 'postgres://tree_user:Kj9mPx7vLq2wZn4t@localhost:5432/treekipedia',
 });
+const creditService = require('../services/creditService')(pool);
 
 /**
  * GET /api/prediction/sample
@@ -771,8 +773,23 @@ router.post('/from-embedding', async (req, res) => {
  * - Species coverage (% of sample points where species is suitable)
  * - Variability in suitability across the AOI
  */
-router.post('/polygon', async (req, res) => {
+router.post('/polygon', authenticateUser, async (req, res) => {
     try {
+        // Credit deduction: 25 credits for polygon prediction
+        const PREDICTION_COST = 25;
+        const idempotencyKey = `polygon_prediction_${req.user.id}_${Date.now()}`;
+        const deduction = await creditService.deductCredits(
+            req.user.id, PREDICTION_COST, 'polygon_prediction',
+            null, { geometry_type: 'polygon' }, idempotencyKey
+        );
+        if (!deduction.success) {
+            return res.status(402).json({
+                error: 'Insufficient credits',
+                required: PREDICTION_COST,
+                balance: deduction.balance
+            });
+        }
+
         const {
             geometry,
             sample_count = 9,

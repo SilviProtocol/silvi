@@ -185,6 +185,10 @@ app.use('/api/embeddings', embeddingsRoutes);
 const predictionRoutes = require('./routes/prediction');
 app.use('/api/prediction', predictionRoutes);
 
+// User Analyses Routes (saved analysis sessions)
+const analysesRoutes = require('./controllers/analyses')(pool);
+app.use('/api/analyses', analysesRoutes);
+
 // ============================================
 // Admin Authentication Endpoints (for monitoring)
 // ============================================
