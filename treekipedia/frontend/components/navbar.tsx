@@ -58,7 +58,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-black/30 backdrop-blur-md border-b border-silvi-mint/20 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
             <Link href="/" className="flex items-center z-10">
@@ -116,7 +116,7 @@ export function Navbar() {
                   <div className="absolute right-0 mt-2 w-56 rounded-lg bg-black/80 backdrop-blur-lg border border-white/10 shadow-xl py-1 z-50">
                     <div className="px-4 py-2 border-b border-white/10">
                       <p className="text-sm text-white font-medium truncate">
-                        {userName || "User"}
+                        {userName || userEmail || "User"}
                       </p>
                       {userEmail && (
                         <p className="text-xs text-white/50 truncate">{userEmail}</p>
