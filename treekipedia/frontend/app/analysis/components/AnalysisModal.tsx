@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X, Loader2, ChevronLeft, MapPin, Trees, Sparkles, Leaf,
-  AlertCircle, Search, TreePine, Sprout, Droplets, Wind, Bug
+  AlertCircle, TreePine, Sprout, Droplets, Wind, Bug
 } from 'lucide-react';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import L from 'leaflet';
 import {
   AOIDefinition, AnalysisPhase, RecommendationStrategy,
-  PlotAnalysisResponse, SpeciesResearchStatus, BulkResearchStatusResponse
+  PlotAnalysisResponse, BulkResearchStatusResponse
 } from '@/lib/types';
 import {
   predictPolygonSpecies, checkBulkResearchStatus, triggerResearch
@@ -22,7 +22,7 @@ import { CreditGate } from '@/components/CreditGate';
 import CrossAnalysisSummary from './CrossAnalysisSummary';
 
 // ============================================
-// Inline Types (from PolygonPredictionModal pattern)
+// Inline Types
 // ============================================
 
 interface PolygonPrediction {
@@ -78,13 +78,13 @@ interface PredictionResponse {
 // Strategy definitions
 // ============================================
 
-const STRATEGIES: { key: RecommendationStrategy; label: string; desc: string; icon: React.ReactNode }[] = [
-  { key: 'general', label: 'General Restoration', desc: 'Balanced species mix for ecosystem health', icon: <Trees className="h-5 w-5" /> },
-  { key: 'rewilding', label: 'Rewilding', desc: 'Native species for ecological recovery', icon: <TreePine className="h-5 w-5" /> },
-  { key: 'agroforestry', label: 'Agroforestry', desc: 'Species with productive value', icon: <Sprout className="h-5 w-5" /> },
-  { key: 'riparian', label: 'Riparian', desc: 'Waterway buffer zone species', icon: <Droplets className="h-5 w-5" /> },
-  { key: 'carbon', label: 'Carbon Sequestration', desc: 'Maximum carbon capture potential', icon: <Wind className="h-5 w-5" /> },
-  { key: 'biodiversity', label: 'Biodiversity', desc: 'Maximize species diversity', icon: <Bug className="h-5 w-5" /> },
+const STRATEGIES: { key: RecommendationStrategy; label: string; desc: string; icon: React.ReactNode; color: string }[] = [
+  { key: 'general', label: 'General Restoration', desc: 'Balanced species mix for ecosystem health', icon: <Trees className="h-5 w-5" />, color: 'emerald' },
+  { key: 'rewilding', label: 'Rewilding', desc: 'Native species for ecological recovery', icon: <TreePine className="h-5 w-5" />, color: 'teal' },
+  { key: 'agroforestry', label: 'Agroforestry', desc: 'Species with productive value', icon: <Sprout className="h-5 w-5" />, color: 'lime' },
+  { key: 'riparian', label: 'Riparian', desc: 'Waterway buffer zone species', icon: <Droplets className="h-5 w-5" />, color: 'cyan' },
+  { key: 'carbon', label: 'Carbon Sequestration', desc: 'Maximum carbon capture potential', icon: <Wind className="h-5 w-5" />, color: 'sky' },
+  { key: 'biodiversity', label: 'Biodiversity', desc: 'Maximize species diversity', icon: <Bug className="h-5 w-5" />, color: 'violet' },
 ];
 
 // ============================================
@@ -96,6 +96,21 @@ interface AnalysisModalProps {
   initialSummary: PlotAnalysisResponse;
   onClose: () => void;
   map?: L.Map | null;
+}
+
+// ============================================
+// Stagger animation wrapper
+// ============================================
+
+function Stagger({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
+  return (
+    <div
+      className={`animate-fade-up ${className}`}
+      style={{ animationDelay: `${delay}ms`, animationFillMode: 'both' }}
+    >
+      {children}
+    </div>
+  );
 }
 
 // ============================================
@@ -143,13 +158,18 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
   // Display
   const [displayLimit, setDisplayLimit] = useState(50);
 
-  // Portal mount
+  // Portal mount + entrance animation
   const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMounted(true);
+    // Trigger entrance after mount
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setVisible(true));
+    });
     return () => setMounted(false);
   }, []);
 
@@ -260,7 +280,6 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
       setProgress(100);
       setLoadingStatus('complete');
 
-      // Load research statuses async
       if (data.results?.predictions?.length > 0) {
         const ids = data.results.predictions.map((p: PolygonPrediction) => p.taxon_id);
         try {
@@ -303,7 +322,6 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
       setProgress(100);
       setLoadingStatus('complete');
 
-      // Load research statuses async
       if (data.results?.predictions?.length > 0) {
         const ids = data.results.predictions.map((p: PolygonPrediction) => p.taxon_id);
         try {
@@ -329,7 +347,6 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
     navigateTo('research');
     setLoadingStatus('loading');
 
-    // Get unresearched species from whichever result set is active
     const activeResults = predictionData?.results?.predictions || recommendationData?.results?.predictions || [];
     const unresearched = activeResults.filter(
       (p: PolygonPrediction) => researchStatuses[p.taxon_id] === 'unresearched'
@@ -351,7 +368,6 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
           setResearchStatuses(prev => ({ ...prev, [species.taxon_id]: 'researched' }));
         } catch (err) {
           console.error(`Failed to research ${species.taxon_id}:`, err);
-          // Continue with remaining species
         }
       }
 
@@ -366,38 +382,58 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
   }, [predictionData, recommendationData, researchStatuses, navigateTo, refreshBalance]);
 
   // ============================================
-  // Research status dot helper
+  // Research status dot
   // ============================================
 
   const ResearchDot = ({ taxonId }: { taxonId: string }) => {
     const status = researchStatuses[taxonId];
-    if (!status) return <div className="w-2.5 h-2.5 rounded-full bg-gray-500" title="Unknown" />;
-    const colors = {
-      researched: 'bg-green-400',
-      partial: 'bg-yellow-400',
-      unresearched: 'bg-gray-500',
+    if (!status) return <div className="w-2 h-2 rounded-full bg-white/20 ring-1 ring-white/10" title="Unknown" />;
+    const config = {
+      researched: { bg: 'bg-emerald-400', ring: 'ring-emerald-400/30', glow: 'shadow-[0_0_6px_rgba(52,211,153,0.4)]' },
+      partial: { bg: 'bg-amber-400', ring: 'ring-amber-400/30', glow: 'shadow-[0_0_6px_rgba(251,191,36,0.4)]' },
+      unresearched: { bg: 'bg-white/20', ring: 'ring-white/10', glow: '' },
     };
-    const labels = {
-      researched: 'Researched',
-      partial: 'Partially researched',
-      unresearched: 'Not researched',
-    };
-    return <div className={`w-2.5 h-2.5 rounded-full ${colors[status]}`} title={labels[status]} />;
+    const c = config[status];
+    const labels = { researched: 'Researched', partial: 'Partially researched', unresearched: 'Not researched' };
+    return <div className={`w-2 h-2 rounded-full ${c.bg} ring-1 ${c.ring} ${c.glow}`} title={labels[status]} />;
   };
 
   // ============================================
-  // Native status badge (from PolygonPredictionModal)
+  // Native status badge
   // ============================================
 
   const NativeBadge = ({ prediction }: { prediction: PolygonPrediction }) => {
-    if (prediction.is_native) return <span className="text-xs px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 border border-green-500/30">Native</span>;
-    if (prediction.is_invasive) return <span className="text-xs px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 border border-red-500/30">Invasive</span>;
-    if (prediction.is_introduced) return <span className="text-xs px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30">Introduced</span>;
+    if (prediction.is_native) return (
+      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/25">
+        Native
+      </span>
+    );
+    if (prediction.is_invasive) return (
+      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-red-500/15 text-red-300 border border-red-500/25">
+        Invasive
+      </span>
+    );
+    if (prediction.is_introduced) return (
+      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+        Introduced
+      </span>
+    );
     return null;
   };
 
   // ============================================
-  // Species list renderer (shared between prediction + recommendation)
+  // Suitability color
+  // ============================================
+
+  const suitabilityColor = (pct: number) => {
+    if (pct >= 80) return { bar: 'from-emerald-500 to-emerald-300', text: 'text-emerald-300' };
+    if (pct >= 60) return { bar: 'from-teal-500 to-teal-300', text: 'text-teal-300' };
+    if (pct >= 40) return { bar: 'from-amber-500 to-amber-300', text: 'text-amber-300' };
+    return { bar: 'from-orange-500 to-orange-300', text: 'text-orange-300' };
+  };
+
+  // ============================================
+  // Species list renderer
   // ============================================
 
   const renderSpeciesList = (predictions: PolygonPrediction[]) => {
@@ -406,62 +442,84 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
     const researchCost = unresearchedCount * 25;
 
     return (
-      <div className="space-y-3">
-        {/* Stats bar */}
-        <div className="flex items-center justify-between text-sm text-white/60 px-1">
-          <span>{predictions.length} species found</span>
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-green-400" /> Researched</span>
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-yellow-400" /> Partial</span>
-            <span className="flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-gray-500" /> None</span>
+      <div className="space-y-2">
+        {/* Legend bar */}
+        <Stagger delay={0}>
+          <div className="flex items-center justify-between text-xs text-white/40 px-1 mb-1">
+            <span className="font-medium tracking-wide uppercase">{predictions.length} species</span>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_4px_rgba(52,211,153,0.5)]" />
+                Researched
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_4px_rgba(251,191,36,0.5)]" />
+                Partial
+              </span>
+              <span className="flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-white/20" />
+                None
+              </span>
+            </div>
           </div>
-        </div>
+        </Stagger>
 
         {/* Species cards */}
-        {displayed.map((pred, idx) => (
-          <Link
-            key={pred.taxon_id}
-            href={`/species/${pred.taxon_id}`}
-            target="_blank"
-            className="block bg-black/30 border border-white/10 rounded-lg p-3 hover:border-emerald-500/40 transition-colors"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <ResearchDot taxonId={pred.taxon_id} />
-                <div className="min-w-0">
-                  <div className="text-white font-medium text-sm truncate">
-                    {pred.common_name || pred.scientific_name}
+        {displayed.map((pred, idx) => {
+          const pct = Math.round(pred.avg_suitability * 100);
+          const colors = suitabilityColor(pct);
+          return (
+            <Stagger key={pred.taxon_id} delay={Math.min(idx * 30, 300)}>
+              <Link
+                href={`/species/${pred.taxon_id}`}
+                target="_blank"
+                className="group block rounded-lg border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.05] hover:border-emerald-500/20 transition-all duration-200 overflow-hidden"
+              >
+                <div className="flex items-center gap-3 p-3">
+                  {/* Research dot */}
+                  <div className="shrink-0">
+                    <ResearchDot taxonId={pred.taxon_id} />
                   </div>
-                  <div className="text-white/50 text-xs italic truncate">
-                    {pred.scientific_name}
+
+                  {/* Species info */}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-white/90 font-medium text-sm truncate">
+                        {pred.common_name || pred.scientific_name}
+                      </span>
+                      <NativeBadge prediction={pred} />
+                    </div>
+                    <div className="text-white/30 text-xs italic truncate mt-0.5">
+                      {pred.scientific_name}
+                      {pred.family && <span className="not-italic text-white/20 ml-2">{pred.family}</span>}
+                    </div>
+                  </div>
+
+                  {/* Suitability score */}
+                  <div className="shrink-0 text-right">
+                    <div className={`text-lg font-bold tabular-nums tracking-tight ${colors.text}`}>
+                      {pct}<span className="text-[10px] font-normal opacity-60">%</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <NativeBadge prediction={pred} />
-                <div className="text-right">
-                  <div className="text-emerald-400 font-semibold text-sm">
-                    {Math.round(pred.avg_suitability * 100)}%
-                  </div>
-                  <div className="text-white/40 text-xs">suitability</div>
+
+                {/* Suitability bar — flush bottom edge */}
+                <div className="h-0.5 bg-black/20">
+                  <div
+                    className={`h-full bg-gradient-to-r ${colors.bar} transition-all duration-500 group-hover:opacity-100 opacity-70`}
+                    style={{ width: `${pct}%` }}
+                  />
                 </div>
-              </div>
-            </div>
-            {/* Suitability bar */}
-            <div className="mt-2 bg-black/40 rounded-full h-1.5 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400"
-                style={{ width: `${Math.round(pred.avg_suitability * 100)}%` }}
-              />
-            </div>
-          </Link>
-        ))}
+              </Link>
+            </Stagger>
+          );
+        })}
 
         {/* Show more */}
         {predictions.length > displayLimit && (
           <button
             onClick={() => setDisplayLimit(prev => prev + 50)}
-            className="w-full py-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+            className="w-full py-2.5 text-xs font-medium tracking-wide uppercase text-white/30 hover:text-emerald-300 border border-dashed border-white/[0.06] hover:border-emerald-500/20 rounded-lg transition-all duration-200"
           >
             Show more ({predictions.length - displayLimit} remaining)
           </button>
@@ -469,121 +527,154 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
 
         {/* Research CTA */}
         {unresearchedCount > 0 && isAuth && (
-          <div className="mt-4 p-4 bg-emerald-900/20 border border-emerald-600/30 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-white text-sm font-medium">
-                {unresearchedCount} species not yet researched
-              </span>
-              <span className="text-amber-400 text-sm">
-                {researchCost} credits
-              </span>
+          <Stagger delay={400}>
+            <div className="mt-3 relative overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-emerald-900/20 to-transparent p-4">
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(52,211,153,0.08),transparent_60%)]" />
+              <div className="relative">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-white/80 text-sm">
+                    <span className="font-semibold text-white">{unresearchedCount}</span> species awaiting research
+                  </span>
+                  <span className="text-amber-300/80 text-sm font-medium tabular-nums">
+                    {researchCost} credits
+                  </span>
+                </div>
+                <button
+                  onClick={() => requireAuthAndCredits(researchCost, 'Research Remaining Species', runResearch)}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-semibold tracking-wide transition-all duration-200 hover:shadow-[0_0_20px_rgba(52,211,153,0.2)]"
+                >
+                  Research & Generate Guide
+                </button>
+              </div>
             </div>
-            <button
-              onClick={() => requireAuthAndCredits(researchCost, 'Research Remaining Species', runResearch)}
-              className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
-            >
-              Research Remaining & Generate Guide
-            </button>
-          </div>
+          </Stagger>
         )}
       </div>
     );
   };
 
   // ============================================
-  // Render phases
+  // Phase: Summary
   // ============================================
 
   const renderSummaryPhase = () => (
-    <div className="space-y-4">
-      {/* AOI info */}
-      <div className="flex items-center gap-2 text-white/60 text-sm">
-        <MapPin className="h-4 w-4" />
-        <span>
+    <div className="space-y-5">
+      {/* AOI badge */}
+      <Stagger delay={0}>
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.04] border border-white/[0.06] text-white/50 text-xs">
+          <MapPin className="h-3 w-3" />
           {aoi.type === 'polygon' ? 'Drawn polygon' :
            aoi.type === 'point' ? 'Point buffer (~1 km)' :
            aoi.label || 'Uploaded KML'}
-        </span>
-      </div>
+        </div>
+      </Stagger>
 
-      {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-emerald-900/20 border border-emerald-600/30 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-emerald-400">{initialSummary.totalSpecies}</div>
-          <div className="text-sm text-white/60">Species Found</div>
+      {/* Summary stats — asymmetric layout */}
+      <Stagger delay={60}>
+        <div className="grid grid-cols-5 gap-3">
+          <div className="col-span-3 relative overflow-hidden rounded-xl border border-emerald-500/15 bg-gradient-to-br from-emerald-950/30 to-transparent p-5">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl -translate-y-1/2 translate-x-1/2" />
+            <div className="relative">
+              <div className="text-4xl font-bold tracking-tight text-emerald-300">
+                {initialSummary.totalSpecies}
+              </div>
+              <div className="text-xs text-white/40 mt-1 font-medium tracking-wide uppercase">Species Found</div>
+            </div>
+          </div>
+          <div className="col-span-2 relative overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
+            <div className="text-3xl font-bold tracking-tight text-white/80 tabular-nums">
+              {initialSummary.totalOccurrences.toLocaleString()}
+            </div>
+            <div className="text-xs text-white/30 mt-1 font-medium tracking-wide uppercase">Occurrences</div>
+          </div>
         </div>
-        <div className="bg-emerald-900/20 border border-emerald-600/30 rounded-lg p-4 text-center">
-          <div className="text-3xl font-bold text-emerald-400">{initialSummary.totalOccurrences.toLocaleString()}</div>
-          <div className="text-sm text-white/60">Total Occurrences</div>
-        </div>
-      </div>
+      </Stagger>
 
       {/* Cross analysis */}
       {initialSummary.crossAnalysis && (
-        <CrossAnalysisSummary
-          crossAnalysis={initialSummary.crossAnalysis}
-          totalSpecies={initialSummary.totalSpecies}
-        />
+        <Stagger delay={120}>
+          <CrossAnalysisSummary
+            crossAnalysis={initialSummary.crossAnalysis}
+            totalSpecies={initialSummary.totalSpecies}
+          />
+        </Stagger>
       )}
 
-      {/* CTA buttons */}
-      <div className="grid grid-cols-2 gap-3 mt-6">
-        <button
-          onClick={() => requireAuthAndCredits(25, 'Species Prediction (AlphaEarth)', runPrediction)}
-          className="flex flex-col items-center gap-2 p-4 bg-blue-900/20 border border-blue-600/30 rounded-lg hover:border-blue-400/50 transition-colors group"
-        >
-          <Sparkles className="h-6 w-6 text-blue-400 group-hover:text-blue-300" />
-          <span className="text-white font-medium text-sm">Species Prediction</span>
-          <span className="text-white/40 text-xs">AlphaEarth satellite analysis</span>
-          <span className="text-amber-400 text-xs">25 credits</span>
-        </button>
-        <button
-          onClick={() => navigateTo('recommendation')}
-          className="flex flex-col items-center gap-2 p-4 bg-green-900/20 border border-green-600/30 rounded-lg hover:border-green-400/50 transition-colors group"
-        >
-          <Leaf className="h-6 w-6 text-green-400 group-hover:text-green-300" />
-          <span className="text-white font-medium text-sm">Species Recommendation</span>
-          <span className="text-white/40 text-xs">LEAF ecological scoring</span>
-          <span className="text-amber-400 text-xs">25 credits</span>
-        </button>
-      </div>
+      {/* CTA buttons — the hero section */}
+      <Stagger delay={180}>
+        <div className="grid grid-cols-2 gap-3">
+          <button
+            onClick={() => requireAuthAndCredits(25, 'Species Prediction (AlphaEarth)', runPrediction)}
+            className="group relative overflow-hidden rounded-xl border border-blue-500/15 p-5 text-left transition-all duration-300 hover:border-blue-400/30 hover:shadow-[0_0_30px_rgba(59,130,246,0.08)]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-950/30 via-blue-900/10 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative">
+              <Sparkles className="h-6 w-6 text-blue-400/80 group-hover:text-blue-300 transition-colors mb-3" />
+              <div className="text-white font-semibold text-sm mb-1">Species Prediction</div>
+              <div className="text-white/30 text-xs leading-relaxed">AlphaEarth satellite habitat analysis</div>
+              <div className="mt-3 text-amber-300/60 text-xs font-medium">25 credits</div>
+            </div>
+          </button>
+          <button
+            onClick={() => navigateTo('recommendation')}
+            className="group relative overflow-hidden rounded-xl border border-emerald-500/15 p-5 text-left transition-all duration-300 hover:border-emerald-400/30 hover:shadow-[0_0_30px_rgba(52,211,153,0.08)]"
+          >
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-950/30 via-emerald-900/10 to-transparent opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="relative">
+              <Leaf className="h-6 w-6 text-emerald-400/80 group-hover:text-emerald-300 transition-colors mb-3" />
+              <div className="text-white font-semibold text-sm mb-1">Species Recommendation</div>
+              <div className="text-white/30 text-xs leading-relaxed">LEAF ecological scoring by strategy</div>
+              <div className="mt-3 text-amber-300/60 text-xs font-medium">25 credits</div>
+            </div>
+          </button>
+        </div>
+      </Stagger>
 
-      {/* Occurrence species list (free) */}
+      {/* Occurrence species list */}
       {initialSummary.species.length > 0 && (
-        <div className="mt-4">
-          <h3 className="text-white/70 text-sm font-medium mb-2">Occurrence-Based Species ({initialSummary.species.length})</h3>
-          <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-            {initialSummary.species.slice(0, 20).map(sp => (
-              <Link
-                key={sp.taxon_id}
-                href={`/species/${sp.taxon_id}`}
-                target="_blank"
-                className="block bg-black/20 border border-white/5 rounded-lg p-2 hover:border-emerald-500/30 transition-colors"
-              >
-                <div className="flex items-center justify-between">
+        <Stagger delay={240}>
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-white/[0.06] to-transparent" />
+              <span className="text-[10px] font-semibold tracking-widest uppercase text-white/25">
+                Occurrence Data ({initialSummary.species.length})
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-white/[0.06] to-transparent" />
+            </div>
+            <div className="space-y-1 max-h-[280px] overflow-y-auto pr-1 scrollbar-thin">
+              {initialSummary.species.slice(0, 20).map((sp, idx) => (
+                <Link
+                  key={sp.taxon_id}
+                  href={`/species/${sp.taxon_id}`}
+                  target="_blank"
+                  className="group flex items-center justify-between gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors duration-150"
+                >
                   <div className="min-w-0">
-                    <div className="text-white text-sm truncate">
+                    <div className="text-white/70 text-sm truncate group-hover:text-white/90 transition-colors">
                       {sp.common_name || sp.scientific_name}
                     </div>
-                    <div className="text-white/40 text-xs italic truncate">{sp.scientific_name}</div>
+                    <div className="text-white/25 text-xs italic truncate">{sp.scientific_name}</div>
                   </div>
-                  <div className="text-right shrink-0 ml-2">
-                    <div className="text-emerald-400 text-sm font-medium">{sp.occurrences}</div>
-                    <div className="text-white/30 text-xs">occurrences</div>
+                  <div className="shrink-0 tabular-nums text-right">
+                    <span className="text-emerald-400/70 text-sm font-semibold">{sp.occurrences}</span>
                   </div>
+                </Link>
+              ))}
+              {initialSummary.species.length > 20 && (
+                <div className="text-center text-white/20 text-xs py-2">
+                  + {initialSummary.species.length - 20} more
                 </div>
-              </Link>
-            ))}
-            {initialSummary.species.length > 20 && (
-              <div className="text-center text-white/40 text-xs py-1">
-                + {initialSummary.species.length - 20} more species
-              </div>
-            )}
+              )}
+            </div>
           </div>
-        </div>
+        </Stagger>
       )}
     </div>
   );
+
+  // ============================================
+  // Phase: Prediction
+  // ============================================
 
   const renderPredictionPhase = () => {
     if (loadingStatus === 'loading') return renderLoadingState();
@@ -594,28 +685,35 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
       <div className="space-y-4">
         {/* Location context */}
         {locationContext && locationContext.ecoregions.length > 0 && (
-          <div className="bg-black/30 border border-white/10 rounded-lg p-3">
-            <div className="text-white/60 text-xs mb-1">Ecoregion Context</div>
-            {locationContext.ecoregions.slice(0, 3).map(eco => (
-              <div key={eco.eco_id} className="text-white text-sm">
-                {eco.eco_name} <span className="text-white/40">({eco.biome_name})</span>
-              </div>
-            ))}
-            {locationContext.countries.length > 0 && (
-              <div className="text-white/40 text-xs mt-1">
-                {locationContext.countries.join(', ')}
-              </div>
-            )}
-          </div>
+          <Stagger delay={0}>
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Ecoregion Context</div>
+              {locationContext.ecoregions.slice(0, 3).map(eco => (
+                <div key={eco.eco_id} className="text-white/80 text-sm leading-relaxed">
+                  {eco.eco_name}
+                  <span className="text-white/25 ml-1.5">{eco.biome_name}</span>
+                </div>
+              ))}
+              {locationContext.countries.length > 0 && (
+                <div className="text-white/25 text-xs mt-2 font-medium">
+                  {locationContext.countries.join(' / ')}
+                </div>
+              )}
+            </div>
+          </Stagger>
         )}
 
-        {/* Polygon summary */}
+        {/* Polygon metrics */}
         {predictionData.polygon_summary && (
-          <div className="flex items-center gap-4 text-sm text-white/60">
-            <span>{predictionData.polygon_summary.approx_area_km2.toFixed(1)} km²</span>
-            <span>{predictionData.polygon_summary.sample_points_succeeded} sample points</span>
-            <span>{predictionData.results.species_count} species</span>
-          </div>
+          <Stagger delay={60}>
+            <div className="flex items-center gap-4 text-xs text-white/30 font-medium">
+              <span className="tabular-nums">{predictionData.polygon_summary.approx_area_km2.toFixed(1)} km²</span>
+              <span className="w-px h-3 bg-white/10" />
+              <span className="tabular-nums">{predictionData.polygon_summary.sample_points_succeeded} sample pts</span>
+              <span className="w-px h-3 bg-white/10" />
+              <span className="tabular-nums">{predictionData.results.species_count} species</span>
+            </div>
+          </Stagger>
         )}
 
         {renderSpeciesList(predictionData.results.predictions)}
@@ -623,26 +721,39 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
     );
   };
 
+  // ============================================
+  // Phase: Recommendation
+  // ============================================
+
   const renderRecommendationPhase = () => {
-    // If no strategy selected yet, show picker
+    // Strategy picker
     if (!selectedStrategy && loadingStatus === 'idle') {
       return (
-        <div className="space-y-4">
-          <p className="text-white/60 text-sm">Choose a restoration strategy to get species recommendations tailored to your goals.</p>
-          <div className="grid grid-cols-2 gap-3">
-            {STRATEGIES.map(s => (
-              <button
-                key={s.key}
-                onClick={() => requireAuthAndCredits(25, `${s.label} Recommendation`, () => runRecommendation(s.key))}
-                className="flex flex-col items-center gap-2 p-4 bg-black/30 border border-white/10 rounded-lg hover:border-emerald-500/40 transition-colors text-center group"
-              >
-                <div className="text-emerald-400 group-hover:text-emerald-300">{s.icon}</div>
-                <span className="text-white text-sm font-medium">{s.label}</span>
-                <span className="text-white/40 text-xs">{s.desc}</span>
-              </button>
+        <div className="space-y-5">
+          <Stagger delay={0}>
+            <p className="text-white/40 text-sm leading-relaxed">
+              Choose a restoration strategy to get species recommendations tailored to your goals.
+            </p>
+          </Stagger>
+          <div className="grid grid-cols-2 gap-2.5">
+            {STRATEGIES.map((s, idx) => (
+              <Stagger key={s.key} delay={60 + idx * 40}>
+                <button
+                  onClick={() => requireAuthAndCredits(25, `${s.label} Recommendation`, () => runRecommendation(s.key))}
+                  className="group relative overflow-hidden rounded-xl border border-white/[0.06] p-4 text-left transition-all duration-200 hover:border-emerald-500/20 hover:bg-white/[0.02]"
+                >
+                  <div className="text-emerald-400/60 group-hover:text-emerald-300 transition-colors mb-2">
+                    {s.icon}
+                  </div>
+                  <div className="text-white/80 text-sm font-medium mb-0.5">{s.label}</div>
+                  <div className="text-white/25 text-xs leading-relaxed">{s.desc}</div>
+                </button>
+              </Stagger>
             ))}
           </div>
-          <div className="text-center text-amber-400 text-xs">25 credits per recommendation</div>
+          <Stagger delay={320}>
+            <div className="text-center text-amber-300/40 text-xs font-medium">25 credits per recommendation</div>
+          </Stagger>
         </div>
       );
     }
@@ -653,24 +764,27 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
 
     return (
       <div className="space-y-4">
-        {/* Strategy badge */}
         {selectedStrategy && (
-          <div className="flex items-center gap-2 text-white/60 text-sm">
-            <Leaf className="h-4 w-4 text-emerald-400" />
-            <span>Strategy: {STRATEGIES.find(s => s.key === selectedStrategy)?.label}</span>
-          </div>
+          <Stagger delay={0}>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/15 text-emerald-300/80 text-xs font-medium">
+              <Leaf className="h-3 w-3" />
+              {STRATEGIES.find(s => s.key === selectedStrategy)?.label}
+            </div>
+          </Stagger>
         )}
 
-        {/* Location context */}
         {locationContext && locationContext.ecoregions.length > 0 && (
-          <div className="bg-black/30 border border-white/10 rounded-lg p-3">
-            <div className="text-white/60 text-xs mb-1">Ecoregion Context</div>
-            {locationContext.ecoregions.slice(0, 3).map(eco => (
-              <div key={eco.eco_id} className="text-white text-sm">
-                {eco.eco_name} <span className="text-white/40">({eco.biome_name})</span>
-              </div>
-            ))}
-          </div>
+          <Stagger delay={60}>
+            <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <div className="text-[10px] font-semibold tracking-widest uppercase text-white/30 mb-2">Ecoregion Context</div>
+              {locationContext.ecoregions.slice(0, 3).map(eco => (
+                <div key={eco.eco_id} className="text-white/80 text-sm leading-relaxed">
+                  {eco.eco_name}
+                  <span className="text-white/25 ml-1.5">{eco.biome_name}</span>
+                </div>
+              ))}
+            </div>
+          </Stagger>
         )}
 
         {renderSpeciesList(recommendationData.results.predictions)}
@@ -678,26 +792,41 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
     );
   };
 
+  // ============================================
+  // Phase: Research
+  // ============================================
+
   const renderResearchPhase = () => {
     if (loadingStatus === 'loading') {
       return (
-        <div className="space-y-4">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin text-emerald-400 mx-auto mb-3" />
-            <div className="text-white font-medium">{statusMessage}</div>
-            <div className="text-white/50 text-sm mt-1">
-              {researchProgress} / {researchTotal} species
+        <div className="py-12 space-y-6">
+          <Stagger delay={0}>
+            <div className="text-center">
+              <div className="relative mx-auto w-14 h-14 mb-4">
+                <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping" />
+                <div className="relative w-full h-full flex items-center justify-center">
+                  <Loader2 className="h-7 w-7 animate-spin text-emerald-400" />
+                </div>
+              </div>
+              <div className="text-white/90 font-medium text-sm">{statusMessage}</div>
+              <div className="text-white/30 text-xs mt-1 tabular-nums">
+                {researchProgress} / {researchTotal}
+              </div>
             </div>
-          </div>
-          <div className="bg-black/40 rounded-full h-3 overflow-hidden">
+          </Stagger>
+          <div className="relative h-1.5 rounded-full bg-black/30 overflow-hidden">
             <div
-              className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-300"
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500"
+              style={{ width: `${progress}%` }}
+            />
+            <div
+              className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-400/50 to-emerald-300/50 blur-sm transition-all duration-500"
               style={{ width: `${progress}%` }}
             />
           </div>
           {researchingTaxonId && (
-            <div className="text-center text-white/40 text-xs">
-              Current: {researchingTaxonId}
+            <div className="text-center text-white/20 text-xs font-mono">
+              {researchingTaxonId}
             </div>
           )}
         </div>
@@ -708,29 +837,39 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
 
     if (loadingStatus === 'complete') {
       return (
-        <div className="space-y-4 text-center">
-          <div className="text-emerald-400 text-5xl mb-2">&#10003;</div>
-          <h3 className="text-white text-lg font-semibold">Research Complete</h3>
-          <p className="text-white/60 text-sm">
-            {researchTotal} species have been researched. Research data is now available on each species page.
-          </p>
-          <button
-            onClick={() => {
-              // Go back to whichever result view was active
-              if (phaseHistory.includes('prediction')) {
-                setPhase('prediction');
-              } else if (phaseHistory.includes('recommendation')) {
-                setPhase('recommendation');
-              } else {
-                setPhase('summary');
-              }
-              setPhaseHistory([]);
-              setLoadingStatus('idle');
-            }}
-            className="px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-medium transition-colors"
-          >
-            Back to Results
-          </button>
+        <div className="py-12 text-center space-y-5">
+          <Stagger delay={0}>
+            <div className="relative mx-auto w-16 h-16">
+              <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-pulse" />
+              <div className="relative w-full h-full flex items-center justify-center text-emerald-400 text-3xl">
+                &#10003;
+              </div>
+            </div>
+          </Stagger>
+          <Stagger delay={100}>
+            <h3 className="text-white font-semibold text-lg tracking-tight">Research Complete</h3>
+            <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto">
+              {researchTotal} species researched. Data is now available on each species page.
+            </p>
+          </Stagger>
+          <Stagger delay={200}>
+            <button
+              onClick={() => {
+                if (phaseHistory.includes('prediction')) {
+                  setPhase('prediction');
+                } else if (phaseHistory.includes('recommendation')) {
+                  setPhase('recommendation');
+                } else {
+                  setPhase('summary');
+                }
+                setPhaseHistory([]);
+                setLoadingStatus('idle');
+              }}
+              className="px-6 py-2.5 bg-white/[0.06] hover:bg-white/[0.1] text-white/80 rounded-lg text-sm font-medium transition-all duration-200 border border-white/[0.06]"
+            >
+              Back to Results
+            </button>
+          </Stagger>
         </div>
       );
     }
@@ -739,32 +878,47 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
   };
 
   // ============================================
-  // Shared render helpers
+  // Shared: Loading
   // ============================================
 
   const renderLoadingState = () => (
-    <div className="space-y-4 py-8">
+    <div className="py-12 space-y-6">
       <div className="text-center">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-400 mx-auto mb-3" />
-        <div className="text-white font-medium">{statusMessage}</div>
+        <div className="relative mx-auto w-14 h-14 mb-4">
+          <div className="absolute inset-0 rounded-full bg-emerald-500/10 animate-ping" />
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Loader2 className="h-7 w-7 animate-spin text-emerald-400" />
+          </div>
+        </div>
+        <div className="text-white/80 font-medium text-sm">{statusMessage}</div>
       </div>
-      <div className="bg-black/40 rounded-full h-3 overflow-hidden">
+      <div className="relative h-1.5 rounded-full bg-black/30 overflow-hidden">
         <div
-          className="h-full rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500"
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-700"
+          style={{ width: `${progress}%` }}
+        />
+        <div
+          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-emerald-400/50 to-emerald-300/50 blur-sm transition-all duration-700"
           style={{ width: `${progress}%` }}
         />
       </div>
     </div>
   );
 
+  // ============================================
+  // Shared: Error
+  // ============================================
+
   const renderErrorState = () => (
-    <div className="py-8 text-center space-y-3">
-      <AlertCircle className="h-8 w-8 text-red-400 mx-auto" />
-      <div className="text-red-300 font-medium">Something went wrong</div>
-      <div className="text-white/50 text-sm">{errorMessage}</div>
+    <div className="py-12 text-center space-y-4">
+      <div className="mx-auto w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center">
+        <AlertCircle className="h-6 w-6 text-red-400/80" />
+      </div>
+      <div className="text-white/80 font-medium">Something went wrong</div>
+      <div className="text-white/30 text-sm max-w-xs mx-auto">{errorMessage}</div>
       <button
         onClick={goBack}
-        className="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-lg text-sm transition-colors"
+        className="px-5 py-2 bg-white/[0.06] hover:bg-white/[0.1] text-white/70 rounded-lg text-sm transition-all duration-200 border border-white/[0.06]"
       >
         Go Back
       </button>
@@ -775,11 +929,11 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
   // Phase titles
   // ============================================
 
-  const phaseTitle: Record<AnalysisPhase, string> = {
-    summary: 'Site Analysis',
-    prediction: 'Species Prediction',
-    recommendation: 'Species Recommendation',
-    research: 'Species Research',
+  const phaseConfig: Record<AnalysisPhase, { title: string; icon: React.ReactNode }> = {
+    summary: { title: 'Site Analysis', icon: <MapPin className="h-4 w-4" /> },
+    prediction: { title: 'Species Prediction', icon: <Sparkles className="h-4 w-4" /> },
+    recommendation: { title: 'Species Recommendation', icon: <Leaf className="h-4 w-4" /> },
+    research: { title: 'Species Research', icon: <Trees className="h-4 w-4" /> },
   };
 
   // ============================================
@@ -791,43 +945,53 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
   const modalContent = (
     <div
       ref={overlayRef}
-      className="fixed inset-0 z-[9999] flex items-center justify-center"
+      className={`fixed inset-0 z-[9999] flex items-center justify-center transition-opacity duration-300 ${visible ? 'opacity-100' : 'opacity-0'}`}
     >
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/70 backdrop-blur-md"
         onClick={onClose}
       />
 
       {/* Modal */}
       <div
         ref={modalRef}
-        className="relative w-full max-w-2xl max-h-[85vh] mx-4 bg-gray-900/95 backdrop-blur-xl border border-emerald-600/30 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+        className={`relative w-full max-w-2xl max-h-[85vh] mx-4 flex flex-col overflow-hidden rounded-2xl border border-white/[0.08] bg-[#0a0f0d]/95 backdrop-blur-xl shadow-[0_0_80px_rgba(0,0,0,0.6)] transition-all duration-300 ${visible ? 'translate-y-0 scale-100' : 'translate-y-4 scale-[0.98]'}`}
       >
+        {/* Decorative top gradient line */}
+        <div className="h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-3">
             {phaseHistory.length > 0 && (
               <button
                 onClick={goBack}
-                className="text-white/50 hover:text-white transition-colors"
+                className="text-white/30 hover:text-white/70 transition-colors duration-200 -ml-1"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-4 w-4" />
               </button>
             )}
-            <Trees className="h-5 w-5 text-emerald-400" />
-            <h2 className="text-white font-semibold text-lg">{phaseTitle[phase]}</h2>
+            <div className="text-emerald-400/60">
+              {phaseConfig[phase].icon}
+            </div>
+            <h2 className="text-white/90 font-semibold tracking-tight">
+              {phaseConfig[phase].title}
+            </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white/40 hover:text-white transition-colors"
+            className="text-white/20 hover:text-white/60 transition-colors duration-200 p-1 rounded-lg hover:bg-white/[0.04]"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </button>
         </div>
 
+        {/* Subtle header divider */}
+        <div className="h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-4">
+        <div className="flex-1 overflow-y-auto px-6 py-5 scrollbar-thin">
           {/* Credit gate overlay */}
           {showCreditGate && (
             <div className="mb-4">
@@ -856,25 +1020,29 @@ export default function AnalysisModal({ aoi, initialSummary, onClose, map }: Ana
 
         {/* Footer breadcrumb */}
         {phaseHistory.length > 0 && !showCreditGate && (
-          <div className="px-6 py-2 border-t border-white/5 text-xs text-white/30">
-            {['summary', ...phaseHistory.filter(p => p !== 'summary')].map((p, i) => (
-              <span key={i}>
-                {i > 0 && ' > '}
-                <button
-                  onClick={() => {
-                    setPhase(p as AnalysisPhase);
-                    setPhaseHistory([]);
-                    setShowCreditGate(false);
-                    setLoadingStatus('idle');
-                  }}
-                  className="hover:text-white/60 transition-colors"
-                >
-                  {phaseTitle[p as AnalysisPhase]}
-                </button>
-              </span>
-            ))}
-            {' > '}{phaseTitle[phase]}
-          </div>
+          <>
+            <div className="h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+            <div className="px-6 py-2.5 text-[10px] font-medium tracking-wider uppercase text-white/20">
+              {['summary', ...phaseHistory.filter(p => p !== 'summary')].map((p, i) => (
+                <span key={i}>
+                  {i > 0 && <span className="mx-1.5 text-white/10">/</span>}
+                  <button
+                    onClick={() => {
+                      setPhase(p as AnalysisPhase);
+                      setPhaseHistory([]);
+                      setShowCreditGate(false);
+                      setLoadingStatus('idle');
+                    }}
+                    className="hover:text-emerald-400/60 transition-colors duration-200"
+                  >
+                    {phaseConfig[p as AnalysisPhase].title}
+                  </button>
+                </span>
+              ))}
+              <span className="mx-1.5 text-white/10">/</span>
+              <span className="text-white/30">{phaseConfig[phase].title}</span>
+            </div>
+          </>
         )}
       </div>
     </div>
