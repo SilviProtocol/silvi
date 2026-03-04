@@ -6,6 +6,110 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-03-04 - Free/Paid Split: Site Analysis Free, LEAF Paid, Wallet Removed
+
+**Product split refinement** — site analysis occurrence data now free (was credit-gated), LEAF scoring now paid (was public), wallet connect UI removed.
+
+**Backend** (`backend/controllers/geospatial.js`, `backend/routes/geospatial.js`):
+- `analyzePlot`: Removed credit deduction block (lines 410-436), switched from `authenticateUser` to `optionalAuth` — public endpoint, tracks users if logged in
+- `getLeafScore`: Added `authenticateUser` middleware to GET/POST routes, added credit deduction — polygon requests use `calculateSiteAnalysisCost(hectares)`, point/ecoregion requests flat 10 credits, returns 402 on insufficient
+
+**Frontend** (`frontend/app/analysis/page.tsx`, `frontend/app/analysis/components/Map.tsx`):
+- Removed CreditGate flow, cost estimation, pending geometry state — draw polygon → results directly
+- Removed `useSession`, `useCredits`, `useRouter`, `estimateAnalysisCost` imports
+- `DrawControl` and `handleExternalGeometry` simplified to direct `analyzePlot()` calls
+
+**Wallet removal** (`frontend/components/navbar.tsx`, `frontend/app/providers.tsx`):
+- Removed `WalletConnectButton` from desktop + mobile navbar (component file preserved)
+- Removed `WagmiProvider`, wagmi imports, chain config, Infura config from providers
+- Kept `QueryClientProvider` (used by search, species data hooks, etc.)
+
+**Current credit gating**: LEAF Score (10-685 by area), Guide Synthesis (200), Species Research (25). Site Analysis = free.
+
+---
+
+## 2026-02-27 - Users & Authentication (Phase 1+2)
+
+**Phase 1: Frontend Auth** — NextAuth v5 → Silvi Django backend (`api.silvi.earth`)
+- `frontend/auth.ts`: token-login (OTP) + Google OAuth, JWT refresh, session callbacks
+- `frontend/app/login/page.tsx`: Email OTP flow + Google button, dark theme
+- `frontend/middleware.ts`: Protects `/profile`, `/saved`; existing pages public
+- `frontend/app/providers.tsx`: `<SessionProvider>` wrapper
+- `frontend/components/navbar.tsx`: Auth-aware — sign in / avatar dropdown / sign out
+
+**Phase 2: Backend Auth** — Express JWT validation
+- `backend/middleware/userAuth.js`: `authenticateUser` + `optionalAuth` — Django HS256 JWT verification
+- `backend/server.js`: `optionalAuth` global middleware — `req.user` on all routes
+- `frontend/lib/auth-api.ts`: `fetchWithAuth()` Bearer token utility
+
+**External blockers**: Django CORS/CSRF config (Djimo/Moses), Vercel env vars, VPS DJANGO_SECRET_KEY
+**Google OAuth**: Djimo created dedicated Treekipedia OAuth client in Google Console
+
+---
+
+## 2026-02-27 - Credit System + NOWPayments Integration
+
+**Credit system gating three products**: Site Analysis (10-685 credits, scaled by area), Reforestation Guide (200 flat), Species Research (25 flat). Crypto checkout via NOWPayments, signup bonus 50 credits.
+
+**Database** (`database/10_credit_system.sql`):
+- `credit_packs` — configurable packs (Starter $10/100, Pro $40/500, Enterprise $120/2000)
+- `credit_balances` — per-user balance, auto-updated by trigger on transaction insert
+- `credit_transactions` — immutable ledger with idempotency keys, JSONB metadata
+- `credit_invoices` — NOWPayments invoice tracking with fulfillment status
+
+**Backend Service** (`backend/services/creditService.js`):
+- `deductCredits()` — transactional with `SELECT FOR UPDATE`, race-condition safe
+- `grantCredits()` — idempotent via unique keys, handles signup bonus
+- `calculateSiteAnalysisCost()` — tiered formula: 10 credits (≤10ha) → 685+ (10,000+ ha)
+- Auto-grants 50 credit signup bonus on first `getBalance()` call
+
+**Backend Endpoints** (`backend/controllers/credits.js`, `backend/routes/credits.js`):
+- `GET /api/credits/balance` — balance + lifetime stats (auth required)
+- `GET /api/credits/transactions` — paginated history (auth required)
+- `GET /api/credits/packs` — available packs (public)
+- `POST /api/credits/estimate-analysis` — area → cost preview (public)
+
+**NOWPayments** (`backend/controllers/payments.js`, `backend/routes/payments.js`):
+- `POST /api/payments/create-invoice` — creates NOWPayments hosted invoice, redirects user
+- `POST /api/payments/webhooks/nowpayments` — HMAC-SHA512 verified IPN, idempotent credit granting
+- Sandbox mode via `NOWPAYMENTS_SANDBOX=true` env var
+
+**Credit Gating** (modified existing controllers):
+- `backend/controllers/geospatial.js` (`analyzePlot`) — auth required, deducts tiered credits, returns 402 on insufficient
+- `backend/controllers/guides.js` (`synthesize`) — auth required, 200 credits
+- `backend/controllers/species.js` (`research`) — auth required, 25 credits
+- All gated responses include `credits_charged` + `balance_after`
+
+**Frontend** (6 new files, 5 modified):
+- `frontend/lib/credits.ts` — API client for balance, packs, invoices, estimation
+- `frontend/hooks/useCredits.ts` — SWR-style hook, auto-refreshes on window focus
+- `frontend/components/CreditBalance.tsx` — navbar coin + balance display
+- `frontend/components/CreditPurchaseModal.tsx` — pack cards → NOWPayments redirect
+- `frontend/components/CreditGate.tsx` — reusable cost confirmation with insufficient-credits fallback
+- `frontend/app/credits/page.tsx` — dashboard: balance stats + transaction history + purchase
+- `frontend/lib/api.ts` — added axios interceptor for Django JWT from NextAuth session
+- `frontend/components/navbar.tsx` — added CreditBalance component
+- `frontend/app/analysis/page.tsx` — polygon draw → cost estimate → CreditGate → confirm → analyze
+- `frontend/app/guide/[eco_id]/page.tsx` — "Generate Guide (200 credits)" button with CreditGate
+- `frontend/app/species/[taxon_id]/page.tsx` — Research/Re-research buttons with CreditGate
+
+---
+
+## 2026-02-26 - Users & Authentication (Phase 1 — Frontend)
+
+**Frontend Auth** — NextAuth v5 integration with Silvi Django backend (`api.silvi.earth`)
+- Option C approach: own NextAuth instance, shared Django user store (Moses recommended)
+- `auth.ts`: token-login (OTP) + Google OAuth providers, 5-min JWT refresh, session callbacks
+- `app/login/page.tsx`: Email OTP flow + Google button, Treekipedia dark theme
+- `middleware.ts`: Protects `/profile`, `/saved` — all existing pages remain public
+- `providers.tsx`: Added `<SessionProvider>` wrapper
+- `navbar.tsx`: Auth-aware — "Sign In" button when logged out, avatar dropdown when logged in
+- Added `next-auth@5.0.0-beta.30` to `package.json`
+
+Blocked on: Vercel env vars (Doppler access), Google Console redirect URI (teammates)
+
+---
+
 ## 2026-02-04 - Guide Synthesis & Unified Scoring Architecture
 
 **Planning Doc**: [docs/todo/leaf-alpha-unified-scoring.md](docs/todo/leaf-alpha-unified-scoring.md)

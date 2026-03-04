@@ -1,6 +1,6 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: January 28, 2026
+**Last Updated**: March 4, 2026
 **System Health**: Operational
 
 ---
@@ -70,8 +70,8 @@
 - `GET /species/:taxon_id/subspecies` - Subspecies discovery
 
 ### Geospatial
-- `POST /api/geospatial/analyze-plot` - Polygon-based species analysis
-- `GET/POST /api/geospatial/leaf/score` - **LEAF™ species recommendations**
+- `POST /api/geospatial/analyze-plot` - Polygon-based species analysis **(free, optionalAuth)**
+- `GET/POST /api/geospatial/leaf/score` - **LEAF™ species recommendations** **(auth + credits required)**
 - `GET /api/geospatial/ecoregions/search?q=` - **Ecoregion autocomplete search** (NEW)
 - `GET /api/geospatial/ecoregions/:ecoregion_id/species` - Species in ecoregion
 - `GET /api/geospatial/ecoregions/at-point` - Ecoregion at coordinates
@@ -81,6 +81,14 @@
 ### Ecoregion Guides (NEW)
 - `GET /api/guides/ecoregion/:eco_id` - **Reforestation guide** with LEAF-ranked species + synthesized content
 - `POST /api/guides/ecoregion/:eco_id/synthesize` - Trigger Grok synthesis (supports `?force=true`)
+
+### Credits & Payments (NEW)
+- `GET /api/credits/balance` - User credit balance + lifetime stats (auth required)
+- `GET /api/credits/transactions` - Paginated transaction history (auth required)
+- `GET /api/credits/packs` - Available credit packs + prices
+- `POST /api/credits/estimate-analysis` - Area → credit cost preview
+- `POST /api/payments/create-invoice` - Create NOWPayments crypto invoice (auth required)
+- `POST /api/payments/webhooks/nowpayments` - NOWPayments IPN webhook (HMAC verified)
 
 ### Research & Insights
 - `POST /species/:taxon_id/research` - Trigger Grok instant AI research (creates insights → syncs to _ai columns)
@@ -133,6 +141,8 @@ Full API documentation: See **API.md**
 12. **Public API Access** - API key authentication for external integrations
 13. **Admin Dashboard** - Password-protected server stats
 14. **Habitat Biomes** - Derived from occurrence data, replaces unreliable SBTN land cover
+15. **Credit System** - Credit gating: LEAF Score (10-685 by area, or flat 10), Guide (200), Research (25). Site Analysis = free. 50 free signup bonus.
+16. **NOWPayments** - Crypto checkout for credit packs (Starter $10, Pro $40, Enterprise $120)
 
 ### Known Issues
 - Database parameter validation ("null" strings vs NULL values)
@@ -182,6 +192,9 @@ psql -h localhost -U tree_user -d treekipedia
 - `PERPLEXITY_API_KEY` - AI research (legacy)
 - `LIGHTHOUSE_API_KEY` - IPFS storage
 - `API_KEYS` - Comma-separated public API keys
+- `NOWPAYMENTS_API_KEY` - NOWPayments crypto checkout
+- `NOWPAYMENTS_IPN_SECRET` - NOWPayments webhook HMAC verification
+- `NOWPAYMENTS_SANDBOX` - Sandbox mode (`true`/`false`)
 - Chain-specific: `CELO_RPC_URL`, `BASE_RPC_URL`, `OPTIMISM_RPC_URL`, `ARBITRUM_RPC_URL`
 
 ---

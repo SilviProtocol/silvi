@@ -152,21 +152,31 @@ Full refresh of geohash occurrence data from BigQuery parquet export.
 - [ ] Queue research path should also call `createInsightsFromResearch()` when processing completes
 - [ ] Restyle ResearchMetadataPanel (violet → existing design system, or keep as differentiation)
 
-### Dual Research Integration (NOWPayments + Grok)
-**Planning Doc**: [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md)
+### Credit System + NOWPayments ✅ IMPLEMENTED
+**Supersedes**: [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md)
 
-Two research paths: instant ($1 crypto via NOWPayments) and free queue.
+Credit system gating LEAF Score, Guide Synthesis, Species Research. Site Analysis = free (Mar 2026 split). NOWPayments crypto checkout.
 
-- [ ] Sign up NOWPayments with dev@silvi.earth, get API key + IPN secret
-- [ ] Create `research_payments` table
-- [ ] Build `backend/controllers/payments.js` (invoice creation + webhook)
-- [ ] Build `backend/routes/payments.js` + register in server.js
-- [ ] Webhook: verify HMAC-SHA512, trigger Grok research on payment confirmation
-- [ ] Frontend: dual-button UI ("Research Instantly $1" / "Add to Queue (Free)")
-- [ ] Frontend: show "Re-research" with last research date for already-researched species
-- [ ] Install `@nowpaymentsio/nowpayments-api-js`
-- [ ] Test with NOWPayments sandbox
-- [ ] Future: admin role bypasses payment for instant research
+- [x] Database schema (`database/10_credit_system.sql`) — 4 tables + trigger
+- [x] Credit service with transactional deductions, idempotent grants, signup bonus
+- [x] Credit endpoints (`/api/credits/*`) — balance, transactions, packs, cost estimation
+- [x] NOWPayments integration (`/api/payments/*`) — invoice creation + HMAC-verified webhook
+- [x] Backend credit gating on LEAF score (tiered/flat 10), synthesize (200), research (25)
+- [x] Site analysis made free (optionalAuth, no credits) — Mar 2026
+- [x] LEAF scoring made paid (authenticateUser + credit deduction) — Mar 2026
+- [x] Frontend: CreditBalance navbar, CreditGate component, CreditPurchaseModal, credits page
+- [x] Frontend: guide synthesis gate, research gate
+- [x] Wallet connect UI removed from navbar + providers (files preserved) — Mar 2026
+- [x] Auth interceptor on axios client (Django JWT from NextAuth)
+
+**Deployment TODO**:
+- [ ] Run `10_credit_system.sql` on VPS PostgreSQL
+- [ ] Set `NOWPAYMENTS_API_KEY` + `NOWPAYMENTS_IPN_SECRET` in production .env
+- [ ] Sign up NOWPayments with dev@silvi.earth (sandbox first, then production)
+- [ ] Deploy backend (git pull + PM2 restart)
+- [ ] Deploy frontend (vercel --prod)
+- [ ] Test end-to-end: signup bonus → draw polygon → cost preview → confirm → results
+- [ ] Test NOWPayments sandbox: create invoice → simulated payment → webhook → credits granted
 
 ### Future: Insights Vector/Graph
 - [ ] Embed insights in vector database for semantic search
@@ -423,7 +433,7 @@ A unified schema for all environmental/geographic zones (biomes, ecoregions, lan
 | LEAF + AlphaEarth Unified | [docs/todo/leaf-alpha-unified-scoring.md](docs/todo/leaf-alpha-unified-scoring.md) | Planning |
 | Geohash Import | [docs/todo/geohash-occurrence-import.md](docs/todo/geohash-occurrence-import.md) | Active |
 | Frontend v10 | [docs/todo/frontend-v10-implementation.md](docs/todo/frontend-v10-implementation.md) | Active |
-| Dual Research | [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md) | Planning |
+| Credit System + NOWPayments | [docs/todo/dual-research-integration.md](docs/todo/dual-research-integration.md) | Complete (superseded) |
 | Ecoregion Guides | [docs/todo/ecoregion-reforestation-guides.md](docs/todo/ecoregion-reforestation-guides.md) | Active |
 | Unified Zone Schema | [docs/todo/unified-zone-schema.md](docs/todo/unified-zone-schema.md) | Planning |
 

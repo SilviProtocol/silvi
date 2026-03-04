@@ -814,6 +814,10 @@ Get overall statistics about the geospatial data.
 
 Get species recommendations ranked by LEAF™ (Location-based Ecological Aptness Forecast) score for any location. Supports ecoregion ID, point coordinates, or polygon geometry.
 
+**Authentication:** Required (Django JWT via `Authorization: Bearer <token>`)
+
+**Credits:** Polygon requests use area-based cost via `calculateSiteAnalysisCost(hectares)` (10-685 credits). Point and ecoregion requests cost flat 10 credits. Returns 402 with `required`/`balance` on insufficient credits.
+
 **Endpoints:**
 - `GET /api/geospatial/leaf/score` - For eco_id or lat/lng queries
 - `POST /api/geospatial/leaf/score` - For polygon geometry
@@ -914,6 +918,177 @@ curl -X POST "https://treekipedia-api.silvi.earth/api/geospatial/leaf/score" \
 ```
 
 **Usage:** Bioregional reforestation campaigns, native species recommendations, ecological restoration planning.
+
+---
+
+## Credit System Endpoints
+
+### Get Credit Balance
+
+**Endpoint:** `GET /api/credits/balance`
+
+**Authentication:** Required (Bearer token)
+
+**Response:**
+```json
+{
+  "success": true,
+  "balance": 150,
+  "lifetime_purchased": 200,
+  "lifetime_spent": 50
+}
+```
+
+New users auto-receive 50 credit signup bonus on first balance check.
+
+---
+
+### Get Transaction History
+
+**Endpoint:** `GET /api/credits/transactions`
+
+**Authentication:** Required (Bearer token)
+
+**Query Parameters:**
+- `limit` (optional): Max records (default 50, max 100)
+- `offset` (optional): Pagination offset
+
+**Response:**
+```json
+{
+  "success": true,
+  "transactions": [
+    {
+      "id": 1,
+      "amount": -25,
+      "type": "species_research",
+      "reference_id": "AngMaApPtTs00001-00",
+      "description": "species_research: 25 credits",
+      "balance_after": 125,
+      "metadata": {"taxon_id": "AngMaApPtTs00001-00"},
+      "created_at": "2026-02-27T10:00:00Z"
+    }
+  ],
+  "total": 5,
+  "limit": 50,
+  "offset": 0
+}
+```
+
+Transaction types: `purchase`, `signup_bonus`, `site_analysis`, `guide`, `species_research`, `refund`, `admin_grant`
+
+---
+
+### Get Credit Packs
+
+**Endpoint:** `GET /api/credits/packs`
+
+**Authentication:** None
+
+**Response:**
+```json
+{
+  "success": true,
+  "packs": [
+    {"id": "starter", "name": "Starter", "credits": 100, "price_usd": "10.00"},
+    {"id": "pro", "name": "Pro", "credits": 500, "price_usd": "40.00"},
+    {"id": "enterprise", "name": "Enterprise", "credits": 2000, "price_usd": "120.00"}
+  ]
+}
+```
+
+---
+
+### Estimate Analysis Cost
+
+**Endpoint:** `POST /api/credits/estimate-analysis`
+
+**Authentication:** None
+
+**Request Body:**
+```json
+{
+  "geometry": {
+    "type": "Polygon",
+    "coordinates": [[[lng, lat], ...]]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "area_hectares": 42.5,
+  "cost_credits": 26
+}
+```
+
+Cost formula (tiered): 10 credits (≤10ha), scales to 685+ at 10,000+ ha.
+
+---
+
+## Payment Endpoints
+
+### Create Payment Invoice
+
+**Endpoint:** `POST /api/payments/create-invoice`
+
+**Authentication:** Required (Bearer token)
+
+**Request Body:**
+```json
+{
+  "pack_id": "pro"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "invoice_url": "https://nowpayments.io/payment/...",
+  "invoice_id": 1,
+  "pack": {"id": "pro", "name": "Pro", "credits": 500, "price_usd": "40.00"}
+}
+```
+
+Frontend redirects user to `invoice_url` for crypto payment. On completion, NOWPayments redirects to `/credits?purchased=true`.
+
+---
+
+### NOWPayments Webhook
+
+**Endpoint:** `POST /api/payments/webhooks/nowpayments`
+
+**Authentication:** HMAC-SHA512 signature via `x-nowpayments-sig` header
+
+Automatically grants credits when `payment_status === 'finished'`. Idempotent — duplicate webhooks are safely ignored.
+
+---
+
+## Credit-Gated Endpoints
+
+These existing endpoints now require authentication and deduct credits:
+
+| Endpoint | Credits | Notes |
+|----------|---------|-------|
+| `POST /api/geospatial/analyze-plot` | **Free** | Public endpoint (optionalAuth for tracking) |
+| `GET/POST /api/geospatial/leaf/score` | 10-685 (polygon by area) or 10 flat (point/ecoregion) | Auth required, returns 402 on insufficient |
+| `POST /api/guides/ecoregion/:eco_id/synthesize` | 200 flat | |
+| `POST /species/:taxon_id/research` | 25 flat | |
+
+All gated responses include `credits_charged` and `balance_after` fields.
+
+**402 Response (insufficient credits):**
+```json
+{
+  "error": "Insufficient credits",
+  "required": 25,
+  "balance": 10,
+  "cost_credits": 25
+}
+```
 
 ---
 
