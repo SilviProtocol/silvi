@@ -1,7 +1,7 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: January 5, 2026
-**System Health**: Operational with some known issues
+**Last Updated**: February 10, 2026
+**System Health**: Operational — Multi-signal prediction system live
 
 ---
 
@@ -19,13 +19,16 @@
 | **NFTs Minted** | 21 | Research contributions |
 | **Sponsorships** | 34 | USDC payments |
 
-### AlphaEarth Coverage
+### Prediction System (Multi-Signal)
 | Metric | Value |
 |--------|-------|
-| **Species with Embeddings** | 100 (pilot) |
-| **Habitat Centroids** | 500 (5 per species) |
-| **Clean Embeddings in BigQuery** | 45,677 |
-| **Embedding Success Rate** | 47.6% |
+| **Species with Centroids** | 17,924 (from v4 AlphaEarth) |
+| **Habitat Centroids** | 44,625 (pgvector IVFFlat index) |
+| **Prediction Signals** | 5 (embedding, spatial, range, ecoregion, climate) |
+| **Recommender Strategies** | 7 (general, rewilding, agroforestry, riparian, carbon, biodiversity, erosion) |
+| **Benchmark: P. radiata @ Auckland NZ** | Rank #42, 81% suitability |
+| **Default Result Limit** | 100 species per prediction |
+| **Latency** | ~5-15s (includes GEE sampling) |
 
 ---
 
@@ -74,10 +77,18 @@
 | GET | `/api/geospatial/tiles` | Working |
 | GET | `/api/geospatial/stats` | Working |
 
-### Embeddings (AlphaEarth)
+### Prediction & Recommendation (Multi-Signal)
+| Method | Endpoint | Status | Notes |
+|--------|----------|--------|-------|
+| GET | `/api/prediction/predict?lat=&lon=` | **Working** | 5-signal scoring, 100 species |
+| GET | `/api/prediction/recommend?lat=&lon=&strategy=` | **Working** | SAFE-B, 7 strategies |
+| GET | `/api/prediction/strategies` | Working | Lists available strategies |
+| GET | `/api/prediction/sample?lat=&lon=` | Working | Raw AlphaEarth embedding |
+
+### Embeddings (Legacy)
 | Method | Endpoint | Status |
 |--------|----------|--------|
-| POST | `/api/embeddings/predict` | Working |
+| POST | `/api/embeddings/predict` | Working (legacy, use /prediction/predict instead) |
 | GET | `/api/embeddings/stats` | Working |
 | GET | `/api/embeddings/:taxon_id` | Working |
 | GET | `/api/embeddings/similar/:taxon_id` | Working |
@@ -101,23 +112,23 @@
 - Distribution maps with heatmap overlay
 - Geohash tile queries (STAC-compliant)
 - Intact forest layer on maps
-- **Habitat prediction (click-to-predict)** - AlphaEarth 100-species POC
+- **Multi-signal species predictor** (click map → 5-signal scoring → 100 species)
+- **SAFE-B species recommender** (7 strategies: rewilding, agroforestry, carbon, etc.)
+- **Signal breakdown UI** (per-species embedding/spatial/range/ecoregion/climate bars)
+- **Show More pagination** (initially 30, expandable to 100)
 - Admin dashboard UI
 - Treederboard and user profiles
 - Research sponsorship workflow (USDC payments)
 - NFT minting for contributors
 
 ### Known Issues
-1. **Species Search Broken**: `/species?search=X` returns 500 error
-   - File: [backend/controllers/species.js](treekipedia/backend/controllers/species.js)
-   - Issue: Queries non-existent "species" column
-   - Fix: Use `species_scientific_name` instead
+1. **Climate scoring incomplete**: Only elevation used; precipitation/temperature not sampled at query location
+   - Need to add WorldClim/CHELSA sampling to Python GEE service
 
-2. **Limited Habitat Coverage**: Only 100 species have AlphaEarth embeddings
-   - Predictions limited to pilot species
-   - Scale-up to full 67k species planned
+3. **WCVP data gaps**: Some major introduced species (e.g., P. radiata in NZ) not listed
+   - Mitigated by spatial-confirmed range scoring (de-facto present tier)
 
-3. **GraphFlow Dependencies**: Full ontology features need Python deps installed
+4. **GraphFlow Dependencies**: Full ontology features need Python deps installed
    - Run: `pip install -r treekipedia/python-microservice/requirements.txt`
 
 ---
@@ -193,7 +204,8 @@ GOOGLE_CLOUD_PROJECT=treekipedia-476404
 - **contreebution_nfts**: NFT minting records
 - **sponsorships**: Payment tracking
 - **geohash_species_tiles**: PostGIS spatial data
-- **species_alphaearth_centroids**: 64-D habitat embeddings (500 rows)
+- **species_habitat_centroids**: 64-D habitat embeddings (44,625 rows, 17,924 species, pgvector IVFFlat)
+- **species_alphaearth_centroids**: Legacy POC centroids (500 rows)
 
 ---
 

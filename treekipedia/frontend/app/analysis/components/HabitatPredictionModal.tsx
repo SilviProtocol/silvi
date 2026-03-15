@@ -16,23 +16,60 @@ interface AlternateHabitat {
 }
 
 interface SpeciesPrediction {
+  rank: number;
   taxon_id: string;
-  species_scientific_name: string;
+  scientific_name: string;
+  species_scientific_name?: string; // legacy compat
   family: string;
   common_name: string | null;
-  cluster_id: number;
-  cluster_size: number;
-  total_occurrences: number;
-  representative_lat: number;
-  representative_lon: number;
-  similarity_score: string;
-  confidence: number;
+  genus?: string;
+  suitability_score: number;
+  habitat_similarity: number;
+  signals?: {
+    embedding: number;
+    spatial: number;
+    range: number;
+    ecoregion: number;
+    climate: number;
+  };
+  discovery_sources?: string[];
+  source_count?: number;
+  raw_embedding_similarity?: number;
+  spatial_tiles_nearby?: number;
+  spatial_min_distance_m?: number | null;
+  cluster_id?: number;
+  cluster_size?: number;
+  total_occurrences?: number;
+  representative_lat?: number;
+  representative_lon?: number;
+  similarity_score?: string;
+  confidence?: number;
   habitat_count?: number;
   alternate_habitats?: AlternateHabitat[];
+  habitat_match?: {
+    cluster_id: number;
+    cluster_elevation: number;
+    cluster_treecover: number;
+    cluster_occurrences: number;
+    representative_location: { lat: number; lon: number } | null;
+  };
   native_status?: 'native' | 'introduced' | 'invasive' | 'native_and_introduced' | 'unknown';
   is_native?: boolean;
   is_introduced?: boolean;
   is_invasive?: boolean;
+  ecoregion_match?: boolean;
+  signal_weights?: {
+    embedding: number;
+    spatial: number;
+    range: number;
+    ecoregion: number;
+    climate: number;
+  };
+  attributes?: {
+    growth_form: string | null;
+    maximum_height: string | null;
+    conservation_status: string | null;
+  };
 }
 
 interface LocationContext {
@@ -41,9 +78,20 @@ interface LocationContext {
     eco_name: string;
     biome_name: string;
     realm: string;
-  };
+  } | null;
   countries: string[];
+  climate?: {
+    annual_mean_temp_c: number | null;
+    annual_precipitation_mm: number | null;
+  } | null;
+  soil?: {
+    ph: number | null;
+    ph_category: string | null;
+    texture: string | null;
+  } | null;
 }
+
+type NativeStatusFilter = 'native' | 'introduced' | 'invasive' | 'unknown';
 
 interface NativeStatusSummary {
   native: number;
@@ -55,8 +103,27 @@ interface NativeStatusSummary {
 
 interface PredictionResponse {
   success: boolean;
-  prediction_count: number;
-  predictions: SpeciesPrediction[];
+  prediction_count?: number;
+  location?: {
+    latitude: number;
+    longitude: number;
+    elevation: number | null;
+    data_source: string;
+    demo_mode: boolean;
+  };
+  results?: {
+    count: number;
+    native_status_summary: NativeStatusSummary;
+    source_summary?: {
+      embedding_only: number;
+      spatial_only: number;
+      multi_source: number;
+      total_candidates_evaluated: number;
+    };
+    predictions: SpeciesPrediction[];
+  };
+  // Legacy format support
+  predictions?: SpeciesPrediction[];
   location_context?: LocationContext | null;
   native_status_summary?: NativeStatusSummary;
 }
@@ -78,7 +145,9 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
   const [errorMessage, setErrorMessage] = useState('');
   const [isDemoMode, setIsDemoMode] = useState(false);
   const [expandedSpecies, setExpandedSpecies] = useState<Set<string>>(new Set());
+  const [displayCount, setDisplayCount] = useState(30);
   const [mounted, setMounted] = useState(false);
+  const [activeFilters, setActiveFilters] = useState<Set<NativeStatusFilter>>(new Set());
   const modalRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
 
@@ -93,6 +162,33 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
       return next;
     });
   };
+
+  const toggleFilter = (filter: NativeStatusFilter) => {
+    setActiveFilters(prev => {
+      const next = new Set(prev);
+      if (next.has(filter)) {
+        next.delete(filter);
+      } else {
+        next.add(filter);
+      }
+      return next;
+    });
+    // Reset display count when filters change
+    setDisplayCount(30);
+  };
+
+  // Categorize a prediction's native status for filtering
+  const getNativeCategory = (pred: SpeciesPrediction): NativeStatusFilter => {
+    if (pred.native_status === 'native' || pred.native_status === 'native_and_introduced') return 'native';
+    if (pred.native_status === 'introduced') return 'introduced';
+    if (pred.native_status === 'invasive') return 'invasive';
+    return 'unknown';
+  };
+
+  // Apply filters — if no filters active, show all
+  const filteredPredictions = activeFilters.size === 0
+    ? predictions
+    : predictions.filter(p => activeFilters.has(getNativeCategory(p)));
 
   // Handle client-side mounting for portal
   useEffect(() => {
@@ -151,108 +247,77 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
     setPredictions([]);
     setErrorMessage('');
     setIsDemoMode(false);
+    setActiveFilters(new Set());
+    setDisplayCount(30);
 
     sampleAndPredict();
   }, [lat, lon]);
 
   const sampleAndPredict = async () => {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+
     try {
-      // Step 1: Start with immediate UI feedback
-      setMessage('Initializing Google Earth Engine connection...');
-      setProgress(5);
+      // Step 1: UI feedback
+      setMessage('Analyzing location with multi-signal prediction...');
+      setProgress(10);
       setStatus('sampling');
-
-      // Force render by yielding to event loop
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      setMessage('Requesting AlphaEarth satellite data...');
-      setProgress(15);
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      setMessage('Earth Engine processing location (this may take 10-30 seconds)...');
+      setMessage('Sampling AlphaEarth satellite data + occurrence records...');
       setProgress(20);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      console.log('📡 Fetching from GEE service...');
-      const fetchStartTime = Date.now();
+      setMessage('This may take 10-30 seconds (Earth Engine + spatial queries)...');
+      setProgress(30);
 
-      const response = await fetch('http://localhost:5002/sample', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lon, year: 2024 })
-      });
+      console.log('Calling multi-signal predict endpoint...');
+      const startTime = Date.now();
 
-      const fetchDuration = ((Date.now() - fetchStartTime) / 1000).toFixed(1);
-      console.log(`✅ GEE fetch completed in ${fetchDuration}s`);
+      // Single call to the new multi-signal predict endpoint
+      // It handles: GEE sampling + embedding + spatial + WCVP + ecoregion
+      const response = await fetch(
+        `${API_URL}/api/prediction/predict?lat=${lat}&lon=${lon}&limit=100`
+      );
+
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      console.log(`Prediction completed in ${duration}s`);
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || error.details || 'Failed to sample location');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || errorData.detail || `Server error: ${response.status}`);
       }
 
-      setMessage('Extracting 64-dimensional habitat embedding...');
-      setProgress(60);
+      setMessage('Processing multi-signal results...');
+      setProgress(80);
+      await new Promise(resolve => setTimeout(resolve, 100));
 
-      const samplingResult = await response.json();
-      console.log('📊 Embedding received:', samplingResult.data_source);
+      const data: PredictionResponse = await response.json();
 
-      if (!samplingResult.success || !samplingResult.embedding) {
-        // Check if it's a no-coverage error (from multi-year service)
-        if (samplingResult.details?.years_tried) {
-          const detailsMsg = samplingResult.details.message ||
-            'This location may be over water, in an urban area, or outside satellite coverage.';
-          const yearsMsg = `Tried years: ${samplingResult.details.years_tried.join(', ')}`;
-          throw new Error(`No AlphaEarth data available. ${detailsMsg} (${yearsMsg})`);
-        } else {
-          throw new Error(samplingResult.error || 'No AlphaEarth data at this location');
-        }
+      if (!data.success) {
+        throw new Error((data as any).error || 'Prediction failed');
       }
 
-      // Check if using demo mode
-      if (samplingResult.demo_mode) {
+      // Check demo mode
+      if (data.location?.demo_mode) {
         setIsDemoMode(true);
       }
 
-      setMessage('Analyzing 64-dimensional habitat signature...');
-      setProgress(65);
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Extract predictions from new format
+      const preds = data.results?.predictions || data.predictions || [];
+      const locContext = data.location_context || null;
+      const nativeSummary = data.results?.native_status_summary || data.native_status_summary || null;
 
-      // Step 2: Predict species from embedding
-      setStatus('predicting');
-      setMessage('Querying species database (500 habitat centroids)...');
-      setProgress(75);
-
-      // CRITICAL: Wait to ensure React re-renders before fast API call
-      await new Promise(resolve => setTimeout(resolve, 300));
-
-      console.log('🔍 Searching for similar species...');
-      const predictionStartTime = Date.now();
-
-      const predictionResponse = await fetch('http://localhost:5001/api/embeddings/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          embedding: samplingResult.embedding,
-          limit: 10,
-          lat,  // Pass location for native status determination
-          lon
-        })
-      });
-
-      console.log(`✅ Prediction completed in ${Date.now() - predictionStartTime}ms`);
-
-      if (!predictionResponse.ok) {
-        const errorText = await predictionResponse.text();
-        throw new Error(`Failed to predict species: ${predictionResponse.status} ${errorText}`);
+      console.log(`Received ${preds.length} predictions from ${data.results?.source_summary?.total_candidates_evaluated || '?'} candidates`);
+      if (data.results?.source_summary) {
+        const ss = data.results.source_summary;
+        console.log(`Sources: ${ss.embedding_only} emb-only, ${ss.spatial_only} spatial-only, ${ss.multi_source} multi-source`);
       }
-
-      const predictionData: PredictionResponse = await predictionResponse.json();
-      console.log(`✅ Received ${predictionData.prediction_count} species predictions`);
 
       setMessage('Species predictions ready!');
       setProgress(100);
-      setPredictions(predictionData.predictions);
-      setLocationContext(predictionData.location_context || null);
-      setNativeStatusSummary(predictionData.native_status_summary || null);
+      setPredictions(preds);
+      setLocationContext(locContext);
+      setNativeStatusSummary(nativeSummary);
       setStatus('complete');
 
     } catch (error) {
@@ -352,21 +417,30 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                   Top {predictions.length} Species Predictions
                 </h3>
                 <p className="text-sm text-emerald-200/70">
-                  Based on satellite habitat signature similarity
+                  Multi-signal: satellite + spatial + range + ecoregion + climate + soil
                 </p>
                 {isDemoMode && (
-                  <div className="mt-3 px-3 py-2 bg-yellow-900/30 border border-yellow-600/50 rounded-lg inline-block">
-                    <span className="text-xs text-yellow-400">
-                      🔬 DEMO MODE: Using simulated data for testing
-                    </span>
+                  <div className="mt-3 px-4 py-3 bg-red-900/40 border-2 border-red-500/60 rounded-xl">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-red-400">
+                          SIMULATED DATA - Predictions are not meaningful
+                        </p>
+                        <p className="text-xs text-red-300/70 mt-1">
+                          No satellite data exists for this location (likely ocean or outside coverage). 
+                          The embedding was generated synthetically and results are random noise, not real habitat analysis.
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
 
-              {/* Location Context & Native Status Summary */}
+              {/* Location Context & Native Status Filters */}
               {(locationContext || nativeStatusSummary) && (
                 <div className="bg-black/30 rounded-xl p-4 border border-emerald-500/20 mb-4">
-                  {locationContext && (
+                  {locationContext?.ecoregion && (
                     <div className="mb-3">
                       <div className="flex items-center gap-2 mb-1">
                         <Globe className="h-4 w-4 text-emerald-400" />
@@ -374,34 +448,106 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
                       </div>
                       <p className="text-xs text-emerald-300/60 ml-6">
                         {locationContext.ecoregion.biome_name} • {locationContext.ecoregion.realm}
-                        {locationContext.countries.length > 0 && ` • ${locationContext.countries.join(', ')}`}
+                        {locationContext.countries?.length > 0 && ` • ${locationContext.countries.join(', ')}`}
                       </p>
                     </div>
                   )}
+
+                  {/* Climate & Soil context */}
+                  {(locationContext?.climate || locationContext?.soil) && (
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mb-3 ml-6 text-xs text-emerald-300/50">
+                      {locationContext.climate?.annual_mean_temp_c != null && (
+                        <span>{locationContext.climate.annual_mean_temp_c.toFixed(1)}°C</span>
+                      )}
+                      {locationContext.climate?.annual_precipitation_mm != null && (
+                        <span>{Math.round(locationContext.climate.annual_precipitation_mm)}mm/yr</span>
+                      )}
+                      {locationContext.soil?.ph != null && (
+                        <span>pH {locationContext.soil.ph} ({locationContext.soil.ph_category})</span>
+                      )}
+                      {locationContext.soil?.texture && (
+                        <span>{locationContext.soil.texture}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Toggleable native status filters */}
                   {nativeStatusSummary && (
-                    <div className="flex flex-wrap gap-2">
-                      {nativeStatusSummary.native > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-500/20 text-green-300 text-xs">
-                          <Leaf className="h-3 w-3" />
-                          {nativeStatusSummary.native} Native
-                        </span>
-                      )}
-                      {nativeStatusSummary.introduced > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs">
-                          <Globe className="h-3 w-3" />
-                          {nativeStatusSummary.introduced} Introduced
-                        </span>
-                      )}
-                      {nativeStatusSummary.invasive > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-red-500/20 text-red-300 text-xs">
-                          <AlertTriangle className="h-3 w-3" />
-                          {nativeStatusSummary.invasive} Invasive
-                        </span>
-                      )}
-                      {nativeStatusSummary.unknown > 0 && (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-gray-500/20 text-gray-300 text-xs">
-                          {nativeStatusSummary.unknown} Unknown
-                        </span>
+                    <div>
+                      <div className="flex flex-wrap gap-2">
+                        {nativeStatusSummary.native > 0 && (
+                          <button
+                            onClick={() => toggleFilter('native')}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                              activeFilters.has('native')
+                                ? 'bg-green-500/40 text-green-200 ring-1 ring-green-400/60'
+                                : activeFilters.size > 0
+                                  ? 'bg-green-500/10 text-green-400/40'
+                                  : 'bg-green-500/20 text-green-300 hover:bg-green-500/30'
+                            }`}
+                          >
+                            <Leaf className="h-3 w-3" />
+                            {nativeStatusSummary.native} Native
+                          </button>
+                        )}
+                        {nativeStatusSummary.introduced > 0 && (
+                          <button
+                            onClick={() => toggleFilter('introduced')}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                              activeFilters.has('introduced')
+                                ? 'bg-blue-500/40 text-blue-200 ring-1 ring-blue-400/60'
+                                : activeFilters.size > 0
+                                  ? 'bg-blue-500/10 text-blue-400/40'
+                                  : 'bg-blue-500/20 text-blue-300 hover:bg-blue-500/30'
+                            }`}
+                          >
+                            <Globe className="h-3 w-3" />
+                            {nativeStatusSummary.introduced} Introduced
+                          </button>
+                        )}
+                        {nativeStatusSummary.invasive > 0 && (
+                          <button
+                            onClick={() => toggleFilter('invasive')}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                              activeFilters.has('invasive')
+                                ? 'bg-red-500/40 text-red-200 ring-1 ring-red-400/60'
+                                : activeFilters.size > 0
+                                  ? 'bg-red-500/10 text-red-400/40'
+                                  : 'bg-red-500/20 text-red-300 hover:bg-red-500/30'
+                            }`}
+                          >
+                            <AlertTriangle className="h-3 w-3" />
+                            {nativeStatusSummary.invasive} Invasive
+                          </button>
+                        )}
+                        {nativeStatusSummary.unknown > 0 && (
+                          <button
+                            onClick={() => toggleFilter('unknown')}
+                            className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs transition-all cursor-pointer ${
+                              activeFilters.has('unknown')
+                                ? 'bg-gray-500/40 text-gray-200 ring-1 ring-gray-400/60'
+                                : activeFilters.size > 0
+                                  ? 'bg-gray-500/10 text-gray-400/40'
+                                  : 'bg-gray-500/20 text-gray-300 hover:bg-gray-500/30'
+                            }`}
+                          >
+                            {nativeStatusSummary.unknown} Unknown
+                          </button>
+                        )}
+                        {activeFilters.size > 0 && (
+                          <button
+                            onClick={() => setActiveFilters(new Set())}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-white/5 text-white/50 hover:bg-white/10 hover:text-white/70 transition-all cursor-pointer"
+                          >
+                            <X className="h-3 w-3" />
+                            Clear
+                          </button>
+                        )}
+                      </div>
+                      {activeFilters.size > 0 && (
+                        <p className="text-xs text-emerald-300/40 mt-2">
+                          Showing {filteredPredictions.length} of {predictions.length} species
+                        </p>
                       )}
                     </div>
                   )}
@@ -409,141 +555,209 @@ export default function HabitatPredictionModal({ lat, lon, onClose, map }: Habit
               )}
 
               <div className="space-y-3">
-                {predictions.map((pred, index) => {
+                {filteredPredictions.slice(0, displayCount).map((pred, index) => {
                   const isExpanded = expandedSpecies.has(pred.taxon_id);
-                  const hasAlternateHabitats = pred.alternate_habitats && pred.alternate_habitats.length > 0;
+                  const displayName = pred.scientific_name || pred.species_scientific_name || 'Unknown';
+                  const score = pred.suitability_score || (pred.confidence ? Math.round(pred.confidence * 100) : 0);
+                  const signals = pred.signals;
+                  const sources = pred.discovery_sources || [];
 
                   return (
                     <div key={`${pred.taxon_id}-${index}`} className="bg-black/30 backdrop-blur-sm border border-emerald-500/20 rounded-xl hover:border-emerald-400/40 transition-all">
-                      <Link href={`/species/${pred.taxon_id}`} className="block p-4 hover:bg-black/40 transition-all cursor-pointer">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">
-                                {index + 1}
-                              </span>
-                              <h4 className="text-white font-medium italic">
-                                {pred.species_scientific_name}
-                              </h4>
-                              {/* Native Status Badge */}
-                              {pred.native_status === 'native' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 text-xs">
-                                  <Leaf className="h-2.5 w-2.5" />
-                                  Native
+                      <div className="p-4">
+                        <Link href={`/species/${pred.taxon_id}`} className="block hover:bg-black/20 transition-all cursor-pointer -m-1 p-1 rounded-lg">
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                                <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold">
+                                  {pred.rank || index + 1}
                                 </span>
-                              )}
-                              {pred.native_status === 'introduced' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-xs">
-                                  <Globe className="h-2.5 w-2.5" />
-                                  Introduced
-                                </span>
-                              )}
-                              {pred.native_status === 'invasive' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-xs">
-                                  <AlertTriangle className="h-2.5 w-2.5" />
-                                  Invasive
-                                </span>
-                              )}
-                              {pred.native_status === 'native_and_introduced' && (
-                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs">
-                                  <Leaf className="h-2.5 w-2.5" />
-                                  Native+Intro
-                                </span>
-                              )}
+                                <h4 className="text-white font-medium italic">
+                                  {displayName}
+                                </h4>
+                                {/* Native Status Badge */}
+                                {pred.native_status === 'native' && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-green-500/20 text-green-300 text-xs">
+                                    <Leaf className="h-2.5 w-2.5" />
+                                    Native
+                                  </span>
+                                )}
+                                {pred.native_status === 'introduced' && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 text-xs">
+                                    <Globe className="h-2.5 w-2.5" />
+                                    Introduced
+                                  </span>
+                                )}
+                                {pred.native_status === 'invasive' && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-red-500/20 text-red-300 text-xs">
+                                    <AlertTriangle className="h-2.5 w-2.5" />
+                                    Invasive
+                                  </span>
+                                )}
+                                {pred.native_status === 'native_and_introduced' && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 text-xs">
+                                    <Leaf className="h-2.5 w-2.5" />
+                                    Native+Intro
+                                  </span>
+                                )}
+                                {pred.ecoregion_match && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 text-xs">
+                                    Ecoregion
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-sm text-emerald-300/70 ml-8">
+                                {pred.family}
+                                {pred.common_name && ` • ${pred.common_name.split(';')[0].trim()}`}
+                              </p>
                             </div>
-                            <p className="text-sm text-emerald-300/70 ml-8">
-                              {pred.family}
-                              {pred.common_name && ` • ${pred.common_name}`}
-                            </p>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-emerald-400">
+                                {score}%
+                              </div>
+                              <div className="text-xs text-emerald-300/50">
+                                suitability
+                              </div>
+                            </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-emerald-400">
-                              {(pred.confidence * 100).toFixed(1)}%
-                            </div>
-                            <div className="text-xs text-emerald-300/50">
-                              {pred.habitat_count && pred.habitat_count > 1 ? `${pred.habitat_count} habitats` : 'confidence'}
-                            </div>
+                        </Link>
+
+                        {/* Multi-signal score bar */}
+                        {signals ? (
+                          <div className="h-2 flex rounded-full overflow-hidden bg-emerald-950/50 mb-2">
+                            {signals.embedding > 0 && (
+                              <div className="bg-blue-500 h-full" style={{ width: `${signals.embedding * (pred.signal_weights?.embedding || 0.3)}%` }} title={`Embedding: ${signals.embedding}%`} />
+                            )}
+                            {signals.spatial > 0 && (
+                              <div className="bg-amber-500 h-full" style={{ width: `${signals.spatial * (pred.signal_weights?.spatial || 0.3)}%` }} title={`Spatial: ${signals.spatial}%`} />
+                            )}
+                            {signals.range > 0 && (
+                              <div className="bg-green-500 h-full" style={{ width: `${signals.range * (pred.signal_weights?.range || 0.15)}%` }} title={`Range: ${signals.range}%`} />
+                            )}
+                            {signals.ecoregion > 0 && (
+                              <div className="bg-purple-500 h-full" style={{ width: `${signals.ecoregion * (pred.signal_weights?.ecoregion || 0.15)}%` }} title={`Ecoregion: ${signals.ecoregion}%`} />
+                            )}
+                            {signals.climate > 0 && (
+                              <div className="bg-teal-500 h-full" style={{ width: `${signals.climate * (pred.signal_weights?.climate || 0.1)}%` }} title={`Climate: ${signals.climate}%`} />
+                            )}
                           </div>
-                        </div>
+                        ) : (
+                          <div className="h-1.5 bg-emerald-950/50 rounded-full overflow-hidden mb-3">
+                            <div
+                              className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-300"
+                              style={{ width: `${score}%` }}
+                            />
+                          </div>
+                        )}
 
-                        {/* Confidence Bar */}
-                        <div className="h-1.5 bg-emerald-950/50 rounded-full overflow-hidden mb-3">
-                          <div
-                            className="h-full bg-gradient-to-r from-emerald-500 to-emerald-300 transition-all duration-300"
-                            style={{ width: `${pred.confidence * 100}%` }}
-                          />
-                        </div>
-
-                        {/* Primary Habitat Metadata */}
+                        {/* Discovery sources + key signals */}
                         <div className="flex items-center justify-between text-xs text-emerald-200/50">
-                          <span>
-                            {pred.total_occurrences.toLocaleString()} total occurrences
-                            {pred.habitat_count && pred.habitat_count > 1 && ` • ${pred.cluster_size} in primary habitat`}
-                          </span>
-                          <span>
-                            <MapPin className="inline h-3 w-3 mr-1" />
-                            {pred.representative_lat.toFixed(2)}, {pred.representative_lon.toFixed(2)}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            {sources.includes('embedding') && (
+                              <span className="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300/70">Satellite</span>
+                            )}
+                            {sources.includes('spatial') && (
+                              <span className="px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-300/70">
+                                Observed nearby
+                                {pred.spatial_tiles_nearby ? ` (${pred.spatial_tiles_nearby} tiles)` : ''}
+                              </span>
+                            )}
+                            {pred.raw_embedding_similarity != null && pred.raw_embedding_similarity > 0 && (
+                              <span>emb:{Math.round(pred.raw_embedding_similarity * 100)}%</span>
+                            )}
+                          </div>
+                          {pred.habitat_match?.representative_location && (
+                            <span>
+                              <MapPin className="inline h-3 w-3 mr-1" />
+                              {pred.habitat_match.representative_location.lat.toFixed(2)}, {pred.habitat_match.representative_location.lon.toFixed(2)}
+                            </span>
+                          )}
                         </div>
-                      </Link>
 
-                      {/* Expandable Habitat Breakdown */}
-                      {hasAlternateHabitats && (
-                        <>
+                        {/* Expandable signal breakdown */}
+                        {signals && (
                           <button
                             onClick={(e) => {
                               e.preventDefault();
                               e.stopPropagation();
                               toggleExpanded(pred.taxon_id);
                             }}
-                            onMouseDown={(e) => {
-                              e.stopPropagation();
-                            }}
-                            onMouseUp={(e) => {
-                              e.stopPropagation();
-                            }}
-                            className="w-full px-4 py-2 text-xs text-emerald-400 hover:text-emerald-300 border-t border-emerald-500/10 hover:bg-black/20 transition-colors"
+                            className="w-full mt-2 py-1.5 text-xs text-emerald-400 hover:text-emerald-300 border-t border-emerald-500/10 hover:bg-black/20 transition-colors"
                           >
-                            {isExpanded ? '▼' : '▶'} {pred.habitat_count} habitat distribution
+                            {isExpanded ? '▼ Hide signals' : '▶ Show signal breakdown'}
                           </button>
-
-                          {isExpanded && (
-                            <div className="px-4 pb-4 space-y-2 border-t border-emerald-500/10">
-                              {/* Primary Habitat */}
-                              <div className="pt-3 text-xs">
-                                <div className="flex justify-between items-center mb-1">
-                                  <span className="text-emerald-400 font-medium">Primary habitat:</span>
-                                  <span className="text-emerald-300">{(pred.confidence * 100).toFixed(1)}% match</span>
-                                </div>
-                                <div className="text-emerald-200/50">
-                                  {pred.cluster_size} occurrences at ({pred.representative_lat.toFixed(2)}, {pred.representative_lon.toFixed(2)})
-                                </div>
+                        )}
+                        {isExpanded && signals && (
+                          <div className="mt-2 pt-2 border-t border-emerald-500/10 space-y-1.5">
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="w-20 text-blue-400">Satellite</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-blue-500" style={{ width: `${signals.embedding}%` }} />
                               </div>
-
-                              {/* Alternate Habitats */}
-                              {pred.alternate_habitats!.map((habitat, idx) => (
-                                <div key={idx} className="text-xs">
-                                  <div className="flex justify-between items-center mb-1">
-                                    <span className="text-emerald-400/70 font-medium">Habitat {idx + 2}:</span>
-                                    <span className="text-emerald-300/70">{(habitat.confidence * 100).toFixed(1)}% match</span>
-                                  </div>
-                                  <div className="text-emerald-200/40">
-                                    {habitat.cluster_size} occurrences at ({habitat.representative_lat.toFixed(2)}, {habitat.representative_lon.toFixed(2)})
-                                  </div>
-                                </div>
-                              ))}
+                              <span className="w-8 text-right text-white/50">{signals.embedding}</span>
                             </div>
-                          )}
-                        </>
-                      )}
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="w-20 text-amber-400">Spatial</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-amber-500" style={{ width: `${signals.spatial}%` }} />
+                              </div>
+                              <span className="w-8 text-right text-white/50">{signals.spatial}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="w-20 text-green-400">Range</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-green-500" style={{ width: `${signals.range}%` }} />
+                              </div>
+                              <span className="w-8 text-right text-white/50">{signals.range}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="w-20 text-purple-400">Ecoregion</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-purple-500" style={{ width: `${signals.ecoregion}%` }} />
+                              </div>
+                              <span className="w-8 text-right text-white/50">{signals.ecoregion}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-xs">
+                              <span className="w-20 text-teal-400">Climate</span>
+                              <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                                <div className="h-full rounded-full bg-teal-500" style={{ width: `${signals.climate}%` }} />
+                              </div>
+                              <span className="w-8 text-right text-white/50">{signals.climate}</span>
+                            </div>
+                            {pred.spatial_min_distance_m != null && (
+                              <p className="text-xs text-white/40 mt-1">
+                                Nearest occurrence: {pred.spatial_min_distance_m < 1000 ? `${pred.spatial_min_distance_m}m` : `${(pred.spatial_min_distance_m / 1000).toFixed(1)}km`}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}
               </div>
 
+              {/* Show More / Show Less */}
+              {filteredPredictions.length > displayCount && (
+                <button
+                  onClick={() => setDisplayCount(filteredPredictions.length)}
+                  className="w-full py-3 text-sm text-emerald-400 hover:text-emerald-300 hover:bg-emerald-900/20 border border-emerald-500/20 rounded-xl transition-colors mt-2"
+                >
+                  Show all {filteredPredictions.length} species ({filteredPredictions.length - displayCount} more)
+                </button>
+              )}
+              {displayCount > 30 && filteredPredictions.length > 30 && (
+                <button
+                  onClick={() => setDisplayCount(30)}
+                  className="w-full py-2 text-xs text-emerald-400/60 hover:text-emerald-300 transition-colors mt-1"
+                >
+                  Show fewer
+                </button>
+              )}
+
               <div className="pt-4 text-center border-t border-emerald-500/10">
                 <p className="text-xs text-emerald-200/50 mb-3">
-                  Predictions based on AlphaEarth 64-D satellite embeddings
+                  Multi-signal predictions: satellite embedding + spatial proximity + WCVP range + ecoregion + climate
                 </p>
                 <button
                   onClick={onClose}

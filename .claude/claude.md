@@ -1,13 +1,15 @@
 # Treekipedia & Ontology-Generator Documentation
-**Last Updated**: January 5, 2026
+**Last Updated**: February 11, 2026
 **Version**: Production + Local Development Environment
 
 > **FOR ONBOARDING**: Read [GO.md](.claude/project-management/GO.md) first for complete project context and onboarding procedure.
 >
 > **DOCUMENTATION SYSTEM** (in `.claude/project-management/`):
 > - [GO.md](.claude/project-management/GO.md) - Onboarding workflow (start here)
-> - [ACTIVE.md](.claude/project-management/ACTIVE.md) - Current production status and metrics
+> - [MASTER_PREDICTION_ARCHITECTURE_3.md](.claude/project-management/MASTER_PREDICTION_ARCHITECTURE_3.md) - **v3.0 System design** (k-NN + FSI + model progression)
+> - [GEE_PIPELINE_REFERENCE.md](.claude/project-management/GEE_PIPELINE_REFERENCE.md) - AlphaEarth/GEE/BigQuery pipeline reference
 > - [TODO.md](.claude/project-management/TODO.md) - Development roadmap and priorities
+> - [ACTIVE.md](.claude/project-management/ACTIVE.md) - Current production status and metrics
 > - [CHANGELOG.md](.claude/project-management/CHANGELOG.md) - History of completed work
 > - This file (CLAUDE.md) - Development guide and patterns
 
@@ -21,7 +23,7 @@ This repository contains two interconnected systems: **Treekipedia** (web platfo
 |---------|--------|----------|---------|
 | **Local Frontend** | ✅ Running | http://localhost:3001 | Next.js 15 dev server |
 | **Local Backend** | ✅ Running | http://localhost:5001 | PostgreSQL 17 + PostGIS 3.6 |
-| **Location Predictor** | ✅ Running | http://localhost:5002 | AlphaEarth GEE sampling service |
+| **Location Predictor** | ✅ Running | http://localhost:5002 | AlphaEarth GEE + WorldClim + Soil sampling (v3) |
 | **Local Database** | ✅ Synced | treekipedia (local) | 67,743 species, 5.7M geohash tiles |
 | **Production API** | ✅ Live | https://treekipedia-api.silvi.earth | Digital Ocean VM |
 | **Production Frontend** | ✅ Live | https://treekipedia.silvi.earth | Vercel deployment |
@@ -33,7 +35,38 @@ This repository contains two interconnected systems: **Treekipedia** (web platfo
 - Habitat prediction requires the orchestrator service to work properly
 
 **Critical Known Issues**:
-- ⚠️ Species search endpoint broken (`/species?search=X` returns 500 error - schema column mismatch in [controllers/species.js](treekipedia/backend/controllers/species.js))
+- ✅ Species search endpoint working (`/species?search=X` returns results correctly)
+
+---
+
+## Project Management: Beads + Docs
+
+This project uses a **dual system** for project management. See [GO.md](.claude/project-management/GO.md) for full onboarding.
+
+### Beads (`bd`) — Task State (PRIMARY)
+The **source of truth for what to work on**. Structured, dependency-aware, model-agnostic.
+
+```bash
+bd ready              # What's unblocked RIGHT NOW
+bd show <id>          # Full context for a task
+bd list               # All open issues
+bd update <id> --claim  # Claim a task (sets in_progress)
+bd close <id>         # Mark complete
+bd create --title="..." --type=task --priority=2  # New task
+bd sync               # End of session
+```
+
+### Markdown Docs — Architecture & Context (SECONDARY)
+
+| File | Purpose |
+|------|---------|
+| GO.md | Onboarding workflow + SINR operational context |
+| TODO.md | Architectural vision & phase checklists (reference only — tasks live in `bd`) |
+| CHANGELOG.md | Version history |
+| ACTIVE.md | Production status & endpoints |
+
+### Tool Integrations
+Beads supports 12+ AI tools via `bd setup <recipe>`: claude, cursor, gemini, aider, codex, windsurf, etc. The workflow is the same regardless of tool.
 
 ---
 
@@ -555,6 +588,7 @@ SELECT COUNT(*) FROM species_alphaearth_centroids;  # Should return 500
 - **Database schema**: [treekipedia/database/README.md](../treekipedia/database/README.md)
 - **Development roadmap**: [treekipedia/TODO.md](../treekipedia/TODO.md)
 - **Research planning**: [research.md](../research.md) - Local LLM integration plans
+- **GEE Pipeline Reference**: [GEE_PIPELINE_REFERENCE.md](.claude/project-management/GEE_PIPELINE_REFERENCE.md) - AlphaEarth, BigQuery, embedding pipeline
 
 ---
 

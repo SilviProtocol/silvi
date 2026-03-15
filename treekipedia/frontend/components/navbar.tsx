@@ -30,6 +30,11 @@ export function Navbar() {
       active: pathname === "/analysis",
     },
     {
+      href: "/v3",
+      label: "V3",
+      active: pathname === "/v3",
+    },
+    {
       href: "/about",
       label: "About",
       active: pathname === "/about",

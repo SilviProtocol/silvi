@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useMapEvents, useMap, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import HabitatPredictionModal from './HabitatPredictionModal';
+import SpeciesRecommenderModal from './SpeciesRecommenderModal';
 
 // Custom icon for clicked location - modern circular design
 const clickedLocationIcon = L.divIcon({
@@ -38,6 +39,8 @@ interface MapClickHandlerProps {
 export default function MapClickHandler({ enabled = true }: MapClickHandlerProps) {
   const [clickedLocation, setClickedLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
+  const [showRecommenderModal, setShowRecommenderModal] = useState(false);
+  const [showModeSelector, setShowModeSelector] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
 
   // Get map instance to pass to modal
@@ -109,12 +112,76 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
       const { lat, lng } = e.latlng;
       console.log(`Map clicked at: (${lat}, ${lng})`);
 
-      // Set clicked location and show modal
+      // Set clicked location and show mode selector
       setClickedLocation({ lat, lon: lng });
-      setShowPredictionModal(true);
-      console.log('Modal should now be showing...');
+      setShowModeSelector(true);
     },
   });
+
+  // Helper to create portal outside Leaflet's DOM
+  const ModeSelector = ({ lat, lon, onPredict, onRecommend, onClose }: {
+    lat: number; lon: number;
+    onPredict: () => void; onRecommend: () => void; onClose: () => void;
+  }) => {
+    if (typeof window === 'undefined') return null;
+    const { createPortal } = require('react-dom');
+    return createPortal(
+      <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+        <div className="bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-white">Species Analysis</h2>
+            <p className="text-sm text-white/50 mt-1">
+              {lat.toFixed(4)}, {lon.toFixed(4)}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            <button
+              onClick={onPredict}
+              className="p-4 rounded-xl border border-blue-500/30 bg-blue-500/10 hover:bg-blue-500/20 transition-all text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🔍</span>
+                <div>
+                  <div className="text-white font-medium group-hover:text-blue-400 transition-colors">
+                    Species Predictor
+                  </div>
+                  <div className="text-xs text-white/50 mt-0.5">
+                    What species CAN grow here? Scientific habitat suitability analysis.
+                  </div>
+                </div>
+              </div>
+            </button>
+
+            <button
+              onClick={onRecommend}
+              className="p-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 transition-all text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🌱</span>
+                <div>
+                  <div className="text-white font-medium group-hover:text-emerald-400 transition-colors">
+                    Species Recommender
+                  </div>
+                  <div className="text-xs text-white/50 mt-0.5">
+                    What SHOULD I plant here? Strategy-based SAFE-B recommendations.
+                  </div>
+                </div>
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-full py-2 text-sm text-white/40 hover:text-white/60 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>,
+      document.body
+    );
+  };
 
   return (
     <>
@@ -126,12 +193,29 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
         >
           <Popup>
             <div className="text-sm">
-              <strong>Prediction Location</strong>
+              <strong>Analysis Location</strong>
               <br />
               {clickedLocation.lat.toFixed(4)}, {clickedLocation.lon.toFixed(4)}
             </div>
           </Popup>
         </Marker>
+      )}
+
+      {/* Mode Selector: Predict vs Recommend */}
+      {showModeSelector && clickedLocation && !showPredictionModal && !showRecommenderModal && (
+        <ModeSelector
+          lat={clickedLocation.lat}
+          lon={clickedLocation.lon}
+          onPredict={() => {
+            setShowModeSelector(false);
+            setShowPredictionModal(true);
+          }}
+          onRecommend={() => {
+            setShowModeSelector(false);
+            setShowRecommenderModal(true);
+          }}
+          onClose={() => setShowModeSelector(false)}
+        />
       )}
 
       {/* Prediction Modal */}
@@ -142,7 +226,17 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
           map={map}
           onClose={() => {
             setShowPredictionModal(false);
-            // Optionally clear marker: setClickedLocation(null);
+          }}
+        />
+      )}
+
+      {/* Recommender Modal */}
+      {showRecommenderModal && clickedLocation && (
+        <SpeciesRecommenderModal
+          lat={clickedLocation.lat}
+          lon={clickedLocation.lon}
+          onClose={() => {
+            setShowRecommenderModal(false);
           }}
         />
       )}

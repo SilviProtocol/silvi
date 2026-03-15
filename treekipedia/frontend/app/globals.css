@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 html, body {
-  font-family: 'Montserrat', sans-serif !important;
+  font-family: Montserrat, "Avenir Next", "Segoe UI", sans-serif !important;
 }
 
 @layer base {
@@ -35,8 +35,8 @@ html, body {
     --chart-5: 27 87% 67%;
     --radius: 0.5rem;
     
-    --font-sans: var(--font-montserrat);
-    --font-mono: var(--font-geist-mono);
+    --font-sans: Montserrat, "Avenir Next", "Segoe UI", sans-serif;
+    --font-mono: "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
   }
   
   .dark {
@@ -71,7 +71,7 @@ html, body {
 @layer base {
   * {
     @apply border-border;
-    font-family: 'Montserrat', sans-serif;
+    font-family: Montserrat, "Avenir Next", "Segoe UI", sans-serif;
   }
   body {
     @apply bg-background text-foreground font-sans;
@@ -97,5 +97,125 @@ html, body {
     100% {
       background-position: 0% 50%;
     }
+  }
+
+  /* V3 Landing Page Animations */
+  .animate-fade-in-up {
+    animation: fade-in-up 0.8s ease-out forwards;
+  }
+
+  .animate-fade-in-up-delay-1 {
+    animation: fade-in-up 0.8s ease-out 0.15s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-in-up-delay-2 {
+    animation: fade-in-up 0.8s ease-out 0.3s forwards;
+    opacity: 0;
+  }
+
+  .animate-fade-in-up-delay-3 {
+    animation: fade-in-up 0.8s ease-out 0.45s forwards;
+    opacity: 0;
+  }
+
+  @keyframes fade-in-up {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-draw-line {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: draw-line 2s ease-out forwards;
+  }
+
+  @keyframes draw-line {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.35);
+    }
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-12px);
+    }
+  }
+
+  .animate-shimmer {
+    background-size: 200% 100%;
+    animation: shimmer 2.5s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  /* Scroll-triggered reveal — applied via JS IntersectionObserver */
+  .reveal-hidden {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .reveal-hidden-left {
+    opacity: 0;
+    transform: translateX(-60px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+
+  .reveal-hidden-right {
+    opacity: 0;
+    transform: translateX(60px);
+    transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+  }
+
+  .reveal-visible-x {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* SVG flow animation */
+  .flow-particle {
+    animation: flow-move 3s linear infinite;
+  }
+
+  @keyframes flow-move {
+    0% { offset-distance: 0%; opacity: 0; }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { offset-distance: 100%; opacity: 0; }
   }
 }

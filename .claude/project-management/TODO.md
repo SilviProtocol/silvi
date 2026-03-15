@@ -1,6 +1,8 @@
 # TODO.md - Treekipedia Implementation Plan
 
-Active tasks and planned work. See CHANGELOG.md for completed features.
+> **Reference only** — active task state lives in Beads (`bd ready`). This file preserves architectural vision and phase checklists. Do not manually track task progress here.
+
+See CHANGELOG.md for completed features.
 
 **Reference Docs**:
 - [CLAUDE_RESEARCH_AGENTS.md](CLAUDE_RESEARCH_AGENTS.md) - **Expanded 35-field research agents with token tracking**
@@ -236,59 +238,120 @@ LEAF Score = percentile rank (0-100)
 
 ---
 
-## [HIGH PRIORITY] - AlphaEarth Scale-Up
+## [COMPLETED] - Species Predictor/Recommender System (Feb 2026)
 
-**Status**: 100-species pilot complete, planning scale to full coverage
+**Status**: ✅ LIVE — Multi-signal prediction + SAFE-B recommendation system operational
+**Master Doc**: [MASTER_PREDICTION_ARCHITECTURE_2.md](MASTER_PREDICTION_ARCHITECTURE_2.md) (v2.0)
+**Implementation Doc**: [PREDICTION_RECOMMENDER_IMPLEMENTATION_PLAN.md](PREDICTION_RECOMMENDER_IMPLEMENTATION_PLAN.md)
 
-### Current State
-- 500 species centroids in `species_alphaearth_centroids`
-- 64-dimensional embeddings from Google Earth Engine
-- Click-to-predict feature working on Analysis map
-- Cosine similarity matching for habitat prediction
+### Completed
 
-### Scale-Up Tasks
-- [ ] Analyze coverage patterns from pilot (which species/regions failed)
-- [ ] Create geographic/temporal coverage model
-- [ ] Pre-filter occurrences with <20% GEE success probability
-- [ ] Run batch extraction for next 1,000 species
-- [ ] Monitor GEE quota usage during extraction
+| Component | Status | Details |
+|-----------|--------|---------|
+| **AlphaEarth v4** | ✅ COMPLETE | 277MB, 3.37M rows, 17,924 species |
+| **Habitat Centroids** | ✅ LOADED | 44,625 centroids in pgvector with IVFFlat index |
+| **Multi-Signal Predictor** | ✅ LIVE | 3-channel discovery, 5-signal scoring, dynamic weighting |
+| **SAFE-B Recommender** | ✅ LIVE | 5-component scoring, 7 strategy presets |
+| **Frontend Modals** | ✅ LIVE | Predictor + Recommender + signal breakdowns + pagination |
+| **Scoring Tuning** | ✅ DONE | P. radiata rank #42/81% at Auckland NZ (was #103/64%) |
 
-### Evaluation & Quality
-- [ ] Create validation script with held-out occurrences
-- [ ] Calculate Recall@K (K=5, 10, 20) metrics
-- [ ] Generate performance report per species
-- [ ] Document limitations transparently in UI
+### Prediction Architecture v3.0 Roadmap
+**Reference**: [MASTER_PREDICTION_ARCHITECTURE_3.md](MASTER_PREDICTION_ARCHITECTURE_3.md)
 
-### Frontend Enhancements
-- [ ] Add geographic filtering (species native to clicked continent)
-- [ ] Implement real SSE progress (replace manual 5%→30%→60%→100%)
-- [ ] Add confidence threshold filter (only show >50% predictions)
-- [ ] Add "Why?" explanations showing top contributing features
-- [ ] Allow year selection (2017-2024) for temporal queries
+- [x] **Phase A: Rejoin gap species** — recovered 4,679 species via pixel data join (DONE Feb 11)
+- [x] **Phase B: Re-cluster with DBSCAN** — 2,257 species re-clustered, P. radiata 3→9 clusters (DONE Feb 11)
+- [x] **Climate signal completion** — WorldClim BIO (19 vars) + OpenLandMap soil in GEE service (DONE Feb 11)
+- [x] **k-NN occurrence table** — 3,084,829 individual occurrence embeddings loaded with HNSW index (DONE Feb 11)
+- [x] **Provenance metadata** — GBIF join (95% match), coordinate_uncertainty, establishment_means, occurrence_year, gbif_id per row (DONE Feb 11)
+- [x] **Source type classification** — pixel_accurate (92.8%), pixel_disturbed (6.9%), undisturbed_pre2017, triangulated, disturbed_pre2017 (DONE Feb 11)
+- [x] **Quality weights** — composite 0-1 per occurrence: coord_uncertainty × temporal_match × source_type (DONE Feb 11)
+- [x] **IDF weighting** — 1/log(1+count) per species in species_occurrence_stats table (DONE Feb 11)
+- [x] **Update prediction.js Channel 1** — k-NN vote + IDF + quality_weight + centroid blend 60/40 (DONE Feb 11 Session 4)
+- [x] **Wire soil signal into /predict** — pH + texture scoring wired as Signal 6 (DONE Feb 11 Session 4)
+- [x] **Phase C: GEE export to BigQuery** — 3,454,255 unique pixels with 125 bands exported to BQ (DONE Feb 15)
+
+#### Phase C Data Corrections (BLOCKING — must fix before loading to k-NN)
+
+- [ ] **C1: Year-matched temporal env re-sampling** — Phase C sampled temporal datasets at FIXED modern windows instead of per-occurrence year. Must re-sample TerraClimate, MODIS GPP, Dynamic World, MODIS Burned Area, VIIRS at year-matched dates. Affects all 3.45M Phase C pixels AND 1.48M v4 pixels. Architecture: group pixels by occurrence year, build per-year image stacks, sample in year cohorts.
+  - TerraClimate (1958-present): sample at occurrence_year +/-2yr window (not fixed 2015-2020)
+  - MODIS GPP (2000-present): sample at occurrence_year (pre-2000: use earliest available)
+  - Dynamic World (2015-present): sample at occurrence_year (pre-2015: use ESA WorldCover proxy)
+  - MODIS Burned Area (2000-present): cumulative count UP TO occurrence_year (not through 2023)
+  - VIIRS (2012-present): sample at occurrence_year (pre-2012: use DMSP-OLS or omit)
+  - Hansen lossyear: filter to lossyear <= occurrence_year (only count loss that happened BEFORE observation)
+- [ ] **C2: V4 environmental backfill** — 1,477,738 v4-only pixels missing 59 environmental bands. Sample env-only stack (no AlphaEarth re-sampling needed). Year-match temporal vars to v4 orig_year (2017-2024). These are gold-standard year-accurate pixels — must be complete for neural net training.
+- [ ] **C3: Regime 3 — nearest undisturbed reference pixels** — For pixels where Hansen lossyear > 0 AND disturbance occurred BEFORE or AT occurrence year: find nearest undisturbed reference pixel within same ecoregion (RESOLVE 2017) + elevation band (SRTM +/-100m) + expanding radius (1km → 5km → 10km). Sample AlphaEarth at reference pixel. Tag with proxy metadata. Essential for Recommender's "what SHOULD grow here" logic.
+- [ ] **C4: Disturbance classification during load** — Classify each occurrence using Hansen lossyear vs occurrence_year + SBTN + JRC TMF + ESA WorldCover into source_type categories (pixel_accurate, pixel_disturbed, undisturbed_pre2017, disturbed_pre2017). Apply quality_weight penalties per source_type.
+- [ ] **C5: BQ deduplication + export to parquet** — Dedup 503K duplicate rows (from overlapping restarts) on (lat4, lon4), export to local parquet
+- [ ] **C6: Rejoin to species** — `regime2_sampler.py --rejoin`: fan out pixel-level data to all species observed at each location. One row per (taxon_id, lat4, lon4) in final output.
+- [ ] **C7: Load to k-NN table** — Load corrected Phase C + backfilled v4 data into `species_occurrence_embeddings`. Recompute IDF weights. Rebuild HNSW index. Expected: ~10-15M rows, ~55K species.
+
+#### Remaining Architecture Items
+
+- [ ] **HILDA+ integration** — upload to GEE assets, use for pre-2017 disturbed site reference pixel lookup (1960-2019 annual LUC at 1km, already in PANGAEA). Improves Regime 3 reference pixel matching but NOT a prerequisite for C3.
+- [ ] **Forest Stability Index** — 6-signal composite from JRC TMF + CCDC + GEDI + ORNL + LandTrendr + Hansen. Signal 7 in prediction.js.
+- [ ] **Disturbance-aware invasive prediction** — at disturbed sites: upweight invasive/introduced occurrences at disturbed pixels, downweight native-at-intact; at intact sites: reverse. Use GRIIS + establishment_means for species-level native/invasive classification
+- [ ] **Ecoregion-constrained search** — tag occurrences with WWF/RESOLVE ecoregion, constrain k-NN reference pixel search to same ecoregion
+- [ ] **GRIIS invasive species data** — join Global Register of Introduced and Invasive Species per country per species
+- [ ] **GMM extension** — diagonal Gaussian Mixture Models for species with >100 occurrences
+- [ ] **Neural prediction head** — SINR-style (64-D → 256 → ResBlock×4 → 60K species), trains on k-NN table. BLOCKED on C1-C7 completion (need correct, complete training data).
+- [ ] **Foundation model Phase 2** — Clay v1.5 for pre-2013 Landsat (if projection quality < threshold)
+- [ ] Migrate legacy `/api/embeddings/predict` to multi-signal (deferred)
+
+### Key Files
+| File | Purpose | Lines |
+|------|---------|-------|
+| `treekipedia/backend/routes/prediction.js` | Multi-signal predict + recommend endpoints | ~1930 |
+| `treekipedia/backend/services/safeb-scorer.js` | SAFE-B scoring engine (5 components, 7 strategies) | ~710 |
+| `treekipedia/frontend/app/analysis/components/HabitatPredictionModal.tsx` | Point prediction UI with signal bars + pagination | ~685 |
+| `treekipedia/frontend/app/analysis/components/SpeciesRecommenderModal.tsx` | Recommender UI with strategy selector | ~400 |
+| `treekipedia/frontend/app/analysis/components/MapClickHandler.tsx` | Map click → Predict/Recommend mode selector | ~220 |
+| `orchestrator/location_predictor_FIXED.py` | Python GEE service (multi-year AlphaEarth + SRTM + Hansen) | ~280 |
+
+### External Datasets to Acquire / Integrate
+| Dataset | Priority | GEE ID / Source | Status |
+|---------|----------|-----------------|--------|
+| WorldClim V1 BIO (19 vars) | 🔴 P0 | `WORLDCLIM/V1/BIO` (on GEE) | Ready to integrate |
+| OpenLandMap Soil (6 props) | 🔴 P0 | `OpenLandMap/SOL/*` (on GEE) | Ready to integrate |
+| Hansen GFC v1.11 | ✅ Done | `UMD/hansen/global_forest_change_2023_v1_11` | Already in pipeline |
+| SRTM Elevation | ✅ Done | `USGS/SRTMGL1_003` | Already in pipeline |
+| Landsat 5/7/8/9 (historical) | 🟡 P1 | `LANDSAT/L*/C02/T1_L2` | For triangulation Phase 4 |
+| MODIS NDVI/EVI | 🟡 P1 | `MODIS/061/MOD13A1` | For triangulation Phase 4 |
+| Dynamic World | 🟡 P1 | `GOOGLE/DYNAMICWORLD/V1` (2015+) | For triangulation Phase 4 |
+| TRY Traits | 🟡 P2 | https://www.try-db.org/ | Application pending |
+| GRooT Root Traits | 🟢 P3 | https://github.com/MathieuTWOTWO/GRooT | Future |
+| Human Footprint Index | 🟢 P3 | https://wcshumanfootprint.org/ | Future |
+
+### Foundation Models Evaluated
+| Model | Status | Viability for Our Use Case |
+|-------|--------|---------------------------|
+| **Clay v1.5** (632M) | Best candidate | Wavelength-parameterized, multi-sensor, 1024-D. Best for pre-2013 but untested on Landsat 5/7 |
+| **Prithvi-EO-2.0** (600M-TL) | Good for 2013+ | Location+time aware, trained on HLS. Cannot handle pre-2013 Landsat |
+| **SatMAE** | Skip | Academic, no Landsat support, superseded by Prithvi/Clay |
+| **AlphaEarth** | Current production | 64-D, 2017-2024, on GEE. Our primary embedding space |
 
 ---
 
-## [MEDIUM PRIORITY] - Strategy Layer Implementation
+## [COMPLETED] - Strategy Layer Implementation (Feb 2026)
 
-**Status**: Conceptual, not yet implemented
+**Status**: ✅ LIVE — 7 strategies with distinct weight profiles and trait scoring
 
-### Goal
-Allow users to filter species recommendations by restoration strategy:
+### Implemented Strategies
+| Strategy | Focus | Include Introduced? | Key Traits Boosted |
+|----------|-------|---------------------|-------------------|
+| **General** | Balanced restoration | Yes | Tree growth form |
+| **Rewilding** | Native, ecological integrity | No | Late-successional, wildlife support |
+| **Agroforestry** | Food/timber production | Yes | Multi-use, nitrogen fixing, food production |
+| **Riparian** | Water quality, bank stabilization | Native preferred | Flood tolerance, bank stabilization |
+| **Carbon** | Maximum sequestration | Depends on region | Tall trees, long-lived, timber quality |
+| **Biodiversity** | Species diversity | No | Interaction richness, structural diversity |
+| **Erosion Control** | Soil stabilization | Yes | Pioneer/fast establishing, deep roots |
 
-| Strategy | Focus | Include Introduced? |
-|----------|-------|---------------------|
-| Ecological Rewilding | Purely native, biodiversity | No |
-| Agroforestry | Food/timber production | Yes (non-invasive) |
-| Riparian Restoration | Water quality, erosion | Native preferred |
-| Carbon Sequestration | Fast growth, biomass | Depends on region |
-| Biodiversity Corridors | Connectivity, movement | Native only |
-
-### Tasks
-- [ ] Design strategy ontology schema
-- [ ] Create strategy-species relationship mapping
-- [ ] Build frontend strategy selector component
-- [ ] Implement strategy-weighted LEAF scoring
-- [ ] Test with specific use cases (e.g., Brazil agroforestry)
+### Completed Tasks
+- [x] Strategy weight presets in SAFE-B scorer (7 strategies × 5 components)
+- [x] Strategy-specific candidate discovery (Channel 3: WCVP-native, agroforestry, flood-tolerant, etc.)
+- [x] Frontend strategy selector in SpeciesRecommenderModal
+- [x] Verified different top-3 per strategy (general: Kauri, rewilding: Manuka, carbon: Quercus robur)
 
 ---
 
@@ -481,11 +544,15 @@ Nanopub = {
 | Species with WCVP data | 67,742 (99.99%) | 100% |
 | Species researched | 6 (0.01%) | 10% by Q2 2026 |
 | Total insights | 200 | 350k (35 per species × 10k) |
-| Research version | v1 for 6 species | v1+ for 10k species |
-| Total research spend | ~$0.25 | $420 for 10k species |
-| AlphaEarth embeddings | 500 species | 10,000 species |
+| **Species with centroids** | **22,603 (Phase A+B complete)** | **60,000+ (after Phase C)** |
+| **Habitat centroids** | **49,640** | ~150k (expanded + re-clustered) |
+| **Prediction signals** | **5 (upgrading to 7)** | 7 (emb+spatial+range+eco+climate+soil+FSI) |
+| **k-NN occurrence embeddings** | **3,084,829 (with provenance)** | ~10-15M (after Phase C: 4.2M pixels × ~3 species/pixel) |
+| **Matching method** | **k-NN loaded (HNSW built), prediction.js update pending** | k-NN → GMM → Neural head (129-D input after Phase C) |
+| **Recommender strategies** | **7** | 7+ |
+| **P. radiata benchmark** | **Rank #42, 81% @ Auckland (9 clusters incl NZ)** | Top 20 (after k-NN + FSI) |
+| AlphaEarth embeddings | 3.37M records (v4) + 9K Phase A | ~10M (after Phase C) |
 | Occurrence records | 5.7M tiles | 96.5M processed |
-| LEAF score coverage | TBD | All ecoregions |
 
 ---
 
@@ -530,4 +597,4 @@ Nanopub = {
 
 ---
 
-*Last Updated: January 6, 2026*
+*Last Updated: February 11, 2026 (v3.0 Architecture)*

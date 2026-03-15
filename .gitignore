@@ -89,3 +89,6 @@ species predictor discussions.md
 
 # Research tracking (local SQLite)
 research_tracking.db
+
+# Dolt database files (added by bd init)
+.dolt/
