@@ -2,11 +2,13 @@
 
 Date: 2026-03-15
 Audience: Claude or any successor agent continuing SINR data / release / preview-model work
-Status: active handoff, supersedes the old instinct to keep iterating `v3.x` directly
+Status: historical baseline handoff; `V4.1` preview is now retired as the active forward path
 
 ## Mission
 
 Do not keep nudging `V3` forward as if it were still the main product line.
+
+Note: read `docs/SINR Claude V4.2 Comparison Handoff.md` first for the current active path. This file now documents the completed `V4.1` baseline build/train state.
 
 Treat the program as:
 
@@ -150,6 +152,32 @@ Current facts:
 - explicit GPP high codes nulled out of preview
 - `nighttime_lights` pre-2012 nulled
 - obvious `BIO` / soil contamination rows filtered
+
+### 4.1 `V4.1` training-grain table now exists
+
+Trainer-ready artifact:
+
+- `species_data.sinr_v41_preview_strict_core_train_v1`
+
+Important distinction:
+
+- `sinr_v41_preview_strict_core_v1` = feature-grain preview source
+- `sinr_v41_preview_strict_core_train_v1` = training-grain preview source with `taxon_id`
+
+Current training-grain facts:
+
+- `11,920,314` rows
+- `19,043` unique species
+- `0` null `taxon_id`
+- labels/meta come from `sinr_v3_unified_strict_train_v30_preview_clean`
+- features come from repaired strict lineage `...completed_v1`
+
+Current training artifacts already built:
+
+- `orchestrator/contracts/sinr_v3/normalize_stats_v41_preview_train.npz`
+- `orchestrator/contracts/sinr_v3/normalize_temporal_v41_preview_train.npz`
+- `orchestrator/contracts/sinr_v3/stats_contract_v41_preview_train.json`
+- `orchestrator/contracts/sinr_v3/feature_contract_v41_preview_train.json`
 
 ### 5. Temporal scope is intentionally narrow in `V4.1`
 
@@ -296,9 +324,9 @@ Use `bd show` on these before doing new design work:
 
 ### Priority 1
 
-3. Freeze an explicit feature contract for `species_data.sinr_v41_preview_strict_core_v1`.
-4. Recompute normalization stats from the preview-core table.
-5. Train the `V4.1 preview` model and compare it against the frozen `V3` benchmark family.
+3. Export local shards from `species_data.sinr_v41_preview_strict_core_train_v1`.
+4. Train the `V4.1 preview` model and compare it against the frozen `V3` benchmark family.
+5. Rebuild formal release artifacts if downstream consumers need them.
 6. Update the confidence matrix if any family changes trust class during the work.
 
 ### Priority 2
@@ -351,7 +379,7 @@ Current mission:
 1. verify / finish release-builder rebuilds from completed_v1
 2. settle non-AE semantic trust boundaries (GPP, GEDI, masked-zero families, DW proxy)
 3. treat docs/SINR V4.1 Data Confidence Matrix.md as the preview inclusion boundary
-4. freeze the V4.1 preview contract/stats and run the preview model while backfill continues
+4. use the training-grain V4.1 table + train stats/contract to export shards and run the preview model while backfill continues
 
 Constraints:
 - fail closed

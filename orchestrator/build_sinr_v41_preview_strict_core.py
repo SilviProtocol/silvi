@@ -1,5 +1,5 @@
 """
-Build SINR V4.1 Preview Strict-Core Training Table
+Build the SINR V4.1 preview strict-core feature-grain table.
 
 Sources from the canonical repaired new_gbif strict lineage:
   sinr_v3_features_new_gbif_strict_full_xiao_fixed_gpp_semantic_deduped_completed_v1
@@ -12,6 +12,10 @@ Applies:
   - External/manual family exclusion (carbon extras, HILDA, aridity, etc.)
 
 Output: sinr_v41_preview_strict_core_{timestamp}
+
+Important: this table is feature-grain (one row per context), not training-grain.
+It is suitable for feature auditing / preview feature design, but trainer-ready
+rows with `taxon_id` live in `sinr_v41_preview_strict_core_train_v1`.
 
 This is a V4.1 preview — not final. Designed to train while backfill continues toward V4.2.
 """

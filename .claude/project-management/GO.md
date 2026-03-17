@@ -126,10 +126,11 @@ feat: add location encoding to SINR model (treekipedia-a3f2dd)
 
 **START HERE** for SINR work — the master recovery plan supersedes all prior audit docs:
 
-1. **`docs/SINR Claude V4.1 Preview Handoff.md`** — ACTIVE handoff for the current program focus (`V3` frozen as baseline, `V4.1` strict-core preview while backfill finishes)
-2. **`docs/SINR V4.1 Data Confidence Matrix.md`** — ACTIVE trust boundary for what may enter `V4.1 preview`
-3. **`docs/SINR v3 Master Recovery Plan.md`** — ACTIVE source of truth for the broader recovery / governance program
-4. `docs/SINR Versioning Registry.md` — contract/artifact versions
+1. **`docs/SINR Claude V4.2 Comparison Handoff.md`** — ACTIVE handoff for the current program focus (`V4.1` retired as preview baseline, `V4.2` = radiata comparison + SINR alignment)
+2. **`docs/SINR V4.1 Data Confidence Matrix.md`** — ACTIVE trust boundary for the retired `V4.1` preview baseline and any non-destructive reuse of those assets
+3. **`docs/SINR Claude V4.1 Preview Handoff.md`** — historical baseline handoff for the completed `V4.1` preview build/train path
+4. **`docs/SINR v3 Master Recovery Plan.md`** — ACTIVE source of truth for the broader recovery / governance program
+5. `docs/SINR Versioning Registry.md` — contract/artifact versions
 5. `docs/SINR March 7 Comprehensive State + Audit Request Packet.md` — operational context
 6. `docs/SINR BigQuery Lineage Map.md` — current strict vs legacy table lineage
 7. `docs/SINR Forensic Program History + Master Dataset Plan.md` — long-form forensic synthesis + master dataset plan
@@ -158,7 +159,7 @@ If docs conflict, trust the Master Recovery Plan, then live BigQuery + executabl
 
 Do not claim model quality from memory. Always reference versioned artifacts and current run logs.
 
-## 4.1) Current SINR Program Mode (2026-03-15)
+## 4.1) Current SINR Program Mode (2026-03-16)
 
 This section supersedes the old instinct to keep iterating `v3.x` models on mixed-trust data.
 
@@ -166,12 +167,13 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
 
 - Treat **`V3` as a frozen benchmark family**, not the destination.
 - Treat **`V4.0` as the data-governance / lineage cleanup phase**.
-- Treat **`V4.1 preview` as the next deliberate model-facing step**:
-  - `new_gbif` only,
-  - strict-core feature surface only,
-  - fail-closed exclusions for unresolved families,
-  - trained from repaired strict lineage rather than legacy preview inheritance.
-- Treat **`V4.2+` as the full strict estate** after backfill finishes and external/manual families are either canonicalized or explicitly excluded.
+- Treat **`V4.1 preview` as a completed preview baseline**, not the active forward path.
+- Treat **`V4.2` as the active comparison / SINR-alignment phase**:
+  - explain the corrected `V4.1` radiata failure,
+  - compare the current trainer against the original SINR method,
+  - run minimum-change non-destructive experiments on current `V4.1` data/assets,
+  - postpone any decision to merge backfill into the `V4` program until after that comparison work.
+- Treat **`V4.3+` as the later full strict-estate phase** after backfill-join decisions and family canonicalization are explicit.
 
 ### Version numbering disambiguation
 
@@ -180,7 +182,7 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
 - Program versions (V3, V4.x): describe the data governance and release program.
 - V3 experiment numbers (v1-v18): internal training experiment IDs, all using V3 data/stats. Directories like `~/model_local_contract_v4_gatefix_5m` and `~/model_local_contract_v14_location_5m` are V3 experiments #4 and #14, NOT V4.x program models.
 - The V3 frozen benchmark = experiment v4 (rank #16). The best V3 model = experiment v14 (rank #2).
-- The first actual V4.1 model does not exist yet.
+- The first actual V4.1 preview model now exists and is treated as a retired baseline for comparison, not the main forward path.
 - All V3 experiment data (shards, stats, contracts) is reproducible from BQ + repo scripts. Only trained weights are seed-dependent.
 
 ### Current canonical `new_gbif` strict lineage
@@ -207,10 +209,14 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
   - build a **strict-core preview table** from repaired strict raw + preview labels/meta,
   - exclude unresolved families rather than pretending they are canonical.
 - Current built preview artifact:
-  - `species_data.sinr_v41_preview_strict_core_v1`
-  - `8,392,893` rows
-  - `643` columns
-  - `445,595` rows excluded relative to `completed_v1`
+  - feature-grain source: `species_data.sinr_v41_preview_strict_core_v1`
+    - `8,392,893` rows
+    - `643` columns
+    - `445,595` rows excluded relative to `completed_v1`
+  - training-grain source: `species_data.sinr_v41_preview_strict_core_train_v1`
+    - `11,920,314` rows
+    - includes `taxon_id`
+    - features sourced from repaired strict lineage, labels/meta from `preview_clean`
 - Current temporal design for `V4.1 preview` is **intentionally narrow**:
   - the true temporal branch is AE-only (`2017-2024` AlphaEarth sequence = `512D`),
   - non-AE temporal-ish signals currently enter only as year-matched or summary scalar features,
@@ -241,19 +247,68 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
 - External/manual families:
   - still not canonical strict raw; either rebuild them or fail closed in preview.
 
+### Current radiata benchmark warning
+
+- Canonical benchmark:
+  - `lat=-41.151583464812404`
+  - `lon=175.09968969862783`
+  - `year=2023`
+  - `target=GymPiPiPnCx50820-00`
+- Corrected finished `V4.1` BCE result:
+  - `rank #105 / 19,043`
+  - `prob=0.608283`
+- Corrected finished `V4.2` `an_full + hard-cap-1000 + no-boost` result:
+  - `rank #79 / 19,043`
+  - `prob=0.916976`
+  - still effectively unchanged across `introduced=0.0 / 0.5 / 1.0`
+- Historical support context:
+  - `V3` radiata rows: `9,616`
+  - `V4.1` radiata rows: `706`
+  - over `90%` of historical radiata support lived in `backfill`, not `new_gbif`
+- Current consensus:
+  - objective matters (`#105 -> #79` is real),
+  - but objective alone does not rescue radiata,
+  - top ranks remain broadleaf/native-heavy,
+  - the likely bottleneck stack is: thin local radiata support + strong local/native location prior + incomplete plantation-specific signal usage.
+- Treat this as a real comparison problem, not a preview-table plumbing bug.
+
+### Pre-backfill experiment order (`V4.3+`)
+
+- `V4.3` — location-prior / representation diagnosis:
+  - top-100 above-radiata audit,
+  - no-location ablation,
+  - AE / hidden-state / kNN manifold probe.
+- `V4.4` — SINR-alignment on negatives and spatial specificity:
+  - true background negatives,
+  - optionally reduced location-resolution encoding if `V4.3` implicates geo prior dominance.
+- `V4.5` — non-destructive calibration / retrieval layer:
+  - AE kNN reranking,
+  - TDWG / regional prior calibration,
+  - only after `V4.3/V4.4` clarify whether the representation is good but the head is wrong.
+- `V4.6` — pre-backfill recipe lock:
+  - choose the winning pre-backfill recipe,
+  - freeze a plantation benchmark suite,
+  - only then decide whether to merge backfill into the `V4` program.
+- Do **not** merge backfill into `V4` before `V4.6` unless an explicit decision is recorded.
+
 ### Active beads pipeline for the current program
 
 - `treekipedia-bj7` — keep backfill strict extraction running to completion.
 - `treekipedia-cl3` — repoint release builders to completed `new_gbif` strict lineage and rebuild release artifacts.
 - `treekipedia-9vo` — verify/fix non-AE strict raw semantics (GPP, GEDI, masked-zero families, DW proxy semantics).
 - `treekipedia-8b2` — canonicalize or explicitly exclude external/manual families.
-- `treekipedia-bfc` — build the reduced-scope `V4.1` strict-core preview dataset and preview-model run.
+- `treekipedia-bfc` — completed `V4.1` preview baseline (retain for provenance/comparison only).
+- `treekipedia-xz2` — active `V4.2` radiata comparison and SINR alignment work.
+- `treekipedia-xrj` — `V4.3` location-prior and representation diagnosis.
+- `treekipedia-37w` — `V4.4` true background negatives and spatial-specificity experiments.
+- `treekipedia-e0p` — `V4.5` retrieval / regional-calibration probes.
+- `treekipedia-03y` — `V4.6` pre-backfill recipe lock and benchmark suite.
 - `treekipedia-2t9` — design the future multi-source temporal intelligence expansion for `V4.2+`.
 - `treekipedia-csc` — after backfill completes, build the full strict unified training table from strict feature outputs.
 
 ### Operational rule
 
-- Do **not** drift back into generic `v3.x` model tweaking until `V4.1 preview` has a documented confidence matrix, strict-core contract, fresh normalization stats, and a rebuilt release path.
+- Do **not** drift back into generic `v3.x` tweaking or premature backfill-join work until `treekipedia-xz2` has produced a clear comparison / SINR-alignment recommendation.
 
 ## 4.2) Current Data Governance Findings (2026-03-12 to 2026-03-15)
 
@@ -539,7 +594,88 @@ Critical warnings:
 - [ ] **Week 16-24**: Generate sentence transformer embeddings for all 67K species
 - [ ] Schema expansion: Add 8 new fields to species table (see KNOWLEDGE_SCHEMA_FOR_V4_TRAINING.md)
 
-## 12) Anti-Drift Protocol
+## 12) Environmental Envelope & Site Context (Product/Tooling, parallel to SINR V4)
+
+**Added**: 2026-03-17. This is a product/frontend effort — it does NOT modify the SINR training program.
+
+### Motivation
+
+The SINR pipeline already samples ~60 environmental features at every point (climate, soil, terrain, biomass, land cover, hydrology, human modification). These are model *inputs*, not outputs — but they are valuable on their own. Users need to understand the *place itself*, not just the species prediction. This effort surfaces that data.
+
+### Three Concepts (keep separate)
+
+1. **Site Context** — "What is this place?" Objective environmental measurements at a point or across an area. Species-independent.
+2. **Species Envelope** — "What does species X typically occupy?" Per-species quantile ranges derived from training data.
+3. **Envelope Match** — "How well does this site fit species X?" Comparison of site values to species quantile ranges.
+
+### Implementation Phases
+
+| Phase | What | New GEE | New BQ | Beads |
+|-------|------|:-------:|:------:|-------|
+| **A** | Single-point site inspector modal | 0 (reuses `/sample`) | none | `treekipedia-mik` |
+| **B** | Area tile-by-tile analysis + progressive rendering + progress bar | 1 per tile (batched env) | none | `treekipedia-auw` |
+| **C** | Stratification clustering (k-means on tiles, similarity overlays) | 0 (client-side) | none | `treekipedia-uo8` |
+| **D** | Species envelope comparison (per-species quantile match) | 0 | 1 BQ aggregate (~$0.01) | `treekipedia-7gh` |
+| E | Debug/benchmark mode (power-user model inspection) | 0 | optional | deferred |
+
+### Phase A — Single-Point Site Inspector
+
+- New: `SiteInspectorModal.tsx` — shows climate, terrain, soil, land state, carbon, disturbance, human influence, ecological context as collapsible sections
+- New: `POST /sample-env` on Python microservice (lightweight: only `sample_sinr_env_features()` + WorldClim, skips AE/homogeneity/CCDC) — ~5-15s vs 40-80s for full `/sample`
+- Modify: `MapClickHandler.tsx` — add "Site Inspector" to ModeSelector
+- Modify: `prediction.js` — add `GET /api/site-context` proxy route
+
+### Phase B — Area Tile-by-Tile Environmental Analysis
+
+- User draws polygon → generates L7 geohash centroids client-side → fires concurrent `POST /sample-env` with semaphore (5 parallel) + AbortController
+- Each tile renders as `L.rectangle` on the map as data arrives, colored by selected variable
+- Running statistics (Welford online mean/variance) in sidebar, updating in real time
+- Variable dropdown recolors tiles instantly without re-fetch
+- Progress bar with tile count, ETA, cancel button
+- New: `AreaEnvAnalysis.tsx`, `EnvTileLayer.tsx`, `EnvStatsPanel.tsx`, `geohash.ts`, `running-stats.ts`
+- New: `POST /sample-env-batch` on Python microservice (ThreadPoolExecutor, N tiles in one request)
+
+### Phase C — Stratification Clustering
+
+- After tiles sampled, run k-means (15D normalized feature vectors) client-side
+- Recolor tiles by cluster ID, show per-cluster summary (mean elevation, temp, biomass, etc.)
+- User picks k with a slider (3-7 default)
+- New: `kmeans.ts` (~40 lines), `ClusterPanel.tsx`
+
+### Phase D — Species Envelope Comparison
+
+- New BQ table `species_environmental_envelope_v1`: per-species p10/p25/p50/p75/p90 for 22 key features + categorical proportions + geographic bounds
+- Source: `sinr_v41_preview_strict_core_train_v1` (11.9M rows, 19,043 species)
+- Caveat: median species has 9 training rows — mark `is_data_limited` when < 25 rows
+- Exported as ~2MB JSON, served via `GET /api/species-envelope/:taxon_id`
+- New: `EnvelopeMatchCard.tsx` in species prediction modals — shows site vs species range per variable
+- New: `build_species_env_envelope.py` (BQ query + JSON export)
+
+### Feature Trust Levels for Display
+
+- **Green** (safe now): terrain, Hansen, JRC forest, Xiao, Neumann, SBTN, JRC water, MERIT, AGB, human modification, ecoregion/biome, embedding homogeneity, CCDC, ETH canopy
+- **Yellow** (display with caveats): WorldClim BIO, TerraClimate, soil, MODIS GPP, nighttime lights, fire, Dynamic World
+- **Red** (do not expose yet): GEDI, land state class, HILDA+, aridity/ET0/IPCC forest class
+
+### Key Files
+
+- Python microservice: `orchestrator/location_predictor_FIXED.py` (add `/sample-env` and `/sample-env-batch`)
+- Frontend components: `treekipedia/frontend/app/analysis/components/`
+- Backend routes: `treekipedia/backend/routes/prediction.js`
+- Feature contract: `orchestrator/contracts/sinr_v3/feature_contract_v41_preview_train.json`
+- Data confidence: `docs/SINR V4.1 Data Confidence Matrix.md`
+
+### Constraints
+
+- Do NOT mutate canonical strict tables
+- Do NOT modify SINR training code or contracts
+- Do NOT change existing prediction scoring logic
+- Prefer new aggregate tables and new endpoints
+- All testing on localhost (3001/5001/5002)
+
+---
+
+## 13) Anti-Drift Protocol
 
 After any major step (rebuild/extraction/training):
 
