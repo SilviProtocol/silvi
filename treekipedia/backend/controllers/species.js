@@ -395,32 +395,41 @@ module.exports = (pool) => {
   router.get('/', async (req, res) => {
     try {
       const { search } = req.query;
-      
+      const full = req.query.full === 'true';
+
       if (!search) {
         return res.status(400).json({ error: 'Missing required parameter: search' });
       }
-      
-      // Debug log
-      console.log(`GET /species search query: "${search}"`);
-      
+
+      console.log(`GET /species search query: "${search}" full=${full}`);
+
+      // Default: lightweight response. Use ?full=true for all columns.
+      const columns = full ? '*' : `
+        taxon_id, species_scientific_name, accepted_scientific_name,
+        display_common_name, common_name, popular_common_name_ai,
+        family, genus, subspecies, taxon_full
+      `;
+
       const query = `
-        SELECT * FROM species
-        WHERE common_name ILIKE $1
+        SELECT ${columns} FROM species
+        WHERE display_common_name ILIKE $1
+        OR common_name ILIKE $1
         OR species_scientific_name ILIKE $1
         OR accepted_scientific_name ILIKE $1
         ORDER BY
           CASE
             WHEN species_scientific_name ILIKE $2 THEN 0
-            WHEN common_name ILIKE $2 THEN 1
-            ELSE 2
+            WHEN display_common_name ILIKE $2 THEN 1
+            WHEN common_name ILIKE $2 THEN 2
+            ELSE 3
           END,
           species_scientific_name
         LIMIT 50
       `;
-      
+
       const result = await pool.query(query, [`%${search}%`, `${search}%`]);
       console.log(`GET /species returned ${result.rowCount} results`);
-      
+
       res.json(result.rows);
     } catch (error) {
       console.error(`Error searching species for term "${req.query.search}":`, error);

@@ -185,6 +185,10 @@ app.use('/api/embeddings', embeddingsRoutes);
 const predictionRoutes = require('./routes/prediction');
 app.use('/api/prediction', predictionRoutes);
 
+// Common Names Routes (structured common names + light list for Silvi sync)
+const commonNamesRoutes = require('./controllers/commonNames')(pool);
+app.use('/api/common-names', commonNamesRoutes);
+
 // User Analyses Routes (saved analysis sessions)
 const analysesRoutes = require('./controllers/analyses')(pool);
 app.use('/api/analyses', analysesRoutes);
