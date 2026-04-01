@@ -404,16 +404,21 @@ module.exports = (pool) => {
       console.log(`GET /species search query: "${search}"`);
       
       const query = `
-        SELECT * FROM species 
-        WHERE common_name ILIKE $1 
-        OR species ILIKE $1
+        SELECT * FROM species
+        WHERE common_name ILIKE $1
         OR species_scientific_name ILIKE $1
         OR accepted_scientific_name ILIKE $1
-        ORDER BY common_name
+        ORDER BY
+          CASE
+            WHEN species_scientific_name ILIKE $2 THEN 0
+            WHEN common_name ILIKE $2 THEN 1
+            ELSE 2
+          END,
+          species_scientific_name
         LIMIT 50
       `;
       
-      const result = await pool.query(query, [`%${search}%`]);
+      const result = await pool.query(query, [`%${search}%`, `${search}%`]);
       console.log(`GET /species returned ${result.rowCount} results`);
       
       res.json(result.rows);
