@@ -21,22 +21,31 @@ Used for searching tree species by common or scientific name.
 **Endpoint:** `GET /species`
 
 **Query Parameters:**
-- `search` (required): Search term to match against common_name or species field (scientific name)
+- `search` (required): Search term to match against `display_common_name`, `common_name`, `species_scientific_name`, or `accepted_scientific_name`
+- `full` (optional): Set to `true` to return all 155 columns. Default returns lightweight response (10 columns, ~20x smaller).
 
-**Response:**
+**Response (default — lightweight):**
 ```json
 [
   {
     "taxon_id": "string",
-    "common_name": "string",
-    "species": "string",
+    "species_scientific_name": "string",
     "accepted_scientific_name": "string",
+    "display_common_name": "string",
+    "common_name": "string",
+    "popular_common_name_ai": "string|null",
     "family": "string",
     "genus": "string",
-    // Additional species fields
+    "subspecies": "string",
+    "taxon_full": "string"
   }
 ]
 ```
+
+**Notes:**
+- Results ordered by: `starts-with` matches first (scientific name, then display name), then `contains` matches
+- Max 50 results
+- Lightweight response ~41KB vs full ~831KB for 50 results
 
 **Usage:** Primary search functionality on the homepage and search pages.
 
@@ -149,6 +158,117 @@ Retrieve all images for a specific species (used for image carousel display).
 - `photographer` field may contain HTML formatting for links
 - `page_url` should be used for click-through to original image source
 - All images are sourced from Wikimedia Commons with proper licensing
+
+---
+
+## Common Names Endpoints
+
+### Get Light List (Bulk Sync)
+
+Paginated bulk download of all species with pre-aggregated common names. Designed for external app sync (e.g., Silvi mobile).
+
+**Endpoint:** `GET /api/common-names/light-list`
+
+**Query Parameters:**
+- `page` (optional, default 1): Page number
+- `per_page` (optional, default 10000, max 10000): Results per page
+- `since` (optional): ISO timestamp — only species updated after this date (incremental sync)
+- `family` (optional): Filter by taxonomic family
+
+**Response:**
+```json
+{
+  "total": 67927,
+  "page": 1,
+  "per_page": 10000,
+  "pages": 7,
+  "updated_since": null,
+  "version": "2026-04-01T12:00:00.000Z",
+  "data": [
+    {
+      "taxon_id": "AngLiArRcCx00002-00",
+      "scientific_name": "Cocos nucifera",
+      "display_common_name": "Coconut Palm",
+      "family": "Arecaceae",
+      "genus": "Cocos",
+      "common_names": [
+        {"name": "Coconut Palm", "lang": null, "regions": null, "primary": true},
+        {"name": "Cocotier", "lang": null, "regions": null, "primary": false},
+        {"name": "可可椰子", "lang": "ja", "regions": null, "primary": true}
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### Get Common Names for Species
+
+**Endpoint:** `GET /api/common-names/:taxon_id`
+
+**Query Parameters:**
+- `include_staging` (optional): Set to `true` to include user-submitted unreviewed names
+
+**Response:**
+```json
+{
+  "taxon_id": "AngMaLaLmCx21203-00",
+  "display_common_name": "Teak",
+  "popular_common_name_ai": null,
+  "common_names": [
+    {
+      "id": "uuid",
+      "name": "Teak",
+      "language_code": null,
+      "region_codes": null,
+      "source": "bulk_import",
+      "is_primary": true,
+      "staging": false,
+      "created_at": "2026-04-01T..."
+    }
+  ],
+  "count": 7
+}
+```
+
+---
+
+### Submit Common Name (User Contribution)
+
+**Endpoint:** `POST /api/common-names/:taxon_id`
+
+**Request Body:**
+```json
+{
+  "name": "Jati",
+  "language_code": "id",
+  "region_codes": ["ID"],
+  "submitted_by": "user@example.com"
+}
+```
+
+- `name` (required): Common name (min 2 characters)
+- `language_code` (optional): ISO 639-1 language code
+- `region_codes` (optional): Array of ISO 3166-1 alpha-2 country codes
+- `submitted_by` (optional): User identifier for attribution
+
+**Response:** `201 Created`
+```json
+{
+  "id": "uuid",
+  "taxon_id": "AngMaLaLmCx21203-00",
+  "name": "Jati",
+  "language_code": "id",
+  "region_codes": ["ID"],
+  "staging": true,
+  "created_at": "2026-04-01T..."
+}
+```
+
+**Notes:**
+- All user submissions are `staging: true` by default
+- On conflict (same taxon_id + name + language_code), region_codes are merged
 
 ---
 
