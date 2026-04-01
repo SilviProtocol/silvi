@@ -19,9 +19,12 @@
  * Usage: node scripts/parse_common_names.js [--dry-run] [--limit N]
  */
 
-const { Pool } = require('pg');
-const dotenv = require('dotenv');
 const path = require('path');
+
+// Resolve modules from backend/node_modules since pg is installed there
+const backendDir = path.join(__dirname, '../backend');
+const { Pool } = require(path.join(backendDir, 'node_modules/pg'));
+const dotenv = require(path.join(backendDir, 'node_modules/dotenv'));
 
 dotenv.config({ path: path.join(__dirname, '../.env') });
 

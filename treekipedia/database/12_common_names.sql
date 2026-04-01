@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS species_common_names (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
 
-    CONSTRAINT fk_common_names_species FOREIGN KEY (taxon_id) REFERENCES species(taxon_id),
+    -- No FK constraint: species.taxon_id has 27 duplicate pairs (known issue in TODO.md)
+    -- and no UNIQUE constraint yet. Enforce referential integrity at application layer.
     CONSTRAINT uq_common_name_lang UNIQUE (taxon_id, name, language_code)
 );
 
