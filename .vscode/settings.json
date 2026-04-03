@@ -1,0 +1,5 @@
+{
+  "terminal.integrated.mouseWheelScrollSensitivity": 0.1,
+  "terminal.integrated.fastScrollSensitivity": 5,
+  "terminal.integrated.smoothScrolling": true
+}

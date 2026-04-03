@@ -1,0 +1,18 @@
+{
+  "timestamp": "20260211_094113",
+  "phase": "B",
+  "description": "Re-clustered species with adaptive max_k based on geographic dispersion",
+  "min_dispersion_km": 2000,
+  "min_occurrences": 10,
+  "species_reclustered": 1,
+  "old_centroids": 3,
+  "new_centroids": 3,
+  "species_details": [
+    {
+      "taxon_id": "GymPiPiPnCx50820-00",
+      "n_points": 2808,
+      "dispersion_km": 19480.787359764654,
+      "new_max_k": 15
+    }
+  ]
+}

@@ -9,9 +9,10 @@ import 'leaflet-draw';
 import 'leaflet.heat';
 import { analyzePlot } from '@/lib/api';
 import { PlotAnalysisResponse, GeoJSONPolygon } from '@/lib/types';
-import { Layers, Sparkles } from 'lucide-react';
+import { Layers, Sparkles, Grid3X3 } from 'lucide-react';
 import MapClickHandler from './MapClickHandler';
 import PolygonPredictionModal from './PolygonPredictionModal';
+import AreaSiteInspector from './AreaSiteInspector';
 
 // Fix Leaflet icon issues with webpack
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -886,6 +887,7 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
   const [overlayLayer, setOverlayLayer] = useState<'none' | 'ecoregions' | 'intact-forests' | 'heatmap' | 'mangaroa-forests'>('none');
   const [layerOpacity, setLayerOpacity] = useState(0.6);
   const [showPolygonPrediction, setShowPolygonPrediction] = useState(false);
+  const [showAreaInspector, setShowAreaInspector] = useState(false);
 
   // Note: Removed auto-enable heatmap - user must manually select overlay layer from dropdown
 
@@ -949,6 +951,14 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
 
         {/* Habitat Prediction - Click anywhere to predict species */}
         <MapClickHandler enabled={true} />
+
+        {/* Area Site Inspector - tile-by-tile env sampling within polygon */}
+        {showAreaInspector && drawnPolygon && (
+          <AreaSiteInspector
+            polygon={drawnPolygon}
+            onClose={() => setShowAreaInspector(false)}
+          />
+        )}
       </MapContainer>
 
       {/* Loading overlays */}
@@ -978,16 +988,22 @@ export default function Map({ onAnalysisComplete, onAnalysisError, onLoadingChan
         </div>
       )}
 
-      {/* Predict Species Action Bar - Show when polygon IS drawn */}
-      {drawnPolygon && !isAnalysisLoading && (
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1001]">
+      {/* Action Bar - Show when polygon IS drawn */}
+      {drawnPolygon && !isAnalysisLoading && !showAreaInspector && (
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-[1001] flex items-center gap-2">
           <button
             onClick={() => setShowPolygonPrediction(true)}
             className="group bg-black/90 hover:bg-emerald-900/90 backdrop-blur-md border border-emerald-500/40 hover:border-emerald-400/60 rounded-full shadow-xl px-5 py-2.5 text-white text-sm transition-all flex items-center gap-2"
           >
             <Sparkles className="w-4 h-4 text-emerald-400 group-hover:text-emerald-300" />
-            <span className="font-medium">Predict Suitable Species</span>
-            <span className="text-emerald-400/60 text-xs ml-1">AI-powered</span>
+            <span className="font-medium">Predict Species</span>
+          </button>
+          <button
+            onClick={() => setShowAreaInspector(true)}
+            className="group bg-black/90 hover:bg-blue-900/90 backdrop-blur-md border border-blue-500/40 hover:border-blue-400/60 rounded-full shadow-xl px-5 py-2.5 text-white text-sm transition-all flex items-center gap-2"
+          >
+            <Grid3X3 className="w-4 h-4 text-blue-400 group-hover:text-blue-300" />
+            <span className="font-medium">Inspect Area</span>
           </button>
         </div>
       )}

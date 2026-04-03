@@ -1,0 +1,5 @@
+Recipe: V4.7 Pre-backfill
+- an_full
+- hard-cap (or effective-cap)
+- no-boost
+- location encoding ON

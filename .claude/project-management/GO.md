@@ -34,6 +34,7 @@ bd sync                               # End-of-session sync
 | File | Purpose |
 |------|---------|
 | **GO.md** (this file) | Onboarding + operational context |
+| **docs/SINR Current Program State.md** | Single active SINR restart document |
 | **CLAUDE.md** | Development guide, conventions, environment |
 | **TODO.md** | Architectural vision & phase checklists (reference only — tasks live in `bd`) |
 | **ACTIVE.md** | Production status, endpoints, live metrics |
@@ -74,6 +75,19 @@ The workflow is identical regardless of tool — only the integration layer diff
 1. **This file (GO.md)** — workflow + operational context
 2. **CLAUDE.md** — codebase guide, conventions, environment setup
 3. **CHANGELOG.md** — last 10 entries for recent history
+
+### Step 1b: If working on SINR, read these first
+1. `docs/SINR Current Program State.md` — single active restart doc
+2. `docs/SINR V4.1 Data Confidence Matrix.md` — active trust boundary
+3. `docs/SINR GEDI Probe Findings 2026-03-18.md` — canonical GEDI decision
+4. `docs/SINR Claude Opinion Handoff - Post-Merge Radiata Forensics.md` — current second-opinion packet
+5. `docs/SINR Radiata Rank-1 Program.md` — active one-change-at-a-time experiment ladder
+6. `docs/SINR P1-P2-D1-T1 Runbook.md` — exact first execution cycle
+7. `docs/SINR Radiata Suite Benchmark Report 2026-03-19.md` — first local benchmark suite results
+8. `docs/SINR D1 Validation Findings 2026-03-19.md` — narrow non-GEDI validation verdict
+9. `docs/SINR jo1 Repair Status 2026-03-19.md` — non-GEDI repair implementation status
+10. `docs/SINR Claude Strategy Audit Prompt 2026-03-19.md` — external strategy-audit prompt
+11. `docs/SINR BigQuery Delete Candidates 2026-03-19.md` — conservative storage cleanup guidance
 
 ### Step 2: Check Task State
 ```bash
@@ -257,22 +271,35 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
 - Corrected finished `V4.1` BCE result:
   - `rank #105 / 19,043`
   - `prob=0.608283`
-- Corrected finished `V4.2` `an_full + hard-cap-1000 + no-boost` result:
+- Historical documented `V4.2` comparison result:
   - `rank #79 / 19,043`
   - `prob=0.916976`
   - still effectively unchanged across `introduced=0.0 / 0.5 / 1.0`
+- Historical documented `V4.3a` no-location result:
+  - `rank #78 / 19,043`
+  - `prob=0.919605`
+- First merged backfill-inclusive no-GEDI run (`~/model_v47_merged_anfull`) now completed:
+  - recipe-faithful result (`no_boost` honored): `rank #74 / 45,096`, `prob≈0.900`
+  - historical documented convention (boost accidentally left on): `rank #56 / 45,096`
+  - introduced sweep remains inert across `0.0 / 0.5 / 1.0`
+- Benchmark harness caution:
+  - older `V4.2`/`V4.3a` comparisons were not always replayed with artifact-faithful flags,
+  - so a clean post-merge parity audit is now required before treating raw rank deltas as final.
 - Historical support context:
   - `V3` radiata rows: `9,616`
   - `V4.1` radiata rows: `706`
-  - over `90%` of historical radiata support lived in `backfill`, not `new_gbif`
+  - merged `V4.7` matched radiata rows: `9,090`
+  - merged `V4.7` local radiata support within `25km`: `37`
+  - over `90%` of historical radiata support lived in `backfill`, not `new_gbif`, and that support is now largely restored
 - Current consensus:
-  - objective matters (`#105 -> #79` is real),
-  - but objective alone does not rescue radiata,
-  - top ranks remain broadleaf/native-heavy,
-  - the likely bottleneck stack is: thin local radiata support + strong local/native location prior + incomplete plantation-specific signal usage.
-- Treat this as a real comparison problem, not a preview-table plumbing bug.
+  - data scope restoration helps only modestly,
+  - “more radiata rows” is no longer the leading explanation,
+  - the merged run moved the failure from native broadleaf-heavy toward native conifer-heavy, but still did not make radiata competitive,
+  - this does **not** look like a simple `Pinus`-vs-`Pinus` confusion problem,
+  - the leading bottleneck stack is now: weak plantation-specific supervision, no true background negatives, stale inference / benchmark parity risk, and a head/fusion/ranking stack that still prefers nearby native NZ forest taxa.
+- Treat this as a real post-merge forensic problem, not a preview-table plumbing bug.
 
-### Pre-backfill experiment order (`V4.3+`)
+### Historical pre-backfill experiment order (`V4.3+`, now superseded)
 
 - `V4.3` — location-prior / representation diagnosis:
   - top-100 above-radiata audit,
@@ -289,28 +316,122 @@ This section supersedes the old instinct to keep iterating `v3.x` models on mixe
   - choose the winning pre-backfill recipe,
   - freeze a plantation benchmark suite,
   - only then decide whether to merge backfill into the `V4` program.
-- Do **not** merge backfill into `V4` before `V4.6` unless an explicit decision is recorded.
+- This order is now historical only. The explicit `2026-03-18` fast-safe merge decision below supersedes the old `V4.6` gate.
+
+### Post-backfill decision log (`2026-03-18`)
+
+- Explicit decision recorded: proceed with the first **fast-safe** merged `V4.7` lineage now, non-destructively, instead of waiting for a full canonical re-extract.
+- Current fast-safe path:
+  - do **not** full re-extract `new_gbif` now,
+  - do **not** full re-extract `backfill` now,
+  - build repaired backfill strict-core from `sinr_v3_features_backfill_strict_full`,
+  - exclude `GEDI` entirely from that repaired backfill lineage,
+  - merge repaired backfill strict-core with repaired `new_gbif` lineage `sinr_v3_features_new_gbif_strict_full_xiao_fixed_gpp_semantic_deduped_completed_v1`,
+  - keep data scope change as the only major lever for the first merged run.
+- Backfill strict-core repair policy for the fast-safe path:
+  - `MODIS GPP` fill/no-calc codes `65530-65535 -> NULL`,
+  - pre-`2001` `MODIS GPP -> NULL`,
+  - pre-`2012` nighttime lights `-> NULL`,
+  - keep the existing strict-core bio / soil artifact filters,
+  - leave `GEDI` to a separate follow-up issue.
+- Built non-destructive fast-safe tables:
+  - `species_data.sinr_v47_backfill_strict_core_v1` — `5,750,908` rows, `0` duplicate context groups.
+  - `species_data.sinr_v47_merged_strict_core_train_v2` — `21,387,371` rows, `45,096` species, `0` duplicate training-key groups, `0` null `taxon_id`.
+  - Join coverage into `sinr_v3_unified_strict_train_v30_preview_clean`:
+    - `backfill`: `9,467,057 / 9,568,912` rows (`98.94%`)
+    - `new_gbif`: `11,920,314 / 12,464,405` rows (`95.63%`)
+- Immediate next training prep:
+  - `treekipedia-5s4` — completed `V4.8` stats / contracts / shards rebuild from `sinr_v47_merged_strict_core_train_v2`.
+- First backfill-inclusive no-GEDI merged run (`2026-03-19` reality check):
+  - training completed successfully using the frozen merged recipe on `~/model_v47_merged_anfull`.
+  - the merged run improved the canonical radiata benchmark only modestly (`#74` recipe-faithful, `#56` under the older boosted convention).
+  - this is enough to reject the strong version of the “data scope alone will fix radiata” hypothesis.
+  - radiata support is back, but plantation-specific ranking is still weak.
+- Current merged-data integrity verdict:
+  - `v47_merged_strict_core_train_v2` does **not** show broad corruption or unexplained coverage gaps.
+  - merged joins are complete apart from explicit policy filters, duplicate training keys are `0`, and restored radiata support is real.
+  - remaining non-GEDI suspects are narrow and targeted, not broad-estate failures:
+    - `modis_gpp_mean` `NULL`-vs-`0` branch drift,
+    - pre-2015 `Dynamic World` / `ESA` proxy mismatches,
+    - smaller `xiao_planted_forest` branch mismatches,
+    - tiny `modis_lc_at_obs = -1` residue.
+  - `D1` is now complete and the broad "merged data is bad" theory still does **not** hold.
+  - but `D1` did confirm three real branch-semantic repair targets before the next training experiment:
+    - backfill post-2000 `modis_gpp_mean = 0` is mostly fake missingness,
+    - backfill `xiao_planted_forest` has real semantic drift,
+    - new_gbif pre-2015 `dynamic_world` has a stale proxy/remap subset.
+  - that repair pass is now implemented in `v48` branch/merged tables.
+  - this means the next gate after parity is an unchanged rerun on the repaired merged line, not immediate BCE.
+- GEDI probe and repair decision (`2026-03-18`):
+  - dedicated findings doc: `docs/SINR GEDI Probe Findings 2026-03-18.md`.
+  - official docs + direct probe confirmed that `gediv002_rh-98-a0 ... p95` is a valid canopy-height proxy in meters, but the current raw strict GEDI columns in both branches are contaminated.
+  - probe result: current raw GEDI matched the old collection-level mosaic misuse `101 / 120` times, while matching the proper per-asset sampling only `7 / 120` times.
+  - `new_gbif` raw GEDI is overwhelmingly old-mosaic contamination.
+  - `backfill` raw GEDI is mixed-vintage: some later rows look clean, but bad buckets still match the old mosaic.
+  - `gedi_foliage_height_div` is also semantically wrong as a model-facing foliage feature because current `shan` is a heterogeneity statistic, not raw FHD.
+  - decision: keep `V4.7/V4.9` canonical path GEDI-free; if GEDI returns, do a non-destructive GEDI-only re-extract for **both** `new_gbif` and `backfill` at distinct coordinate grain.
+  - first admissible GEDI contract:
+    - canopy: `rh-98-a0 / p95` + `countf`, with preserved `NULL` missingness,
+    - foliage: do **not** reuse current `shan`; if reintroduced, use `mean` or `median` from the FHD asset instead.
+  - future GEDI coord manifest size for the sidecar lookup:
+    - `new_gbif` coords: `8,505,329`
+    - `backfill` coords: `5,232,751`
+    - overlap: `883,075`
+    - union: `12,855,005`
+  - full GEDI-only coord lookup extraction is now running into `species_data.sinr_v48_gedi_lookup_v1`; monitor live progress via BigQuery row count and `orchestrator/gedi_lookup_full_*.log`.
+- Follow-up tracks that must stay visible:
+  - `treekipedia-v9i` — completed fast-safe merged `V4.7` strict-core tables,
+  - `treekipedia-v7x` — canonical post-merge radiata rank-1 program,
+  - `treekipedia-ts1` — post-merge radiata forensic and benchmark-parity audit,
+  - `treekipedia-ahp` — completed targeted non-GEDI merged-data validation sampling,
+  - `treekipedia-jo1` — narrow non-GEDI repair implemented; unchanged-rerun gate pending,
+  - `treekipedia-jt3` — merged background-negative and plantation-aware experiment,
+  - `treekipedia-2x6` — merged retrieval / head-diagnosis probes,
+  - `treekipedia-c5q` — verify and reintroduce `GEDI` for strict `V4` lineage,
+  - `treekipedia-7by` — conservative BigQuery delete-candidate audit,
+  - `treekipedia-a12` — phase-2 storage retirement after parity and validation,
+  - `treekipedia-7za` — phase-3 legacy retirement after v2/v3 forensic closeout,
+  - `treekipedia-rn8` — phase-4 strict-stack consolidation after merged canonization,
+  - `treekipedia-rag` — freeze and rerun a full canonical strict-context re-extract if trust requirements tighten.
 
 ### Active beads pipeline for the current program
 
-- `treekipedia-bj7` — keep backfill strict extraction running to completion.
+- `treekipedia-bj7` — completed backfill strict extraction (retain for provenance).
 - `treekipedia-cl3` — repoint release builders to completed `new_gbif` strict lineage and rebuild release artifacts.
 - `treekipedia-9vo` — verify/fix non-AE strict raw semantics (GPP, GEDI, masked-zero families, DW proxy semantics).
 - `treekipedia-8b2` — canonicalize or explicitly exclude external/manual families.
 - `treekipedia-bfc` — completed `V4.1` preview baseline (retain for provenance/comparison only).
-- `treekipedia-xz2` — active `V4.2` radiata comparison and SINR alignment work.
-- `treekipedia-xrj` — `V4.3` location-prior and representation diagnosis.
-- `treekipedia-37w` — `V4.4` true background negatives and spatial-specificity experiments.
-- `treekipedia-e0p` — `V4.5` retrieval / regional-calibration probes.
-- `treekipedia-03y` — `V4.6` pre-backfill recipe lock and benchmark suite.
+- `treekipedia-xz2` — completed historical `V4.2` comparison phase (retain for provenance only).
+- `treekipedia-xrj` — completed historical `V4.3` diagnosis phase (retain for provenance only).
+- `treekipedia-v7x` — active post-merge radiata rank-1 program umbrella.
+- `treekipedia-ts1` — active post-merge radiata forensic and benchmark-parity audit.
+- `treekipedia-ahp` — completed targeted non-GEDI merged-data validation sampling.
+- `treekipedia-jo1` — active unchanged-rerun gate after the narrow non-GEDI repair implementation.
+- `treekipedia-jt3` — active merged `V4.4` background-negative / plantation-aware experiment track.
+- `treekipedia-2x6` — active merged `V4.5` retrieval / head-diagnosis probes.
 - `treekipedia-2t9` — design the future multi-source temporal intelligence expansion for `V4.2+`.
 - `treekipedia-csc` — after backfill completes, build the full strict unified training table from strict feature outputs.
+- `treekipedia-v9i` — completed fast-safe `V4.7` merged strict-core path (repaired backfill strict-core + merged training grain).
+- `treekipedia-5s4` — completed `V4.8` artifact rebuild from the fast-safe merged training table.
+- `treekipedia-c5q` — future `GEDI`-inclusive repair path once semantics / provenance are verified.
+- `treekipedia-1i5` — build the GEDI-only coord manifest and repaired lookup for both branches.
+- `treekipedia-d4q` — align live inference with the strict GEDI/Xiao semantics after the repair contract is frozen.
+- `treekipedia-7by` — conservative BigQuery delete-candidate audit after the merged rebuild.
+- `treekipedia-a12` — phase-2 storage retirement after parity and narrow validation.
+- `treekipedia-7za` — phase-3 storage retirement after legacy forensic closeout.
+- `treekipedia-rn8` — phase-4 strict-stack consolidation after merged canonization.
+- `treekipedia-rag` — fallback full frozen re-extract path if the fast-safe lineage is not trusted enough.
 
 ### Operational rule
 
-- Do **not** drift back into generic `v3.x` tweaking or premature backfill-join work until `treekipedia-xz2` has produced a clear comparison / SINR-alignment recommendation.
+- Do **not** keep treating “more data” as the main missing piece.
+- Current forward work is: `treekipedia-ts1` + `treekipedia-jo1` + `treekipedia-jt3` + `treekipedia-2x6`, with `GEDI` repair continuing in parallel but not blocking the no-GEDI forensic program.
 
-## 4.2) Current Data Governance Findings (2026-03-12 to 2026-03-15)
+## 4.2) Historical Data Governance Findings (2026-03-12 to 2026-03-15)
+
+- This section records the pre-merge governance state only.
+- It is not the current operational source of truth for the merged V4 program.
+- Current state is the post-`2026-03-18` fast-safe merged path above, with `species_data.sinr_v47_merged_strict_core_train_v2` as the active no-GEDI merged training table and the first merged run already completed.
 
 - `species_data.sinr_v3_unified_v2_final` is deleted and should stay retired.
 - `species_data.sinr_v3_features_new_gbif_strict_full` is currently the cleanest active raw strict feature table for the `new_gbif` branch.
@@ -368,9 +489,14 @@ Notes:
   - MISS quarantine: `species_data.sinr_v3_strict_unified_quarantine`
 - Canonical dedup key: `(data_source, taxon_id, lat4, lon4, observation_year, emb_year)`.
 
-## 6) Current Program State
+## 6) Historical Legacy v3 Recovery Notes (Reference Only)
 
-For current SINR work, the `V4.0 -> V4.1 preview -> V4.2 full` framing in section `4.1` supersedes the historical `v3` experiment queue below. Keep the older `v3` notes as benchmark context only.
+- This section is preserved as historical reference for the old `v2.2 -> v3 -> v14` recovery line.
+- It is **not** the active operational program state.
+- The active SINR restart narrative is now:
+  - `docs/SINR Current Program State.md`
+  - the post-merge sections in `.claude/project-management/GO.md`
+- In particular, do **not** treat the `v14 #2` result below as the current program baseline or as evidence that the merged V4 program should revert to the old legacy artifact family without a parity audit.
 
 - **Best model**: v14_location_5m = radiata rank **#2 / 45,247** (prob=0.9395, zero land-state, location encoding ON)
 - **Previous best**: v8_hardcap_5m_full = rank #2 (prob=0.9785, but seed variance — no location encoding)
@@ -616,7 +742,8 @@ The SINR pipeline already samples ~60 environmental features at every point (cli
 | **B** | Area tile-by-tile analysis + progressive rendering + progress bar | 1 per tile (batched env) | none | `treekipedia-auw` |
 | **C** | Stratification clustering (k-means on tiles, similarity overlays) | 0 (client-side) | none | `treekipedia-uo8` |
 | **D** | Species envelope comparison (per-species quantile match) | 0 | 1 BQ aggregate (~$0.01) | `treekipedia-7gh` |
-| E | Debug/benchmark mode (power-user model inspection) | 0 | optional | deferred |
+| **E** | AE→Env Decoder (eliminates most GEE calls via local regression) | background sampling batch | none | `treekipedia-ck8` |
+| F | Debug/benchmark mode (power-user model inspection) | 0 | optional | deferred |
 
 ### Phase A — Single-Point Site Inspector
 
@@ -664,6 +791,35 @@ The SINR pipeline already samples ~60 environmental features at every point (cli
 - Backend routes: `treekipedia/backend/routes/prediction.js`
 - Feature contract: `orchestrator/contracts/sinr_v3/feature_contract_v41_preview_train.json`
 - Data confidence: `docs/SINR V4.1 Data Confidence Matrix.md`
+
+### Phase E — AE → Environment Decoder (eliminates most GEE calls)
+
+**Added**: 2026-03-17. Separate from SINR model — a small utility model for Site Inspector acceleration.
+
+**Insight**: AlphaEarth 64D embeddings encode temperature at R²=0.97 and implicitly capture most environmental variables visible from satellite imagery. A single multi-output regression model can decode ~30 env variables directly from AE embeddings, eliminating 90%+ of GEE calls in the Site Inspector.
+
+**Architecture**:
+```
+AE_64D → Linear(64,256) + ReLU → Linear(256,256) + ReLU → Linear(256,256) + ReLU
+  → continuous_head: Linear(256, ~55) [MSE loss, z-score normalized]
+  → categorical_heads: Linear(256, vocab_size) per categorical [CE loss]
+```
+- Single model, multiple output heads (multi-task learning)
+- Separate from SINR (different purpose, different update cadence, CPU-only, minutes to train)
+- Training data: 5M+ SINR training rows from BQ (AE + env vars already paired)
+- **Critical**: Must augment with random global background points to correct forest-cover bias in GBIF occurrence data
+
+**Scripts**:
+- `orchestrator/train_ae_env_decoder.py` — trains decoder from BQ data + optional background parquet
+- `orchestrator/sample_background_env.py` — samples random global land points with AE + env from GEE
+
+**Workflow**:
+1. `python3 sample_background_env.py --n-points 2000000` — batch GEE job (hours, run once)
+2. `python3 train_ae_env_decoder.py --from-bq --shards 0,1,2,3,4 --background-parquet background_env_2m.parquet`
+3. Outputs `ae_env_decoder/`: model weights, normalization stats, per-variable R² report, routing table (decodable vs needs-GEE)
+4. Wire into Site Inspector: sample AE from COG → decode locally → only call GEE for low-R² variables
+
+**Expected outcome**: Variables with R²>0.7 decoded locally (~50ms), only soil/historical/LiDAR vars need GEE (~5s). Per-tile latency drops from 5-15s to <1s for most variables.
 
 ### Constraints
 

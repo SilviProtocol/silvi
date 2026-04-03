@@ -5,6 +5,7 @@ import { useMapEvents, useMap, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import HabitatPredictionModal from './HabitatPredictionModal';
 import SpeciesRecommenderModal from './SpeciesRecommenderModal';
+import SiteInspectorModal from './SiteInspectorModal';
 
 // Custom icon for clicked location - modern circular design
 const clickedLocationIcon = L.divIcon({
@@ -40,6 +41,7 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
   const [clickedLocation, setClickedLocation] = useState<{ lat: number; lon: number } | null>(null);
   const [showPredictionModal, setShowPredictionModal] = useState(false);
   const [showRecommenderModal, setShowRecommenderModal] = useState(false);
+  const [showSiteInspectorModal, setShowSiteInspectorModal] = useState(false);
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
 
@@ -119,9 +121,9 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
   });
 
   // Helper to create portal outside Leaflet's DOM
-  const ModeSelector = ({ lat, lon, onPredict, onRecommend, onClose }: {
+  const ModeSelector = ({ lat, lon, onPredict, onRecommend, onInspect, onClose }: {
     lat: number; lon: number;
-    onPredict: () => void; onRecommend: () => void; onClose: () => void;
+    onPredict: () => void; onRecommend: () => void; onInspect: () => void; onClose: () => void;
   }) => {
     if (typeof window === 'undefined') return null;
     const { createPortal } = require('react-dom');
@@ -129,7 +131,7 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
       <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
         <div className="bg-gray-900/95 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-white">Species Analysis</h2>
+            <h2 className="text-lg font-semibold text-white">Location Analysis</h2>
             <p className="text-sm text-white/50 mt-1">
               {lat.toFixed(4)}, {lon.toFixed(4)}
             </p>
@@ -169,6 +171,23 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
                 </div>
               </div>
             </button>
+
+            <button
+              onClick={onInspect}
+              className="p-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 transition-all text-left group"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🛰️</span>
+                <div>
+                  <div className="text-white font-medium group-hover:text-cyan-400 transition-colors">
+                    Site Inspector
+                  </div>
+                  <div className="text-xs text-white/50 mt-0.5">
+                    What IS this place? Environmental context from 35+ satellite layers.
+                  </div>
+                </div>
+              </div>
+            </button>
           </div>
 
           <button
@@ -201,8 +220,8 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
         </Marker>
       )}
 
-      {/* Mode Selector: Predict vs Recommend */}
-      {showModeSelector && clickedLocation && !showPredictionModal && !showRecommenderModal && (
+      {/* Mode Selector: Predict vs Recommend vs Inspect */}
+      {showModeSelector && clickedLocation && !showPredictionModal && !showRecommenderModal && !showSiteInspectorModal && (
         <ModeSelector
           lat={clickedLocation.lat}
           lon={clickedLocation.lon}
@@ -213,6 +232,10 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
           onRecommend={() => {
             setShowModeSelector(false);
             setShowRecommenderModal(true);
+          }}
+          onInspect={() => {
+            setShowModeSelector(false);
+            setShowSiteInspectorModal(true);
           }}
           onClose={() => setShowModeSelector(false)}
         />
@@ -237,6 +260,18 @@ export default function MapClickHandler({ enabled = true }: MapClickHandlerProps
           lon={clickedLocation.lon}
           onClose={() => {
             setShowRecommenderModal(false);
+          }}
+        />
+      )}
+
+      {/* Site Inspector Modal */}
+      {showSiteInspectorModal && clickedLocation && (
+        <SiteInspectorModal
+          lat={clickedLocation.lat}
+          lon={clickedLocation.lon}
+          map={map}
+          onClose={() => {
+            setShowSiteInspectorModal(false);
           }}
         />
       )}

@@ -2807,6 +2807,73 @@ router.post('/polygon', async (req, res) => {
 });
 
 /**
+ * GET /api/prediction/site-context
+ *
+ * Lightweight environmental context sampling for the Site Inspector.
+ * Proxies to the Python /sample-env endpoint which calls only:
+ *   sample_sinr_env_features() + sample_worldclim_bio() + sample_srtm_elevation() + sample_openlandmap_soil()
+ *
+ * Returns structured JSON with human-readable labels organized into sections:
+ *   climate_water, terrain_soil, land_state, carbon_productivity, ecological_context
+ *
+ * Query Parameters:
+ * - lat: Latitude (required)
+ * - lon: Longitude (required)
+ */
+router.get('/site-context', async (req, res) => {
+    try {
+        const { lat, lon } = req.query;
+
+        if (!lat || !lon) {
+            return res.status(400).json({
+                error: 'Missing required parameters: lat, lon'
+            });
+        }
+
+        const latitude = parseFloat(lat);
+        const longitude = parseFloat(lon);
+
+        if (isNaN(latitude) || isNaN(longitude)) {
+            return res.status(400).json({
+                error: 'Invalid coordinates: lat and lon must be numbers'
+            });
+        }
+
+        console.log(`[site-context] Sampling env context at (${latitude}, ${longitude})`);
+
+        const response = await axios.get(`${LOCATION_PREDICTOR_URL}/sample-env`, {
+            params: { lat: latitude, lon: longitude },
+            timeout: 60000 // 60 second timeout — GEE batched call can take 5-15s
+        });
+
+        res.json(response.data);
+
+    } catch (error) {
+        console.error('[site-context] Error:', error.message);
+
+        if (error.code === 'ECONNREFUSED') {
+            return res.status(503).json({
+                error: 'Location predictor service unavailable',
+                detail: 'The Python microservice at port 5002 is not running'
+            });
+        }
+
+        if (error.code === 'ECONNABORTED' || error.message?.includes('timeout')) {
+            return res.status(504).json({
+                error: 'Request timed out',
+                detail: 'GEE sampling took too long. Try again.'
+            });
+        }
+
+        const status = error.response?.status || 500;
+        res.status(status).json({
+            error: 'Failed to sample site context',
+            detail: error.response?.data?.error || error.message
+        });
+    }
+});
+
+/**
  * GET /api/prediction/health
  *
  * Health check for the prediction service.

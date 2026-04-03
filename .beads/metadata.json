@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "server",
+  "dolt_database": "treekipedia",
+  "project_id": "d4b290c6-3e38-4127-bbd6-2d0565cff461"
+}

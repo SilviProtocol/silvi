@@ -1,0 +1,354 @@
+{
+  "benchmark": {
+    "lat": -41.151583464812404,
+    "lon": 175.09968969862783,
+    "year": 2023,
+    "target": "GymPiPiPnCx50820-00",
+    "rank": 105,
+    "prob": 0.6270254850387573
+  },
+  "composition": {
+    "ae_primary": {
+      "angiosperm": 200
+    },
+    "ae_temporal": {
+      "angiosperm": 200
+    },
+    "hidden": {
+      "angiosperm": 195,
+      "nz_native_conifer": 5
+    },
+    "logit_top50": {
+      "angiosperm": 49,
+      "nz_native_conifer": 1
+    }
+  },
+  "top_neighbors": {
+    "ae_primary_top20": [
+      {
+        "taxon_id": "AngMaGeRbCx16511-00",
+        "similarity": 0.9649250507354736,
+        "category": "angiosperm",
+        "lat": -41.100399017333984,
+        "lon": 175.15570068359375,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaGeRbCx16505-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaCaWnTr02888-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApRlCx00982-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxCnNc41307-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApRlCx00989-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApGrSl00008-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaFaNtHf15082-00",
+        "similarity": 0.937955379486084,
+        "category": "angiosperm",
+        "lat": -43.819698333740234,
+        "lon": 169.26719665527344,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaSaSpNd47983-00",
+        "similarity": 0.9375733137130737,
+        "category": "angiosperm",
+        "lat": -41.303199768066406,
+        "lon": 174.78790283203125,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaGeRbCx16532-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaGeRbCx16511-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxLcRp41492-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxCnNc41307-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApPtTs00084-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMaVlCx32867-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApGrSl00008-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMyNgRc40930-00",
+        "similarity": 0.9369593858718872,
+        "category": "angiosperm",
+        "lat": -46.56549835205078,
+        "lon": 168.99850463867188,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMyNgRc40930-00",
+        "similarity": 0.926479160785675,
+        "category": "angiosperm",
+        "lat": -46.082000732421875,
+        "lon": 167.5373992919922,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaAsRsSc01578-00",
+        "similarity": 0.926479160785675,
+        "category": "angiosperm",
+        "lat": -46.082000732421875,
+        "lon": 167.5373992919922,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxCnNc41307-00",
+        "similarity": 0.926479160785675,
+        "category": "angiosperm",
+        "lat": -46.082000732421875,
+        "lon": 167.5373992919922,
+        "is_nz": true
+      }
+    ],
+    "hidden_top20": [
+      {
+        "taxon_id": "AngMaAsRsSc01578-00",
+        "similarity": 0.9926974773406982,
+        "category": "angiosperm",
+        "lat": -40.73249816894531,
+        "lon": 175.23910522460938,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaGeRbCx16531-00",
+        "similarity": 0.990808367729187,
+        "category": "angiosperm",
+        "lat": -40.95800018310547,
+        "lon": 175.02049255371094,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxLcRp41492-00",
+        "similarity": 0.9888912439346313,
+        "category": "angiosperm",
+        "lat": -40.95840072631836,
+        "lon": 175.02149963378906,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaAsRsSc01578-00",
+        "similarity": 0.9888912439346313,
+        "category": "angiosperm",
+        "lat": -40.95840072631836,
+        "lon": 175.02149963378906,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaGeRbCx16511-00",
+        "similarity": 0.9880048036575317,
+        "category": "angiosperm",
+        "lat": -41.100399017333984,
+        "lon": 175.15570068359375,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMyMyRt39093-00",
+        "similarity": 0.9861774444580078,
+        "category": "angiosperm",
+        "lat": -41.10900115966797,
+        "lon": 175.01759338378906,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaLaMnMc23983-00",
+        "similarity": 0.9855368137359619,
+        "category": "angiosperm",
+        "lat": -40.95800018310547,
+        "lon": 175.0198974609375,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApPnNn00037-00",
+        "similarity": 0.985383152961731,
+        "category": "angiosperm",
+        "lat": -41.166900634765625,
+        "lon": 174.80630493164062,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMyNgRc40930-00",
+        "similarity": 0.9822477102279663,
+        "category": "angiosperm",
+        "lat": -41.05870056152344,
+        "lon": 174.96200561523438,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaFaNtHf15092-00",
+        "similarity": 0.981975793838501,
+        "category": "angiosperm",
+        "lat": -41.089698791503906,
+        "lon": 175.04310607910156,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaOxLcRp41492-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaAsRsSc01578-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaErPrMl06733-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaFaFbCx13256-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaMaMlVc34345-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaLaLrCx22033-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaAsStRc01661-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaPrPrTc42455-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaRoRsCx44234-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      },
+      {
+        "taxon_id": "AngMaApPnNn00037-00",
+        "similarity": 0.9817821979522705,
+        "category": "angiosperm",
+        "lat": -38.94540023803711,
+        "lon": 175.4062957763672,
+        "is_nz": true
+      }
+    ]
+  },
+  "total_rows_scanned": 11920314,
+  "elapsed_seconds": 1077.5405640602112
+}

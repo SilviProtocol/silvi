@@ -1,0 +1,24 @@
+{
+  "contract_name": "sinr_v54_ae_xiao_anthro_train_feature_contract",
+  "version": "v54_ae_xiao_anthro_train",
+  "mode": "online",
+  "created_at_utc": "2026-03-27T07:50:42.021547Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "num_ae_embeddings": 64,
+  "num_ae_temporal": 512,
+  "num_env_continuous": 2,
+  "env_continuous_sha256": "180475e79043bb808b90ad9793919aba174044c20948323f82ec02768bdb7d6f",
+  "env_continuous_cols": [
+    "human_modification",
+    "nighttime_lights"
+  ],
+  "categorical_features": [
+    "xiao_planted_forest"
+  ],
+  "land_state_cols": [],
+  "notes": [
+    "AE plus xiao plus anthropogenic-context add-back experiment",
+    "Uses AE current-year embeddings, AE temporal embeddings, xiao_planted_forest, human_modification, and nighttime_lights",
+    "Drops all other non-AE environmental and land-state inputs"
+  ]
+}

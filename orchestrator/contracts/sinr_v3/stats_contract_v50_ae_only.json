@@ -1,0 +1,13 @@
+{
+  "contract_name": "sinr_v50_ae_only_normalization",
+  "version": "v50_ae_only",
+  "created_at_utc": "2026-03-23T14:52:19.158803Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "total_rows": 21387371,
+  "continuous_cols": 64,
+  "ae_emb_cols": 64,
+  "env_continuous_cols": 0,
+  "temporal_cols": 512,
+  "continuous_stats": "normalize_stats_v50_ae_only.npz",
+  "temporal_stats": "normalize_temporal_v50_ae_only.npz"
+}

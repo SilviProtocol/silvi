@@ -1,0 +1,13 @@
+{
+  "contract_name": "sinr_v49_gedi_canopy_normalization",
+  "version": "v49_gedi_canopy",
+  "created_at_utc": "2026-03-22T22:43:27.489042Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v49_merged_strict_core_train_v1",
+  "total_rows": 21387371,
+  "continuous_cols": 121,
+  "ae_emb_cols": 64,
+  "env_continuous_cols": 57,
+  "temporal_cols": 512,
+  "continuous_stats": "normalize_stats_v49_gedi_canopy.npz",
+  "temporal_stats": "normalize_temporal_v49_gedi_canopy.npz"
+}

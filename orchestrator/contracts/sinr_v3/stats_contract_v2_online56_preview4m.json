@@ -1,0 +1,11 @@
+{
+  "contract_name": "sinr_v3_global_normalization",
+  "version": "v2_online56_preview4m",
+  "created_at_utc": "2026-03-06T15:17:49.658747Z",
+  "data_root": "/Users/djimoserodio/data_5m_shards",
+  "num_files": 523,
+  "total_rows_seen": 5001204,
+  "feature_contract": "orchestrator/contracts/sinr_v3/feature_contract_v2_online56.json",
+  "continuous_stats": "normalize_stats_v3_v2_online56_preview4m.npz",
+  "temporal_stats": "normalize_temporal_v3_v2_online56_preview4m.npz"
+}

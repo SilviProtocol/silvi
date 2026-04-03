@@ -1,0 +1,14 @@
+{
+  "contract_name": "sinr_v48_merged_normalization",
+  "version": "v48_merged",
+  "created_at_utc": "2026-03-21T20:30:43.911944Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v48_merged_strict_core_train_v1",
+  "total_rows": 21387371,
+  "continuous_cols": 119,
+  "ae_emb_cols": 64,
+  "env_continuous_cols": 55,
+  "temporal_cols": 512,
+  "continuous_stats": "normalize_stats_v48_merged.npz",
+  "temporal_stats": "normalize_temporal_v48_merged.npz",
+  "note": "recomputed after fixing v48 merged positional union bug"
+}

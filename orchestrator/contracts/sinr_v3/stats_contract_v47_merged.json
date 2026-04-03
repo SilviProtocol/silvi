@@ -1,0 +1,13 @@
+{
+  "contract_name": "sinr_v47_merged_normalization",
+  "version": "v47_merged",
+  "created_at_utc": "2026-03-18T03:51:56.912185Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "total_rows": 21387371,
+  "continuous_cols": 119,
+  "ae_emb_cols": 64,
+  "env_continuous_cols": 55,
+  "temporal_cols": 512,
+  "continuous_stats": "normalize_stats_v47_merged.npz",
+  "temporal_stats": "normalize_temporal_v47_merged.npz"
+}

@@ -1,0 +1,23 @@
+{
+  "contract_name": "sinr_v53_ae_xiao_dynamic_world_train_feature_contract",
+  "version": "v53_ae_xiao_dynamic_world_train",
+  "mode": "online",
+  "created_at_utc": "2026-03-26T22:18:50.751018Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "num_ae_embeddings": 64,
+  "num_ae_temporal": 512,
+  "num_env_continuous": 1,
+  "env_continuous_sha256": "d9dd37c20026541c654eedea33df4af023af86f788aa6d7518f2f6bb8103d110",
+  "env_continuous_cols": [
+    "dynamic_world"
+  ],
+  "categorical_features": [
+    "xiao_planted_forest"
+  ],
+  "land_state_cols": [],
+  "notes": [
+    "AE plus xiao plus dynamic_world add-back experiment",
+    "Uses AE current-year embeddings, AE temporal embeddings, xiao_planted_forest, and dynamic_world",
+    "Drops all other non-AE environmental and land-state inputs"
+  ]
+}

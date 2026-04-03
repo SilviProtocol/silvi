@@ -1,0 +1,645 @@
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+I MBALANCE - AWARE P RESENCE - ONLY L OSS F UNC TION FOR S PECIES D ISTRIBUTION M ODELING
+Marc Rußwurm
+WUR, Netherlands
+marc.russwurm@wur.nl
+
+arXiv:2403.07472v1 [cs.LG] 12 Mar 2024
+
+Robin Zbinden, Nina van Tiel
+EPFL, Switerzland
+firstname.lastname@epfl.ch
+Devis Tuia
+EPFL, Switerzland
+devis.tuia@epfl.ch
+
+A BSTRACT
+In the face of significant biodiversity decline, species distribution models (SDMs)
+are essential for understanding the impact of climate change on species habitats by
+connecting environmental conditions to species occurrences. Traditionally limited
+by a scarcity of species observations, these models have significantly improved in
+performance through the integration of larger datasets provided by citizen science
+initiatives. However, they still suffer from the strong class imbalance between
+species within these datasets, often resulting in the penalization of rare species–
+those most critical for conservation efforts. To tackle this issue, this study assesses
+the effectiveness of training deep learning models using a balanced presence-only
+loss function on large citizen science-based datasets. We demonstrate that this
+imbalance-aware loss function outperforms traditional loss functions across various datasets and tasks, particularly in accurately modeling rare species with limited observations.
+
+1
+
+I NTRODUCTION
+
+Species distribution models (SDMs) play a crucial role in ecology, serving as indispensable tools
+for understanding and predicting the spatial distribution of species. By establishing correlations
+between species occurrence data and environmental variables (Elith and Leathwick, 2009), these
+models provide valuable insights into the ecological niches and habitat preferences of diverse organisms, thereby informing conservation efforts (Guisan et al., 2013). The significance of SDMs
+in identifying and safeguarding endangered species becomes even more pronounced as habitats of
+numerous species face imminent threats from climate change (Thomas et al., 2004; Dyderski et al.,
+2018). Additionally, conservation endeavors aimed at preventing biodiversity loss not only contribute to mitigating climate change (Shin et al., 2022) but also play an important role in alleviating
+its broader impacts (Pörtner et al., 2023).
+These conservation efforts primarily focus on rare and endangered species, which are inherently
+difficult to observe. Consequently, we have only a few observations available, posing challenges to
+the development of reliable SDMs (Breiner et al., 2015). Recent initiatives in citizen science present
+promising avenues to facilitate the collection of large amounts of species records. However, there
+is still a high disparity in the number of observations per species, ranging from a few handfuls of
+occurrences to tens of thousands for the most common or iconic species (Botella et al., 2023; Cole
+et al., 2023). Such a significant class imbalance reflects the existence of various biases within the
+data, which can be geographical and taxonomic, among others (Feldman et al., 2021). Additionally,
+the data gathered through citizen science initiatives is typically presence-only, i.e., it consists of
+recorded occurrences but no data regarding the species’ absence (Pearce and Boyce, 2006). Managing such data limitations brings additional complexities in developing accurate and reliable SDMs
+for rare species.
+Deep learning (DL) has demonstrated promise for SDMs (Deneu et al., 2021; Teng et al., 2023),
+by enabling the simultaneous modeling of multiple species and the identification of shared environ1
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+iNaturalist training data
+12500
+
+600
+species count
+
+species count
+
+GeoLifeCLEF training data
+
+400
+200
+0
+
+0
+
+1000
+
+2000
+3000
+#presences
+
+10000
+7500
+5000
+2500
+0
+
+4000
+
+200
+
+400
+600
+#presences
+
+800
+
+1000
+
+Figure 1: Distributions of the number of presence records in the GeoLifeCLEF 2023 (left) and
+iNaturalist (right) training datasets, obtained through citizen science initiatives. Both distributions
+exhibit a long-tailed pattern, which is crucial to address to avoid penalizing rare species during
+training.
+mental patterns, a characteristic particularly advantageous for rare1 species (Zbinden et al., 2023).
+However, the persistence of high class imbalance in training datasets (see Figure 1) often leads to the
+neglect of rare species during model training, despite their critical importance. Recently, Zbinden
+et al. (2024) introduced a balanced loss function to account for the class imbalance between species,
+demonstrating its effectiveness in improving the model’s performance on rare species, but only on
+the relatively small datasets of Elith et al. (2020). In this study, we extend their work to larger
+datasets acquired through citizen science initiatives at continental and global scales (Botella et al.,
+2023; Cole et al., 2023). Specifically, we train DL models with different presence-only losses and
+evaluate these models on different SDM-related tasks. Our findings highlight that an imbalanceaware loss function is essential to achieve optimal performance on rare species.
+
+2
+
+M ETHODS
+
+Generally, SDMs learn correlations between the environmental features and observed species occurrence patterns. Depending on the downstream application, the model can also be made spatially
+explicit (Domisch et al., 2019) by incorporating geospatial coordinates as additional input through
+location encoders (Rußwurm et al., 2024). Multi-species distribution models aim to learn the distribution of multiple species simultaneously within a single model. The task then involves multi-label
+classification, as a given location may host an arbitrary number of species. However, a significant
+portion of species records exists in the form of presence-only data, often with only one species
+presence observation associated with a given location. This creates a scenario known as single positive multi-label learning (Cole et al., 2021), which poses significant challenges. To cope with this
+scenario, a common strategy involves sampling pseudo-absences (PAs), designating samples as negative even when certainty about the absence of a species is lacking, and incorporating them into the
+loss function during model training (Cole et al., 2023). Below, we describe such losses.
+2.1
+
+L OSS FUNCTIONS
+
+The predominant approach for multi-label classification uses the binary cross-entropy loss function (Nam et al., 2014; Ung et al., 2023). For a given location with species observations represented
+by y, it is defined as follows:
+S
+
+1 X
+LBCE (y, ŷ) = −
+1[ys =1] log(ŷs ) + 1[ys =0] log(1 − ŷs )
+S s=1
+
+(1)
+
+where ys is 1 if species s has been observed and 0 otherwise, ŷs ∈ [0, 1] is the predicted suitability
+score for species s, and S denotes the number of species. It is essential to note that ys = 0 doesn’t
+necessarily imply that the species is absent; it simply indicates that it hasn’t been observed. This
+1
+In this study, for simplicity, we refer to rare species as those with the lowest numbers of occurrences in the
+training set. It is important to note that the rarity of species is a more complex concept, dependent on factors
+such as range size, occupancy, and abundance (Crisfield et al., 2024).
+
+2
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+corresponds to a PA, characterized here by the observation of another species. These specific PAs
+are referred to as target-group background points in the context of SDMs (Phillips et al., 2009).
+Since target-group background points are only located where other species’ observations are, they
+may not entirely cover the area of interest. To address this limitation, Cole et al. (2023) extended the
+BCE loss to incorporate, for each sample, a PA located at a random location with a predicted score
+ŷs′ , introducing the full assume negative loss function:
+S
+
+1 X
+Lfull (y, ŷ) = −
+1[ys =1] λ log(ŷs ) + 1[ys =0] log(1 − ŷs ) + log(1 − ŷs′ ) .
+S s=1
+
+(2)
+
+Here, λ = 2048 is included to counterbalance the larger number of PAs compared to presences.
+However, this loss doesn’t address the high class imbalance between species, which is particularly
+detrimental for rare species. To tackle this issue, we introduced class-specific weights, or species
+weights, in a prior work (Zbinden et al., 2024), resulting in the full weighted loss function:
+S
+
+Lfull-weighted (y, ŷ) = −
+
+1
+1 X
+ log(1 − ŷs )
+1[ys =1] λ1 ws log(ŷs ) + 1[ys =0] λ2 
+S s=1
+1 − w1s
+
++(1 − λ2 ) log(1 − ŷs′ ) .
+
+(3)
+
+1
+, where np(s) denotes the number of presences
+Species weights are defined as ws = nnp(s) = freq(s)
+of species s, and n represents the total number of presence locations, i.e., the number of training
+samples. Additionally, the weight λ2 is introduced to modulate the impact of different types of PAs.
+In this work, we extensively test these loss functions across different large-scale citizen sciencebased datasets and tasks, with a particular emphasis on rare species. The datasets are described in
+the following section, and training details are presented in the Appendix A.
+
+2.2
+
+DATASETS
+
+GeoLifeCLEF 2023 (GLC23). Originally designed for a competition (Botella et al., 2023), this
+dataset provides an extensive collection of species observation records from various citizen science
+sources. GLC23 includes a public validation set containing presence-absence data for 2174 plant
+species. We use it to assess performances by calculating the mean AUC across all species. Additionally, we compute a mean AUC for 468 rare species (with 50 observations or fewer). The distribution
+of the number of presence records per species is shown in the left panel of Figure 1.
+iNaturalist. We leverage the codebase, model architectures, datasets, and tasks developed in Cole
+et al. (2023). Specifically, the training dataset comprises 35.5 million observations spanning 47 375
+species from iNaturalist2 . Unlike the GLC23 dataset, all species in this dataset have a minimum of
+50 observations, with some species exceeding 100 000 occurrences. For computational efficiency,
+we limit the number of observations to 1000 per species (see right panel of Figure 1), aligning
+to Cole et al. (2023). We evaluate with the following three tasks: first, the eBird Status and Trends
+(S&T) test set (Fink et al., 2020), derived from expert range maps, which includes 535 bird species.
+The number of presences for these species is less imbalanced, with almost all the species having
+a substantial number of observations during training. Specifically, we categorize the 96 out of 535
+species with less than 1000 occurrences as rare. Second, the International Union for Conservation
+of Nature (IUCN) test set, which is more imbalanced and contains 639 rare species with 100 occurrences or less. Performance is evaluated using the mean average precision (mAP) for both the
+S&T and IUCN test sets. Third, the models are assessed as geographic priors for fine-grained
+image classification. This task enhances species image classification by incorporating location and
+environmental metadata into the model. We calculate the top-1 accuracy gain (∆ Top-1) by adding
+SDMs to complement the vision model. The distribution of the number of presences of the species
+considered in these three tasks is presented in the Appendix B.
+
+3
+
+R ESULTS
+
+Results are presented in Table 1 and Figure 2. Firstly, we observe consistent high performance with
+the full weighted loss, specifically with λ2 = 0.5, outperforming the other losses in three out of
+2
+
+https://www.inaturalist.org/
+
+3
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+GeoLifeCLEF
+
+S&T
+
+(AUC)
+
+(mAP)
+
+IUCN
+
+Geo Prior
+
+(mAP)
+
+(∆ Top-1)
+
+all
+
+rare
+
+all
+
+rare
+
+all
+
+rare
+
+all
+
+LBCE
+
+0.453
+
+0.398
+
+0.810
+
+0.746
+
+0.702
+
+0.659
+
++6.7
+
+Lfull
+
+0.786
+
+0.802
+
+0.807
+
+0.756
+
+0.761
+
+0.703
+
++6.6
+
+Lfull-weighted with λ2 = 0.5
+
+0.796
+
+0.854
+
+0.806
+
+0.751
+
+0.765
+
+0.710
+
++7.3
+
+Lfull-weighted with λ2 = 0.8
+
+0.787
+
+0.841
+
+0.810
+
+0.753
+
+0.757
+
+0.700
+
++7.3
+
+Table 1: Performance of the different losses function on the SDMs tasks. Results in bold correspond
+to the best in the column, while the second-best is underlined.
+468 species
+
+GeoLifeCLEF
+
+536 species
+
+569 species
+
+601 species
+
+1.0
+
+0.8
+
+0.8
+
+0.6
+
+0.6
+
+mAP
+
+AUC
+
+1.0
+
+0.4
+
+IUCN
+
+675 species
+
+625 species
+
+BCE
+full
+full-weighted
+
+0.0
+(0, 50]
+
+(50, 500]
+(500, 3000]
+#presences
+
+(3000, 4600]
+
+479 species
+
+0.4
+0.2
+
+0.2
+0.0
+
+639 species
+
+(49, 100]
+
+(100, 250]
+(250, 999]
+#presences
+
+(999, 1000]
+
+Figure 2: Performance of the loss functions, grouped by the number of presences records of species
+in the training set. The Lfull-weighted loss, defined here with λ2 = 0.5, is beneficial for rare species.
+
+four tasks. Notably, substantial improvements are observed in the GLC23 dataset, particularly for
+rare species. This aligns well with the nature of the dataset, which contains numerous rare species
+with a limited number of observations. As depicted in the left panel of Figure 2, the Lfull-weighted loss
+demonstrates improved performance over the Lfull loss as the number of presences in the training
+set decreases.
+Results are more nuanced for the S&T dataset, where all loss functions yield similar performance.
+This may be attributed to the fact that most bird species have at least 1000 observations in the
+training set, as illustrated in Figures 3 and 4 in the Appendix, which diminishes the effect of the full
+weighted loss. In contrast, the IUCN dataset presents more variability, leading to a slightly higher
+performance with the Lfull-weighted loss. Additionally, we note the significantly higher performance
+on the Geo Prior task, potentially due to the test set being more balanced than the training set. Since
+this task involves multi-class classification, it favors balanced loss functions. Finally, the Lfull-weighted
+loss with λ2 = 0.5 seems to perform slightly better than its counterpart with λ2 = 0.8.
+
+4
+
+C ONCLUSION
+
+In this study, we emphasized the importance of effectively modeling the distribution of rare species
+using deep learning, which requires addressing the high class imbalance commonly found in datasets
+derived from citizen science initiatives. The presented results illustrate the advantages of employing
+a balanced loss function for SDMs across three out of four datasets, demonstrating substantial performance improvements for rare species. Notably, achieving equal performance on the S&T dataset,
+despite its lower imbalance, suggests that imbalance-aware loss functions do not adversely affect
+less imbalanced applications. Lastly, we stress the significance of considering species with very
+few observations in benchmark datasets when evaluating SDMs, as is done in the GeoLifeCLEF
+2023 dataset. This aspect is particularly crucial given that SDMs are most valuable when aimed at
+predicting the distribution of rare and endangered species.
+4
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+R EFERENCES
+C. Botella, B. Deneu, D. M. Gonzalez, M. Servajean, T. Larcher, C. Leblanc, J. Estopinan, P. Bonnet,
+and A. Joly. Overview of geolifeclef 2023: Species composition prediction with high spatial
+resolution at continental scale using remote sensing. Working Notes of CLEF, 2023.
+F. T. Breiner, A. Guisan, A. Bergamini, and M. P. Nobis. Overcoming limitations of modelling
+rare species by using ensembles of small models. Methods in Ecology and Evolution, 6(10):
+1210–1218, 2015.
+E. Cole, O. Mac Aodha, T. Lorieul, P. Perona, D. Morris, and N. Jojic. Multi-label learning from
+single positive labels. In Proceedings of the IEEE/CVF Conference on Computer Vision and
+Pattern Recognition, pages 933–942, 2021.
+E. Cole, G. Van Horn, C. Lange, A. Shepard, P. Leary, P. Perona, S. Loarie, and O. Mac Aodha.
+Spatial implicit neural representations for global-scale species mapping. arXiv preprint
+arXiv:2306.02564, 2023.
+V. E. Crisfield, F. Guillaume Blanchet, C. Raudsepp-Hearne, and D. Gravel. How and why species
+are rare: towards an understanding of the ecological causes of rarity. Ecography, page e07037,
+2024.
+B. Deneu, M. Servajean, P. Bonnet, C. Botella, F. Munoz, and A. Joly. Convolutional neural networks improve species distribution modelling by capturing the spatial structure of the environment. PLoS computational biology, 17(4):e1008856, 2021.
+S. Domisch, M. Friedrichs, T. Hein, F. Borgwardt, A. Wetzig, S. C. Jähnig, and S. D. Langhans.
+Spatially explicit species distribution models: A missed opportunity in conservation planning?
+Diversity and Distributions, 25(5):758–769, 2019.
+M. K. Dyderski, S. Paź, L. E. Frelich, and A. M. Jagodziński. How much does climate change
+threaten european forest tree species distributions? Global change biology, 24(3):1150–1163,
+2018.
+J. Elith and J. R. Leathwick. Species distribution models: ecological explanation and prediction
+across space and time. Annual Review of Ecology, Evolution and Systematics, 40(1):677–697,
+2009.
+J. Elith, C. Graham, R. Valavi, M. Abegg, C. Bruce, S. Ferrier, A. Ford, A. Guisan, R. J. Hijmans,
+F. Huettmann, et al. Presence-only and presence-absence data for comparing species distribution
+modeling methods. Biodiversity informatics, 15(2):69–80, 2020.
+M. J. Feldman, L. Imbeau, P. Marchand, M. J. Mazerolle, M. Darveau, and N. J. Fenton. Trends
+and gaps in the use of citizen science derived data as input for species distribution models: A
+quantitative review. PLoS One, 16(3):e0234587, 2021.
+D. Fink, T. Auer, A. Johnston, M. Strimas-Mackey, O. Robinson, S. Ligocki, B. Petersen, C. Wood,
+I. Davies, B. Sullivan, et al. ebird status and trends, data version: 2018; released: 2020. Cornell
+Lab of Ornithology, Ithaca, New York, 10, 2020.
+Y. Gorishniy, I. Rubachev, V. Khrulkov, and A. Babenko. Revisiting deep learning models for tabular
+data. Advances in Neural Information Processing Systems, 34:18932–18943, 2021.
+A. Guisan, R. Tingley, J. B. Baumgartner, I. Naujokaitis-Lewis, P. R. Sutcliffe, A. I. Tulloch, T. J.
+Regan, L. Brotons, E. McDonald-Madden, C. Mantyka-Pringle, et al. Predicting species distributions for conservation decisions. Ecology letters, 16(12):1424–1435, 2013.
+S. Ioffe and C. Szegedy. Batch normalization: Accelerating deep network training by reducing
+internal covariate shift. In International conference on machine learning, pages 448–456. pmlr,
+2015.
+J. Nam, J. Kim, E. Loza Mencı́a, I. Gurevych, and J. Fürnkranz. Large-scale multi-label text
+classification—revisiting neural networks. In Machine Learning and Knowledge Discovery in
+Databases: European Conference, ECML PKDD 2014, Nancy, France, September 15-19, 2014.
+Proceedings, Part II 14, pages 437–452. Springer, 2014.
+5
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+J. L. Pearce and M. S. Boyce. Modelling distribution and abundance with presence-only data.
+Journal of applied ecology, 43(3):405–412, 2006.
+S. J. Phillips, M. Dudı́k, J. Elith, C. H. Graham, A. Lehmann, J. Leathwick, and S. Ferrier. Sample
+selection bias and presence-only distribution models: implications for background and pseudoabsence data. Ecological applications, 19(1):181–197, 2009.
+H.-O. Pörtner, R. Scholes, A. Arneth, D. Barnes, M. T. Burrows, S. Diamond, C. M. Duarte,
+W. Kiessling, P. Leadley, S. Managi, et al. Overcoming the coupled climate and biodiversity
+crises and their societal impacts. Science, 380(6642):eabl4881, 2023.
+M. Rußwurm, K. Klemmer, E. Rolf, R. Zbinden, and D. Tuia. Geographic location encoding with
+spherical harmonics and sinusoidal representation networks. Proceedings of the International
+Conference on Learning Representations (ICLR), 2024.
+Y.-J. Shin, G. F. Midgley, E. R. Archer, A. Arneth, D. K. Barnes, L. Chan, S. Hashimoto, O. HoeghGuldberg, G. Insarov, P. Leadley, et al. Actions to halt biodiversity loss generally benefit the
+climate. Global change biology, 28(9):2846–2874, 2022.
+M. Teng, A. Elmustafa, B. Akera, H. Larochelle, and D. Rolnick. Bird distribution modelling using
+remote sensing and citizen science data, 2023.
+C. D. Thomas, A. Cameron, R. E. Green, M. Bakkenes, L. J. Beaumont, Y. C. Collingham, B. F.
+Erasmus, M. F. De Siqueira, A. Grainger, L. Hannah, et al. Extinction risk from climate change.
+Nature, 427(6970):145–148, 2004.
+H. Q. Ung, R. Kojima, and S. Wada. Leverage samples with single positive labels to train cnn-based
+models for multi-label plant species prediction. Working Notes of CLEF, 2023.
+R. Zbinden, N. van Tiel, B. Kellenberger, L. Hughes, and D. Tuia. Exploring the potential of neural
+networks for species distribution modeling. ICLR climate change AI workshop, 2023.
+R. Zbinden, N. van Tiel, B. Kellenberger, L. Hughes, and D. Tuia. On the selection and effectiveness of pseudo-absences for species distribution modeling with deep learning. arXiv preprint
+arXiv:2401.02989, 2024.
+
+6
+
+Published as a workshop paper at ”Tackling Climate Change with Machine Learning”, ICLR 2024
+
+A
+
+T RAINING DETAILS
+
+GeoLifeCLEF 2023 (GLC23). Our models are trained on the 2 856 818 presence records corresponding to the 2174 species in the test set. We provide the models with 19 historical bioclimatic
+variables, 9 pedological variables, and 17 land cover classes as tabular data. We employ a multilayer perceptron model (MLP) with 5 fully connected hidden layers, each containing 1000 neurons
+and connected through residual connections (Gorishniy et al., 2021). Batch normalization (Ioffe and
+Szegedy, 2015) is applied to each hidden layer, and the training process spans 150 epochs with an
+SGD optimizer and a learning rate set to 0.001. Finally, the Lfull-weighted loss function uses λ1 = 1.
+iNaturalist. We adopt the identical configuration and MLP architecture as described in Cole et al.
+(2023). We focus on their approach that incorporates both coordinates and environmental data as
+inputs. For the Lfull-weighted loss function, we set λ1 = 0.1 since the inverse of the frequency of
+species presences becomes very large with the high number of species considered during training.
+
+B
+
+D ISTRIBUTIONS OF SPECIES PRESENCES
+S&T
+400
+
+600
+
+species count
+
+species count
+
+GLC23
+
+400
+200
+0
+
+0
+
+1000
+
+2000
+3000
+#presences
+
+IUCN
+species count
+
+species count
+
+100
+200
+
+300
+200
+100
+400
+600
+#presences
+
+800
+
+400
+600
+#presences
+
+800
+
+1000
+
+800
+
+1000
+
+Geo Prior
+
+8000
+
+400
+
+200
+
+200
+0
+
+4000
+
+500
+
+0
+
+300
+
+6000
+4000
+2000
+0
+
+1000
+
+200
+
+400
+600
+#presences
+
+Figure 3: Distribution of the number of training presences of the species considered in the different
+tasks. The GLC23 training set contains the same species used in testing.
+
+C
+
+E XTRA S& T RESULTS
+1.0
+
+50 species
+
+S&T
+
+46 species
+
+439 species
+
+MAP
+
+0.8
+0.6
+0.4
+BCE
+full
+full-weighted
+
+0.2
+(49, 500]
+
+(500, 999]
+#presences
+
+(999, 1000]
+
+Figure 4: Performance of the loss functions on the S&T dataset, grouped by the number of presences
+records of species in the training set.
+
+7
+
+

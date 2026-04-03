@@ -1,0 +1,183 @@
+================================================================================
+HYBRID OVERRIDE SYSTEM AUDIT - EXECUTIVE SUMMARY
+Date: March 12, 2026
+================================================================================
+
+TABLE METADATA
+================================================================================
+
+TABLE 1: sinr_hybrid_override_registry_v1
+  Rows:       0
+  Columns:    12
+  Size:       0 bytes
+  Created:    2026-03-12 19:44:45 UTC
+  Status:     EMPTY (as expected for new system)
+
+TABLE 2: sinr_hybrid_override_candidate_queue_v1
+  Rows:       13,428,663
+  Columns:    26
+  Size:       4.8 GB (5,158,928,316 bytes)
+  Created:    2026-03-12 19:44:48 UTC
+  Status:     FULLY POPULATED
+
+TABLE 3: sinr_occurrence_release_eligibility_v1
+  Rows:       24,483,023
+  Columns:    77
+  Size:       12.6 GB (13,490,535,437 bytes)
+  Created:    2026-03-12 19:44:52 UTC
+  Status:     MASTER ELIGIBILITY TABLE
+
+================================================================================
+RELEASE GATE DISTRIBUTION (VERIFIED)
+================================================================================
+
+allow_hybrid_release:           0 rows    (0.00%)   ✓ CONFIRMED
+allow_strict_release:    8,579,371 rows   (35.04%)  ✓ CONFIRMED
+block_pending_audit_override: 13,428,663 rows (54.85%) ✓ CONFIRMED
+block:                   2,474,989 rows   (10.11%)  ✓ CONFIRMED
+────────────────────────────────────────────────────────
+TOTAL:                  24,483,023 rows  (100.00%)  ✓ COMPLETE
+
+================================================================================
+DATA INTEGRITY CHECKS
+================================================================================
+
+Override Registry:
+  ✓ Empty (0 rows) - Expected for new system
+  ✓ Schema complete and ready for approvals
+  ✓ No orphaned approved records found
+
+Candidate Queue:
+  ✓ 13,428,663 rows exactly match release eligibility block_pending rows
+  ✓ 100% match rate - No drift, no missing rows
+  ✓ All rows have requires_manual_audit_override = TRUE
+
+Critical Fields:
+  ✓ occurrence_example_id: 100% complete (0 NULLs)
+  ✓ taxon_id: 100% complete (0 NULLs)
+  ✓ data_source: 100% complete (0 NULLs)
+  ✓ latitude/longitude: 100% complete (0 NULLs)
+  ✓ effective_release_gate: 100% complete (0 NULLs)
+
+Data Leakage Detection:
+  ✓ Zero orphaned allow_hybrid_release rows (no unapproved rows)
+  ✓ No rows approved without registry entry
+  ✓ System is clean
+
+================================================================================
+FAILURE ROOT CAUSE ANALYSIS
+================================================================================
+
+Quality Flag Distribution in Candidate Queue (13.4M rows):
+
+xiao_bug_window_flag = TRUE:              0 rows    (0.00%)
+land_state_train_ok = FALSE:              0 rows    (0.00%)
+land_state_serve_parity_ok = FALSE:    13,428,663  (100.00%)
+aridity_family_serve_ok = FALSE:           0 rows   (0.00%)
+carbon_family_serve_ok = FALSE:        13,428,663  (100.00%)
+hilda_family_serve_ok = FALSE:         13,428,663  (100.00%)
+
+CRITICAL FINDING: Monolithic Failure Pattern
+──────────────────────────────────────────────
+  All 13.4M candidate rows fail THE SAME THREE requirements:
+  1. land_state_serve_parity_ok = FALSE (100%)
+  2. carbon_family_serve_ok = FALSE (100%)
+  3. hilda_family_serve_ok = FALSE (100%)
+
+  Overlap: 100% of all three failures together
+
+Context Classification:
+  - ALL 13.4M rows from single context: legacy_safe_candidate
+  - No mixing of failure types across contexts
+  - Suggests standardized audit/override procedure possible
+
+Implication:
+  These are legacy data records safe for training but lacking 3 serve-time
+  feature families. Root cause likely serve-time data availability, not
+  record quality.
+
+================================================================================
+SYSTEM STATE SUMMARY
+================================================================================
+
+Total Occurrences: 24,483,023
+├─ Allow Strict Release:        8,579,371 (35.04%) - Ready for production
+├─ Block (Permanently):         2,474,989 (10.11%) - Excluded
+└─ Block Pending Override:      13,428,663 (54.85%) - Awaiting manual review
+    ├─ In Candidate Queue:      13,428,663 (100%)
+    └─ In Override Registry:              0 (  0%) - No decisions yet
+
+Overall Statistics:
+  Unique Species: 45,903
+  Data Sources: 2
+  Temporal Coverage: 100% (all records have observation_year)
+
+================================================================================
+AUDIT FINDINGS - CONFIRMED EXPECTATIONS
+================================================================================
+
+✓ Override registry is empty (no approval decisions made yet)
+✓ Release gate distribution matches specification exactly
+✓ Candidate queue perfectly synchronized with eligibility table (100%)
+✓ Zero data leakage (no orphaned approved rows)
+✓ All critical fields 100% populated
+✓ No NULL values in core IDs or coordinates
+✓ Monolithic failure pattern suggests standardized treatment approach
+
+================================================================================
+NOTABLE OBSERVATIONS
+================================================================================
+
+⚠ Service Parity Issues:
+  - Carbon and HILDA families completely unavailable at serve time
+  - Land state parity failing across all candidates
+  - Suggests serve-time feature access problem, not data quality issue
+
+⚠ Batch Processing Opportunity:
+  - All 13.4M candidate rows fail identical requirements
+  - All from same quality context (legacy_safe_candidate)
+  - Batch override workflow may be more efficient than individual review
+
+⚠ Table Naming Discrepancy:
+  - Expected table "salvage_status_v1" not found
+  - Only "field_integrity_status_v1" exists (correctly synced)
+  - No impact on audit findings
+
+================================================================================
+RECOMMENDATIONS
+================================================================================
+
+IMMEDIATE (No Action Required):
+  System is fully operational and requires no structural changes.
+  It is correctly initialized and ready for override workflow use.
+
+SHORT TERM:
+  1. Consider batch override workflow for 13.4M legacy_safe_candidate rows
+  2. Investigate why carbon/HILDA families unavailable at serve time
+  3. Document explicit override decision criteria and guidelines
+
+LONG TERM:
+  1. Implement serve-time feature validation in pipeline
+  2. Add monitoring/alerting for candidate queue and override metrics
+  3. Establish SLA for override review timeline
+
+================================================================================
+CONCLUSION
+================================================================================
+
+Status: ✓ APPROVED FOR OPERATIONAL USE
+
+The hybrid override system is FULLY INITIALIZED, STRUCTURALLY SOUND, and
+OPERATIONALLY READY. All data integrity checks pass. The system is in the
+expected initial state with 13.4M legacy data rows queued for manual audit
+and override decisions.
+
+NO BLOCKING ISSUES IDENTIFIED.
+
+================================================================================
+Report Generated: 2026-03-12
+Execution Time: ~5 minutes
+Queries Executed: 20+
+Project: Treekipedia SINR v3
+BigQuery Dataset: species_data (treekipedia-479918)
+================================================================================

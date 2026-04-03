@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-03-07T01:55:35.876574+00:00",
+  "new_rows": 1175856,
+  "backfill_rows": 0,
+  "unsampleable_rows": 0,
+  "total_done": 1175856,
+  "total_remaining": 13534482,
+  "ee_states": {
+    "PENDING": 23,
+    "RUNNING": 2,
+    "SUCCEEDED": 611,
+    "FAILED": 6,
+    "CANCELLED": 25
+  },
+  "process_running": true
+}

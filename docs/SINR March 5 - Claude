@@ -1,0 +1,967 @@
+# SINR v3 Architecture & Program Review — Unified Strategic Plan
+## Treekipedia Species Intelligence System
+
+**Review Date**: March 5, 2026 (forked from March 4)
+**Author**: Claude Opus 4.6
+**Sources**: 14 implementation documents + 3 AI architecture reviews (Claude, Codex, Gemini) + deep research synthesis + March 5 implementation results
+**Scope**: Immediate SINR v3 training plan → Land State Engine → Improved Recommender → Area-Scale Prediction → Long-Term Expansion Roadmap
+
+### Changes from March 4:
+- **Section A**: Updated stats to reflect v3 consolidation v2 results (32.3M rows, 45,979 species)
+- **Section G**: Replaced speculative plan with ACTUAL implementation results — consolidation v2, is_introduced BQ computation, land state engine, species mapping rebuild
+- **Section I**: Updated BQ table inventory with actual sizes and column counts
+- **Section M**: Updated Phase 0 checklist with completed items
+- **Section N**: Resolved additional open questions, added new ones
+- **NEW Section P**: March 5 Implementation Log — detailed record of what was done
+
+---
+
+## A) EXECUTIVE SYNTHESIS
+
+### What We're Building
+
+Treekipedia is the **only global tool that combines species prediction (37,800+ species after merge) with land-state-aware recommendations and carbon/biomass estimation**. At any point on Earth, it answers three distinct questions:
+
+1. **"What is growing there now?"** — Current state estimation (disturbance, successional stage, composition)
+2. **"What CAN grow there?"** — Biophysical suitability under current conditions
+3. **"What SHOULD we grow there?"** — Strategy-constrained spatial optimization
+
+These three questions must produce **separate outputs**, not blended into one ranking. This separation (from Codex) is the single most important architectural constraint for v3+.
+
+### Where We Stand (Updated March 5)
+
+**v2.2 (production)**: 9.7M parameters, 35,561 species, top-10=59.34%, top-50=90.08%. SAFE-B recommender (7 strategies, 5-component scoring) is live.
+
+**v3 data pipeline: COMPLETE** as of March 5:
+- `sinr_v3_unified_v2`: **32,323,081 rows**, **45,979 species** (37,834 after subspecies merge), **686 columns**, 156.74 GB
+- `sinr_v3_is_introduced`: **30,262,138** coordinate-species pairs computed via BQ spatial join (TDWG L3 + WCVP)
+- `sinr_v3_land_state_t1`: **32,323,081 rows**, 14 deterministic land state features
+- Species mapping rebuilt: **37,834 species** after merge (8,240 subspecies merged into parent species)
+
+**Key improvement over v2.2**: 2.2× more data (32.3M vs ~15M), 2.1× more species (37,834 vs 35,561 after merge). The species loss bug from consolidation v1 (24,832 species) has been fixed.
+
+### The Strategic Arc
+
+**Immediate (v3.0)**: ✅ Data ready. Train with 2×+ data + HILDA+ land use features + improved native/introduced handling. Land State Engine v1 (heuristic) computed. Ship improved species recommender with disturbance awareness.
+
+**Near-term (v3.1)**: Add carbon multi-task head. Implement polygon/area-scale assessment. Pre-compute Cloud Optimized GeoTIFFs for common environmental layers.
+
+**Medium-term (v4)**: 8-year L-TAE temporal encoder on AlphaEarth trajectories. Multi-task training with species + land state + carbon heads. Spatial block cross-validation.
+
+**Long-term (v5+)**: Differentiable allometry for auditable carbon. Spatial optimization via MILP/RL. Integration of NISAR L-band SAR, ESA BIOMASS P-band, CHIME hyperspectral. TB-scale data acquisition.
+
+---
+
+## B) THE THREE-QUESTION FRAMEWORK
+
+### B1. Why Separation Matters
+
+The current system blends prediction and recommendation into a single score: `0.6 * SAFE-B + 0.4 * SINR_scaled`. This works for simple queries but creates category errors:
+
+- Recommending climax species on freshly bulldozed dirt
+- Recommending Quercus robur in the Amazon (functional score=100 overrides poor habitat match)
+- No distinction between "this species IS here" vs "this species COULD grow here" vs "this species is OPTIMAL for your strategy"
+
+The Codex framework mandates that each query returns **five separate JSON products**:
+
+| Product | Content | Primary Signals |
+|---------|---------|-----------------|
+| **Current State** | Land condition, disturbance class, probable current assemblage | Hansen, HILDA+, Dynamic World, AlphaEarth temporal trajectory |
+| **Suitability** | Ranked species that can persist under current conditions | Climate, soil, topography, hydrology, AlphaEarth embeddings |
+| **Strategy Recommendations** | Ranked species/mixes by chosen restoration strategy | SAFE-B framework × suitability × land state gating |
+| **Projections** | Expected 3/5/10/20 year trajectory under intervention | Species-specific allometry, successional models |
+| **Confidence & Risk** | Uncertainty, data coverage, key assumptions | Model uncertainty + data coverage separation |
+
+### B2. Implementation Approach
+
+**v3.0 (immediate)**: Ship three of five products — Current State (heuristic), Suitability, and Strategy Recommendations. Projections and Confidence/Risk as stubs.
+
+**v3.1**: Fill in carbon-based projections when carbon head is trained. Add quantified uncertainty.
+
+**API contract**: Update `treekipedia/backend/routes/prediction.js` so `/api/prediction/predict` returns the full 5-product JSON. Frontend tabs map to these products.
+
+---
+
+## C) LAND STATE ENGINE
+
+### C1. Why This Is the Highest-Priority New Capability
+
+Without land state awareness, the system cannot gate recommendations. It will recommend climax species on degraded land and ignore successional dynamics. Every restoration ecologist's first question is: "What condition is this land in?"
+
+The Land State Engine classifies each pixel independently of species, producing:
+
+| Output | Values | Primary Data |
+|--------|--------|-------------|
+| **Disturbance Class** | Intact / Modified / Recently Disturbed / Heavily Altered | Hansen tree cover loss, HILDA+ trajectory, Dynamic World |
+| **Successional Stage** | Early / Mid / Late / Mature | NDVI trend, canopy height (GEDI), forest age proxy |
+| **Restoration Readiness** | 0-100 score | Soil quality, slope, proximity to seed sources, disturbance severity |
+| **Degradation Pressure** | Low / Medium / High / Critical | Recent disturbance trend, edge effects, road proximity |
+| **Limiting Factors** | Flags per category | Hydrology, soil, slope/erosion, human pressure |
+
+### C2. Land State Engine v1 — Heuristic (IMPLEMENTED March 5)
+
+**Status: ✅ COMPLETE** — `sinr_v3_land_state_t1` table created in BQ with 32,323,081 rows.
+
+The Tier 1 heuristic engine runs as a BQ SQL query on the unified training data. It produces 5 deterministic features per row:
+
+| Feature | Type | Values | Data Sources |
+|---------|------|--------|-------------|
+| `land_state_class` | Categorical (6) | intact_forest, managed_forest, natural_non_forest, cropland_pasture, degraded_transitional, urban_barren | Hansen, HILDA+, JRC, Dynamic World |
+| `disturbance_intensity` | Continuous [0-3] | Sum of Hansen loss, HILDA deforestation, JRC degradation signals | Hansen lossyear, HILDA obs/emb, JRC TMF |
+| `forest_stability` | Continuous [0-3] | Sum of Hansen treecover, HILDA stable forest, low disturbance signals | Hansen treecover2000, HILDA trajectory, disturbance |
+| `successional_stage` | Categorical (5) | pioneer, early_secondary, mid_secondary, late_secondary, mature | HILDA trajectory, Hansen treecover, JRC undisturbed |
+| `ae_temporal_change_l2` | Continuous | L2 norm of AlphaEarth 2017 vs 2024 embedding difference | ae_2017_00..07, ae_2024_00..07 |
+
+**Additional computed columns**: `hilda_obs_class_clean`, `hilda_emb_class_clean` (cleaned HILDA codes), `hansen_loss_flag`, `hansen_recent_loss`, `jrc_undisturbed`, `neumann_natural`, `is_cropland_pasture`, `is_urban_barren`.
+
+The `ae_temporal_change_l2` metric is particularly valuable — it captures land surface change between 2017 and 2024 directly from AlphaEarth's learned representations, independent of any explicit change detection algorithm.
+
+### C3. How Land State Was Computed
+
+The engine runs entirely in BigQuery SQL:
+
+1. **Features CTE**: Selects Hansen, HILDA, JRC, Dynamic World, Neumann, carbon columns + AE temporal bands from `sinr_v3_unified_v2`
+2. **Classified CTE**: Applies deterministic rules to produce land_state_class, disturbance_intensity, forest_stability, successional_stage
+3. **AE temporal change**: Computes L2 distance between first 8 bands of 2017 and 2024 AlphaEarth embeddings
+4. **Output**: `sinr_v3_land_state_t1` (14 columns, joined back to unified by lat/lon)
+
+**Implementation file**: `orchestrator/land_state_engine.py`
+
+### C4. Land State Engine v2 — Trained Head (MEDIUM-TERM)
+
+Add a neural Land State head to the shared SINR backbone:
+
+```
+Shared ResBlock trunk (256D)
+  ├── Species Head (existing)
+  ├── Land State Head (MLP 256→128→4 classes, Cross Entropy)
+  └── Carbon Head (future)
+```
+
+Training labels from the heuristic engine (v1 generates pseudo-labels). Key advantage: the neural head can learn subtle patterns that rules miss (e.g., detecting early-stage degradation from AlphaEarth temporal signatures before Hansen loss is recorded).
+
+### C5. Where Land State Runs in the Pipeline
+
+**At training time**: Land state pseudo-labels from v1 are columns in the final training table (`sinr_v3_unified_v2_final`). The model learns to predict these as an auxiliary task.
+
+**At inference time**: Land State Engine v1 runs as a heuristic on the sampled features. Once the neural head is trained, it replaces the heuristic for more nuanced classification.
+
+```
+User query (lat, lon)
+  → GEE /sample endpoint → returns environmental features
+  → Land State Engine v1 (heuristic) → classifies land condition from sampled features
+  → SINR model inference → species probabilities
+  → SAFE-B recommender → strategy-filtered recommendations GATED by land state
+  → API response: 5-product JSON (state, suitability, recommendations, projections, confidence)
+```
+
+### C6. How Land State Gates Recommendations
+
+```
+Land State → gates Strategy Recommendations:
+
+INTACT/MATURE:
+  - Suppress pioneer species recommendations
+  - Emphasize conservation, biodiversity monitoring
+  - Flag if user selects "carbon" strategy (already high baseline)
+
+RECENTLY DISTURBED:
+  - Recommend pioneer species appropriate to successional stage
+  - Gate out climax species unless assisted migration context
+  - Emphasize soil stabilization species first
+
+HEAVILY ALTERED:
+  - Gate out all natural forest species without intervention context
+  - Recommend cover crops, nitrogen fixers, soil restoration species
+  - Flag that site preparation is required before tree planting
+
+MODIFIED/MID-SUCCESSION:
+  - Full species palette available
+  - Weight toward gap-filling and enrichment planting species
+  - Native species preferred unless explicit agroforestry strategy
+```
+
+---
+
+## D) NATIVE vs. INTRODUCED: IMPROVED HANDLING
+
+### D1. Current System (v2.2)
+
+Two-pass inference: run SINR with `is_introduced=0` and `is_introduced=1`, pick per-species probability based on WCVP native/introduced status at the query country. Works well but has gaps:
+
+- WCVP only stores **native ranges**, not introduced ranges
+- "Introduced" is **inferred** as "observed outside native range" — this is a limitation, not a manipulation
+- Many gaps exist, especially for widely cultivated species
+
+### D2. v3 Implementation (COMPLETED March 5)
+
+**is_introduced computed via BQ spatial join** using `compute_is_introduced_bq.py`:
+
+1. **Spatial join**: Each (taxon_id, lat, lon) in `sinr_v3_unified_v2` is joined with 369 TDWG L3 polygons to get the botanical region name
+2. **WCVP lookup**: taxon_id is matched against `wcvp_native_ranges` table (66,040 species with semicolon-separated native region names)
+3. **Classification**:
+   - Region IS in native ranges → `is_introduced = 0` (native)
+   - Region NOT in native ranges → `is_introduced = 1` (introduced)
+   - No TDWG match OR no WCVP data → `is_introduced = -1` (unknown → 0.5 at training time)
+
+**Subspecies handling**: Falls back through exact match → `-00` → `-01` → `-02` → `-03` suffixes for WCVP lookup.
+
+**Results** (`sinr_v3_is_introduced`, 30,262,138 rows):
+
+| Status | Count | % |
+|--------|-------|---|
+| Native (0) | 2,328,052 | 7.7% |
+| Introduced (1) | 26,762,735 | 88.4% |
+| Unknown (-1) | 1,171,351 | 3.9% |
+
+### D3. Important Caveats About is_introduced
+
+**The 88% "introduced" figure is misleading and expected.** Here's why:
+
+- WCVP native ranges only list the **native** botanical regions for each species (often 1-5 regions)
+- Any occurrence outside those few native regions is classified as "introduced"
+- Many GBIF occurrences are from botanical gardens, urban plantings, and cultivated specimens worldwide
+- The backfill data includes coordinates from many countries, inflating "introduced" counts
+
+**This is exactly why the Land State Engine matters**: Rather than relying solely on WCVP (which has known gaps), the Land State Engine detects cultivated/disturbed land directly from satellite data. A species observed in a plantation or urban area in a non-native region provides a different signal than one observed in intact forest.
+
+**At training time**: `is_introduced = -1` becomes `0.5` (midpoint between native and introduced), which the model treats as uncertain. This is the correct behavior — not a fallback to "introduced."
+
+### D4. Validation Example: Pinus radiata
+
+- **WCVP native range**: "California; Mexican Pacific Is.; Mexico Northwest"
+- **Occurrence in New Zealand North**: NOT in native range → `is_introduced = 1` ✅ (correct — P. radiata is indeed introduced/cultivated in NZ)
+- **Occurrence in California**: IS in native range → `is_introduced = 0` ✅ (correct — native)
+- **This was NOT manually assigned** — it's the automatic result of the spatial join + WCVP lookup
+
+---
+
+## E) IMPROVED RECOMMENDER (Production Enhancement)
+
+### E1. Current SAFE-B System
+
+7 strategies, 5-component scoring:
+- **S**patial (proximity to forest cover, intact forest presence)
+- **A**biotic (climate, soil, elevation match)
+- **F**unctional (growth form, canopy characteristics)
+- **E**cosystem (ecoregion and biome alignment)
+- **B**iotic (co-occurrence patterns)
+
+Combined score: `0.6 * SAFE-B + 0.4 * SINR_scaled` (when SINR available). Non-SINR species get 70% penalty.
+
+### E2. v3 Enhancements Planned
+
+With land state awareness:
+1. **Land state gating** (C6 above): Filter recommendations based on site condition
+2. **Successional matching**: Recommend species appropriate to the successional stage
+3. **Disturbance-aware scoring**: Penalize species requiring intact forest when site is degraded
+4. **Native preference gating**: Weight native species higher for rewilding strategies; allow introduced for agroforestry
+
+### E3. Radar Chart Enhancement (8-axis)
+
+Expand from current 6-axis radar (SINR Habitat, Climate/Soil, Ecosystem, Spatial, Biotic, Traits) to 8-axis:
+- Add **Land Compatibility** axis (land state match for the recommended strategy)
+- Add **Temporal Confidence** axis (data density at this location across time)
+
+---
+
+## F) AREA-SCALE PREDICTION (MEDIUM-TERM)
+
+### F1. From Points to Polygons
+
+User draws a polygon → system evaluates it:
+1. **Centroid sample** (instant): Quick assessment of central point
+2. **Corner + centroid** (5 points, fast): Variability check
+3. **Grid sample** (25-100 points, medium): Full characterization
+4. **Complete scan** (all grid cells, slow): Maximum detail
+
+### F2. Management Unit Clustering
+
+Within a polygon, cluster grid points into management units based on:
+- Elevation bands
+- Slope aspect
+- Soil type zones
+- Land state classes
+- Hydrology (MERIT HAND: riparian vs upland)
+
+Each management unit gets its own species recommendations.
+
+### F3. Progressive Loading UX
+
+```
+t=0s:   Centroid result (1 point) → immediate display
+t=2s:   Corners added (5 points) → show variability
+t=10s:  Grid complete (25-100 points) → show management units
+t=30s:  Full analysis → show detailed recommendations per unit
+```
+
+### F4. Polygon Assessment Endpoint
+
+```
+POST /api/prediction/assess-polygon
+Body: { geojson: GeoJSON, strategy: string, density: "quick"|"standard"|"detailed" }
+Response: SSE stream or polling endpoint
+
+Returns: {
+  management_units: [...],
+  per_unit_recommendations: [...],
+  polygon_summary: { dominant_land_state, species_diversity, carbon_potential },
+  confidence: { data_coverage, spatial_variability }
+}
+```
+
+### F5. Spatial Optimization (LONG-TERM)
+
+For the capstone area planner, the system should eventually solve: "Given this polygon, this budget, and this strategy, what is the OPTIMAL spatial distribution of species?"
+
+**Research findings on viable approaches**:
+
+| Tool | Approach | Scale | Relevance |
+|------|----------|-------|-----------|
+| **prioritizr** (R package) | Mixed Integer Linear Programming | Millions of planning units, 10K+ species | Best for species-based conservation targets |
+| **CAPTAIN** (Python, RL) | Reinforcement learning | Thousands of units | Outperforms Marxan in 97% of test cases |
+| **Zonation** (standalone) | Rank-based prioritization | Continental | Good for rapid assessment, less for prescriptive planning |
+| **Marxan** (standalone) | Simulated annealing | Standard for conservation | Legacy tool, being superseded |
+
+**Recommended path**: Start with simple per-unit optimization (rank species per management unit independently). Graduate to prioritizr-style MILP when the system handles multi-unit constraints (seed source connectivity, species complementarity across units).
+
+---
+
+## G) SINR v3 TRAINING — ACTUAL IMPLEMENTATION (Updated March 5)
+
+### G1. Consolidation v2 — The Species Loss Fix
+
+**Problem discovered**: Consolidation v1 produced only 24,832 species (down from v2.2's 35,561). Root cause: backfill taxon_id lookup used `alphaearth_embeddings_v4` (18K species) instead of `occurrences` (60K+ species).
+
+**Fix (consolidation v2)**: Changed backfill INNER JOIN from `alphaearth_embeddings_v4` to deduplicated `occurrences` table:
+
+```sql
+-- v1 (BROKEN): Only 18K species matched
+INNER JOIN alphaearth_embeddings_v4 a
+  ON ROUND(b.latitude, 4) = ROUND(a.latitude, 4)
+  AND ROUND(b.longitude, 4) = ROUND(a.longitude, 4)
+  AND b.emb_year = a.emb_year
+
+-- v2 (FIXED): 44K species matched
+INNER JOIN (
+  SELECT DISTINCT
+    ROUND(decimalLatitude, 4) as lat4,
+    ROUND(decimalLongitude, 4) as lon4,
+    taxon_id
+  FROM occurrences
+  WHERE taxon_id IS NOT NULL
+) occ_dedup
+  ON ROUND(b.latitude, 4) = occ_dedup.lat4
+  AND ROUND(b.longitude, 4) = occ_dedup.lon4
+```
+
+**Why year was dropped from the taxon_id lookup JOIN**:
+- The `occurrences` table has a `year` column, but backfill's `observation_year` does NOT reliably align with it
+- **Year is NOT lost from the data** — every backfill row retains its `observation_year`, `emb_year`, and all 8-year AlphaEarth temporal features
+- Year was only dropped from the **taxon_id assignment JOIN** — which asks "what species was observed at this coordinate?" not "what species was observed at this coordinate in this year?"
+- At any given coordinate, the species present are generally consistent across years (trees don't move)
+
+**Result**: `sinr_v3_unified_v2` — 32,323,081 rows, 45,979 species, 686 columns, 156.74 GB
+
+### G2. Row Count Breakdown
+
+| Source | Rows | Species | Notes |
+|--------|------|---------|-------|
+| `sinr_v3_features_new_gbif` | 9,868,255 | ~44K | New GBIF 2018-2024 with full 647-col features |
+| Backfill (via occurrences join) | ~22,455,000 | ~44K | Backfill features + taxon_id from occurrences |
+| **Total (unified_v2)** | **32,323,081** | **45,979** | UNION of above with LEFT JOINs to carbon, HILDA, aridity |
+
+**Why backfill > new_gbif**: The backfill table contains coordinates from older GBIF data (pre-2018) that were re-sampled with GEE features. The `occurrences` table has 96.5M rows spanning many years, so when we JOIN backfill coordinates with occurrences, many coordinates match multiple species (one coordinate can have multiple species observed at it).
+
+**Non-GBIF data note**: The `occurrences` table contains 87M rows without a `gbifID` — these appear to be from the original bulk occurrence data (possibly including USDA, iNaturalist, and other sources from the October 2024 data expansion). The exact provenance is not fully documented, but this data enriches the species-coordinate mapping.
+
+### G3. Species Mapping v3
+
+**File**: `orchestrator/sinr_training_data/species_mapping_v3.json`
+
+- **45,979 raw taxon_ids** in unified_v2
+- **37,834 species after merge** (8,240 subspecies merged into parent species)
+- Both subspecies keys AND parent species keys point to the same index in `species_to_idx`
+- Example: Pinus radiata at index 317 with 13,918 rows
+
+**Subspecies handling consistency (v2.2 → v3)**:
+- v2.2: Renames taxon_ids before mapping (strips suffix, merges to parent)
+- v3: Includes both subspecies and parent keys in `species_to_idx` pointing to same index
+- **Same logical outcome**: predictions for subspecies are attributed to parent species
+
+### G4. Data Assembly: What We Have
+
+**ALREADY ASSEMBLED** (in `sinr_v3_unified_v2`):
+
+| Dataset | Columns | Coverage | Status |
+|---------|---------|----------|--------|
+| AlphaEarth embeddings (64D × 8 years) | ae_YYYY_NN (512 cols) | ~60% of rows | ✅ LEFT JOINed |
+| WorldClim BIO (19 vars) | bio01-bio19 | ~95% | ✅ In features |
+| OpenLandMap Soils (10 vars) | soil_* | ~95% | ✅ In features |
+| Hansen GFC | hansen_* | ~95% | ✅ In features |
+| JRC TMF | jrc_tmf_class | ~60% (tropical) | ✅ In features |
+| Dynamic World | dynamic_world_class | ~90% | ✅ In features |
+| HILDA+ | hilda_class_obs, hilda_class_emb | ~85% | ✅ LEFT JOINed |
+| Carbon temporal | gedi_*, cci_*, modis_* | ~12% | ✅ LEFT JOINed |
+| Aridity Index | aridity_index, moisture_index | ~70% | ✅ LEFT JOINed |
+| MERIT HAND | merit_hand_m | ~95% | ✅ In features |
+| Neumann Natural Forests | neumann_natural_prob | ~80% | ✅ In features |
+| TerraClimate | tc_* | ~90% | ✅ In features |
+
+**COMPUTED SEPARATELY** (to be joined into final table):
+
+| Dataset | Table | Rows | Status |
+|---------|-------|------|--------|
+| is_introduced | `sinr_v3_is_introduced` | 30,262,138 | ✅ COMPLETE |
+| Land state features | `sinr_v3_land_state_t1` | 32,323,081 | ✅ COMPLETE |
+
+### G5. Final Table Assembly (PENDING)
+
+`sinr_v3_unified_v2_final` = unified_v2 + is_introduced + land_state (all three joined).
+
+**Query** (from `compute_is_introduced_bq.py --finalize`, needs to be extended to include land_state):
+
+```sql
+CREATE TABLE sinr_v3_unified_v2_final AS
+SELECT
+    u.*,
+    COALESCE(i.is_introduced, -1) as is_introduced,
+    i.tdwg_region,
+    ls.land_state_class,
+    ls.disturbance_intensity,
+    ls.forest_stability,
+    ls.successional_stage,
+    ls.ae_temporal_change_l2
+FROM sinr_v3_unified_v2 u
+LEFT JOIN sinr_v3_is_introduced i
+    ON u.taxon_id = i.taxon_id
+    AND ROUND(u.latitude, 4) = i.lat4
+    AND ROUND(u.longitude, 4) = i.lon4
+LEFT JOIN sinr_v3_land_state_t1 ls
+    ON ROUND(u.latitude, 4) = ROUND(ls.latitude, 4)
+    AND ROUND(u.longitude, 4) = ROUND(ls.longitude, 4)
+```
+
+**Expected result**: ~32.3M rows, ~693 columns (686 + 7 new), ~165 GB
+
+### G6. v3.0 Architecture
+
+```
+v3.0 Architecture (species + land use awareness):
+
+Input: 64-D AlphaEarth (per year from 8-year stack)
+     + 56 continuous env (WorldClim, soil, terrain, hydrology)
+     + 5 existing categorical embeddings (JRC, DW, ESA WorldCover, etc.)
+     + is_introduced (0/0.5/1)
+     + hilda_obs_class (8D embedding)
+     + hilda_emb_class (8D embedding)
+     + land_state_class (8D embedding, from LSE v1 pseudo-labels)
+     ≈ ~200+ input features after embedding
+
+Gate MLP: jrc_emb(3D) + is_introduced(1D) + land_state features
+  → alpha in [0,1]
+
+Gated Fusion: alpha * sat + (1-alpha) * env
+
+Linear(256) → ReLU → [ResBlock(256)]×4
+
+Species Head: Linear(N_species) + Planted Logit Boost
+Land State Aux Head: Linear(4) → disturbance class (pseudo-labels from LSE v1)
+
+Loss: BCE(species) + 0.1 * CE(land_state)
+```
+
+### G7. Training Schedule
+
+| Phase | Epochs | Learning Rate | Loss Weights | Notes |
+|-------|--------|---------------|--------------|-------|
+| **Warm-up** | 1-3 | 1e-3 | species=1.0, land_state=0.1 | Species head learns first |
+| **Joint** | 4-10 | 5e-4 | species=1.0, land_state=0.2 | Both heads training |
+| **Fine-tune** | 11-15 | 1e-4 | species=1.0, land_state=0.1 | Reduce LR, species emphasis |
+
+**Hardware**: H100 GPU on GCP (32.3M rows × 15 epochs exceeds MPS memory). Training script: `orchestrator/train_on_gcp.sh` → `orchestrator/train_on_vm.py`.
+
+**Success criteria**:
+- Species top-10 ≥ 60% (improvement over v2.2's 59.34%)
+- Species top-50 ≥ 91% (improvement over 90.08%)
+- P. radiata Wairarapa benchmark: rank ≤ 5
+- Land state auxiliary head accuracy ≥ 70% on pseudo-labels
+
+### G8. Pre-Training Checklist (Updated March 5)
+
+**Data COMPLETE** (no action needed):
+- [x] New GBIF features (9.87M rows in `sinr_v3_features_new_gbif`)
+- [x] Backfill features (5.23M rows in `sinr_v3_features_backfill`)
+- [x] HILDA+ data (14M rows in `sinr_v3_hilda_lulc`)
+- [x] Carbon features (~9.87M rows in `sinr_v3_carbon_temporal`)
+- [x] Aridity Index (in `sinr_v3_aridity_index`)
+- [x] Unified table v2 assembled (32.3M rows, 686 cols)
+- [x] is_introduced computed (30.3M coordinate-species pairs via TDWG+WCVP)
+- [x] Land State Engine v1 pseudo-labels (32.3M rows, 14 cols)
+- [x] Species mapping rebuilt (37,834 species after merge)
+- [x] TDWG L3 polygons uploaded to BQ (369 regions)
+- [x] WCVP native ranges uploaded to BQ (66,040 species)
+
+**Action items remaining**:
+- [ ] **Create `sinr_v3_unified_v2_final`** — JOIN unified_v2 + is_introduced + land_state (BQ query ~30 min)
+- [ ] Export parquet with spatial block train/val split
+- [ ] Compute feature normalization stats on training set only
+- [ ] Launch H100 training on GCP
+- [ ] Download GWDD v2 from Zenodo → JOIN to species table (for carbon extension, not blocking v3.0)
+- [ ] Expand GRIIS to multi-level invasiveness (enhancement, not blocking v3.0)
+
+---
+
+## H) CARBON & BIOMASS EXTENSION (v3.1)
+
+### H1. Carbon Sampling Complete — Ready for Integration
+
+All BQ data extraction is complete as of March 4. Carbon sampling in `sinr_v3_carbon_temporal` is done — remaining unfilled rows are GEE failure points (unsampleable pixels). This data is already LEFT JOINed into `sinr_v3_unified_v2`.
+
+### H1a. Census-Based vs Area-Based Carbon Accounting
+
+These are **fundamentally different approaches** and Treekipedia should support both:
+
+| | Census-Based | Area-Based |
+|---|---|---|
+| **Input** | Known planted species + count | Remote sensing of land cover change |
+| **Method** | Per-species wood density × allometric equation | Pixel-level AGB from satellite (ESA CCI, GEDI) |
+| **Accuracy** | Higher (species-specific) | Lower (aggregate, generic) |
+| **Scale** | Plot-level (hectares) | Landscape (km²) |
+| **Our advantage** | **Treekipedia's unique strength** — we predict species | Can also do this via SINR + carbon head |
+| **VM0047 support** | Yes (census-based quantification) | Yes (area-based quantification) |
+
+**Treekipedia's path**: Start with **census-based** (our competitive advantage — species-specific allometry), then add **area-based** via neural carbon head for landscape-scale estimates. The ideal system does both and cross-validates.
+
+### H2. Deterministic Carbon Estimate (Immediate)
+
+While waiting for neural carbon, implement **deterministic allometry** using existing species predictions:
+
+```python
+# Immediate carbon estimate from species predictions
+def estimate_carbon(species_probabilities, wood_density_db, site_age_estimate):
+    """Chave et al. (2014) pantropical allometric equation"""
+    weighted_wood_density = sum(
+        prob * wood_density_db.get(species, 0.55)  # 0.55 = tropical mean default
+        for species, prob in species_probabilities.items()
+    )
+    # Simplified Chave 2014: AGB = 0.0673 * (WD * H * D²)^0.976
+    # Without tree-level D and H, use biome-specific AGB curves:
+    # AGB_per_ha = f(weighted_wood_density, site_age, biome, precipitation)
+    return carbon_curve(weighted_wood_density, site_age_estimate)
+```
+
+**Data needed**: Global Wood Density Database v2 (Fischer et al. 2026, Zenodo DOI:10.5281/zenodo.16919509) — **16,905 species** with pre-aggregated wood density values. Complement with GLOWCAD (864 species with species-specific carbon fractions).
+
+### H3. Neural Carbon Head (v3.1)
+
+When v3.0 backbone is trained, add carbon head:
+
+```
+Shared ResBlock trunk (256D, frozen from v3.0)
+  ├── Species Head (frozen from v3.0)
+  ├── Land State Head (frozen from v3.0)
+  └── Carbon Head (NEW, trainable)
+      MLP: 256→128→128→3 (AGB, NPP, SOC)
+      Activation: Softplus (enforces positive outputs)
+      Loss: Uncertainty-weighted Huber (robust to outliers)
+      Missing data: Feature masking with explicit missingness indicators
+```
+
+**Training strategy**: Freeze backbone and species/land-state heads. Train only carbon head on the ~12% of points with carbon labels. Prevents catastrophic forgetting on species performance.
+
+---
+
+## I) TECHNICAL ARCHITECTURE DETAIL
+
+### I1. Data Pipeline (Actual v3 State)
+
+```
+GBIF Occurrences (96.5M rows, 60K+ species)
+  │
+  ├── v4 Pipeline (2017-2024) → 3.37M rows → AlphaEarth + env features
+  ├── Phase A Rejoin (+4,679 species)
+  ├── Phase B Re-cluster (49,640 centroids, 22,603 species)
+  │
+  ├── v3 Expansion
+  │   ├── sinr_v3_features_new_gbif (9.87M rows, 647 cols) ✅ COMPLETE
+  │   ├── sinr_v3_features_backfill (5.23M rows, 522 cols) ✅ COMPLETE
+  │   ├── sinr_v3_hilda_lulc (14M rows) ✅ COMPLETE
+  │   ├── sinr_v3_carbon_temporal (9.87M rows) ✅ COMPLETE
+  │   └── sinr_v3_aridity_index ✅ COMPLETE
+  │
+  ├── Assembly
+  │   ├── sinr_v3_unified_v1 (14.6M rows, 24,832 species) — DEPRECATED (species loss bug)
+  │   ├── sinr_v3_unified_v2 (32.3M rows, 45,979 species) ✅ CURRENT
+  │   ├── sinr_v3_is_introduced (30.3M pairs) ✅ COMPLETE
+  │   ├── sinr_v3_land_state_t1 (32.3M rows, 14 cols) ✅ COMPLETE
+  │   └── sinr_v3_unified_v2_final (pending assembly)
+  │
+  └── Training
+      ├── species_mapping_v3.json (37,834 species after merge)
+      └── Export → Parquet → H100 training (NEXT STEP)
+```
+
+### I2. BigQuery Table Inventory (Actual, March 5)
+
+| Table | Rows | Columns | Size | Status |
+|-------|------|---------|------|--------|
+| `sinr_v3_features_new_gbif` | 9,868,255 | 647 | 47.64 GB | ✅ Immutable |
+| `sinr_v3_features_backfill` | 5,256,693 | 522 | 20.44 GB | ✅ Immutable |
+| `sinr_v3_hilda_lulc` | ~14M | ~5 | ~2 GB | ✅ Complete |
+| `sinr_v3_carbon_temporal` | ~9.87M | ~20 | ~5 GB | ✅ Complete |
+| `sinr_v3_aridity_index` | ~9.87M | ~3 | ~1 GB | ✅ Complete |
+| `sinr_v3_unified_v1` | 14,609,514 | 686 | 74.33 GB | ⚠️ Deprecated |
+| `sinr_v3_unified_v2` | 32,323,081 | 686 | 156.74 GB | ✅ Current |
+| `sinr_v3_is_introduced` | 30,262,138 | 6 | 10.05 GB | ✅ Complete |
+| `sinr_v3_land_state_t1` | 32,323,081 | 14 | 3.43 GB | ✅ Complete |
+| `tdwg_level3` | 369 | 3 (incl. GEOGRAPHY) | <1 MB | ✅ Reference |
+| `wcvp_native_ranges` | 66,040 | 2 | <10 MB | ✅ Reference |
+| `occurrences` | 96,529,861 | ~40 | ~50 GB | ✅ Reference |
+| `alphaearth_embeddings_v4` | 3,370,000 | ~520 | ~15 GB | ✅ Reference |
+
+### I3. Known Bugs and Data Quality Issues
+
+1. **GEDI GriddedVeg `.mosaic()` bug** in `unified_gee_sampler_v3.py:L211-212` — already-sampled data may have wrong GEDI values. **Mitigation**: Carbon sampler has the fix; LEFT JOIN carbon table GEDI columns to overwrite bad values where coverage exists.
+
+2. **WCVP native/introduced gaps** — P. radiata not listed as introduced in NZ (only native regions stored). **Mitigation**: The system correctly infers "introduced" (observed outside native range), but WCVP has coverage gaps for some species. GRIIS integration and DeepMind plantation map provide complementary signals.
+
+3. **Non-GBIF data provenance** — 87M of 96.5M rows in `occurrences` lack a `gbifID`. Exact sources unknown. Likely includes USDA, iNaturalist, and other datasets from the October 2024 data expansion. Does not affect training quality but makes attribution difficult.
+
+4. **is_introduced row count mismatch** — 30.3M vs 32.3M unified rows. ~2M rows in unified_v2 lack a corresponding is_introduced value (likely due to deduplication at ROUND(lat,4)/ROUND(lon,4) precision level). These get COALESCE to -1 (unknown → 0.5) in the final table.
+
+### I4. Inference Architecture
+
+**Current** (port 5002, `location_predictor_FIXED.py`):
+- `/sample` → GEE environmental sampling
+- `/sinr-infer` → SINR v2.2 two-pass inference
+- `/recommend` → SAFE-B + SINR combined scoring
+
+**v3.0 updates needed**:
+- Load v3.0 model (new feature dimensions, HILDA embeddings, expanded gate, land state head)
+- Add Land State Engine v1 call in inference pipeline
+- Return 5-product JSON (current state, suitability, recommendations, projections stub, confidence stub)
+- For area queries: add `/assess-polygon` endpoint
+
+---
+
+## J) LONG-TERM ROADMAP AND EXPANSION CONSIDERATIONS
+
+### J1. v4 — Temporal Intelligence (6-12 months)
+
+**L-TAE Temporal Encoder**: Process 8 years of AlphaEarth embeddings (2017-2024) through a Lightweight Temporal Attention Encoder. This enables:
+- **Change detection**: AlphaEarth inter-annual embedding differences are built-in disturbance signals
+- **Phenological fingerprinting**: Species have characteristic seasonal embedding trajectories
+- **Baseline forecasting**: Predict next 5 years of environmental features → project "do nothing" carbon trajectory → prove Additionality for carbon credits
+
+**Note**: The `ae_temporal_change_l2` feature in Land State Engine v1 is a simple precursor to full L-TAE temporal processing — it captures the magnitude of change but not the trajectory shape.
+
+### J2. v5 — Spatial Context and Graph Networks (12-24 months)
+
+**The vision (from Gemini)**: Evaluate grid-chunks (100×100 pixels) using a Spatial Graph Neural Network where edges encode topographic connectivity (water flows downhill) and proximity to intact seed sources.
+
+**Pragmatic path**:
+1. Start with **neighborhood context features** (mean/std of neighboring pixels' predictions) — simple, no GNN needed
+2. Graduate to **GNN on management units** (not pixels): 3-7 nodes per polygon, tractable
+3. Only attempt pixel-level GNN if/when compute budget allows and validation shows improvement
+
+### J3. TB-Scale Data Strategy (12-24 months)
+
+Move from GEE point-sampling to Zarr/Xarray tile-based processing when needed for:
+- Spatial context for GNNs
+- Pre-computed prediction maps
+- Sub-second inference latency
+
+### J4. Future Sensor Integration (2027+)
+
+| Sensor | Launch | Resolution | What It Adds |
+|--------|--------|-----------|-------------|
+| **NISAR** | Operational Jan 2026 | 5-25m | Woody biomass, soil moisture. **DATA AVAILABLE NOW** |
+| **ESA BIOMASS** | Commissioned Jan 2026 | 200m | Dense tropical canopy penetration. **DATA AVAILABLE NOW** |
+| **CO2M** | 2026 | 2×2km | Carbon flux monitoring |
+| **CHIME** | 2028 | 30m | Direct species ID from spectral signatures — **game-changer** |
+
+### J5. Foundation Model Strategy
+
+**Decision (confirmed)**: Keep AlphaEarth as frozen feature backbone. Do NOT pretrain a new foundation model.
+
+### J6. MRV and Carbon Credit Pathway (3-5 years)
+
+```
+Phase 1 (NOW): Deterministic allometry → species prediction × wood density
+Phase 2 (v3.1): Neural carbon + uncertainty → preliminary feasibility
+Phase 3 (v4): Temporal + baseline → Additionality proof
+Phase 4 (v5): Differentiable allometry → audit trail from pixel to credit
+Phase 5 (production): Certified MRV tool → VM0047 / IPCC Tier 3
+```
+
+---
+
+## K) AI RESEARCHER PIPELINE + TREE KNOWLEDGE SYNERGY
+
+### K1. What Already Exists
+
+Treekipedia has a comprehensive tree knowledge schema (130+ columns per species, 67,743 species) with:
+- **35 research fields** across identity, ecological, morphological, and stewardship categories
+- **Adaptive research orchestrator** (`orchestrator/research_orchestrator.py`) with confidence scoring
+- **Research queue** (PostgreSQL `research_queue` table) with priority ordering
+- **Dual data pattern**: `field_ai` / `field_human` (human takes precedence)
+- **V11 environmental derivation** — statistically derived environmental envelopes from GBIF occurrences
+
+### K2. Statistical Derivation Pipeline
+
+**Already derived** (in species table):
+- Soil texture, pH, organic carbon from GBIF × OpenLandMap
+- Climate type (Koppen-Geiger), temperature, precipitation from GBIF × WorldClim
+- WCVP native/introduced status (99.99% coverage)
+- Present in intact forest
+
+**NEW derivations possible from v3 training data** (32.3M points × 686 columns):
+- HILDA+ land use trajectory per species
+- Aridity tolerance envelope
+- MERIT HAND riparian affinity
+- Canopy height preference
+- Biomass context
+- Plantation vs natural
+- Temporal stability (AlphaEarth embedding variance)
+- Co-occurrence networks
+
+### K3. AI Researcher Priority Queue
+
+Focus on fields that CANNOT be derived from occurrence × environment data:
+
+| Priority | Field | Why |
+|----------|-------|-----|
+| HIGH | stewardship_best_practices | Practical knowledge |
+| HIGH | planting_recipes | Horticultural expertise |
+| HIGH | disease_pest_management | Pathology knowledge |
+| HIGH | wood_density (gap-fill) | Carbon estimation |
+| MEDIUM | cultural_significance | Ethnobotanical |
+| MEDIUM | successional_stage | Ecology |
+| LOW | propagation_methods | Nursery knowledge |
+
+---
+
+## L) COMPETITIVE POSITION
+
+### L1. What No One Else Has
+
+1. **37,800+ species coverage globally** — Competitors cap at hundreds of species for specific biomes
+2. **Species-first carbon estimation** — Competitors estimate AGB directly from satellite without knowing species
+3. **HILDA+ trajectory integration** — No SDM system uses 60-year land use history
+4. **7-strategy recommendation engine** — No competitor offers strategy-specific species recommendations
+5. **Land state awareness** — Disturbance-aware gating of recommendations (new in v3)
+
+### L2. What Competitors Do Better (Currently)
+
+1. **Spatial scale**: Pachama/NCX have pre-computed landscape maps
+2. **Carbon estimation**: CTrees has 10m AGB maps
+3. **Temporal monitoring**: Pachama does real-time deforestation monitoring
+4. **Validation**: Competitors have published accuracy assessments
+
+### L3. How v3 Closes the Gap
+
+- **Data scale**: 32.3M training points, 2× more than v2.2
+- **Species scale**: 37,834 species after merge (2× more than any competitor)
+- **Land state**: HILDA+ trajectory + heuristic engine → disturbance awareness
+- **Area-scale**: Polygon assessment (planned v3.0/v3.1)
+- **Carbon**: Deterministic allometry immediately, neural head in v3.1
+
+---
+
+## M) PRIORITIZED ACTION PLAN (Updated March 5)
+
+### Phase 0: Data Preparation — ✅ COMPLETE
+
+| # | Action | Status |
+|---|--------|--------|
+| 1 | Assemble unified BQ table (consolidation v2) | ✅ 32.3M rows, 45,979 species |
+| 2 | Compute is_introduced via TDWG+WCVP spatial join | ✅ 30.3M pairs |
+| 3 | Generate land state pseudo-labels (LSE v1) | ✅ 32.3M rows, 14 cols |
+| 4 | Rebuild species mapping | ✅ 37,834 species after merge |
+| 5 | Upload TDWG L3 polygons to BQ | ✅ 369 regions |
+| 6 | Upload WCVP native ranges to BQ | ✅ 66,040 species |
+
+### Phase 0.5: Final Assembly (NEXT)
+
+| # | Action | Time | Status |
+|---|--------|------|--------|
+| 7 | Create `sinr_v3_unified_v2_final` (join all three tables) | ~30 min | 🔲 NEXT |
+| 8 | Export parquet with spatial block train/val split | 1 day | 🔲 |
+| 9 | Compute feature normalization stats | 1 hour | 🔲 |
+| 10 | Launch H100 training | 1-3 days | 🔲 |
+
+### Phase 1: SINR v3.0 Training (1-2 weeks)
+
+| # | Action | Time | Dependency |
+|---|--------|------|-----------|
+| 11 | Update `train_on_vm.py` for v3.0 architecture | 2 days | Phase 0.5 |
+| 12 | Train v3.0 (15 epochs on H100) | 1-3 days | #11 |
+| 13 | Evaluate: species metrics, Wairarapa benchmark, land state accuracy | 1 day | #12 |
+| 14 | Integrate v3.0 into `location_predictor_FIXED.py` | 1 day | #13 passes criteria |
+
+### Phase 2: Land State Engine + Improved Recommender (1-2 weeks)
+
+| # | Action | Time | Dependency |
+|---|--------|------|-----------|
+| 15 | Implement Land State Engine v1 at inference time | 1 day | #14 |
+| 16 | Update SAFE-B with land state gating | 2 days | #15 |
+| 17 | Update API for 5-product JSON | 1 day | #16 |
+| 18 | Update frontend for land state display | 2 days | #17 |
+
+### Phase 3: Area-Scale + Carbon (2-4 weeks)
+
+| # | Action | Time | Dependency |
+|---|--------|------|-----------|
+| 19 | Implement polygon assessment endpoint | 3 days | Phase 2 |
+| 20 | Deterministic allometry from GWDD | 2 days | GWDD download |
+| 21 | Train carbon head | 3-5 days | #14 + carbon data |
+
+---
+
+## N) OPEN QUESTIONS
+
+### Resolved (March 4-5):
+
+1. ~~Carbon sampler: wait or proceed?~~ → RESOLVED: Carbon sampling COMPLETE.
+2. ~~GEDI bug triage~~ → RESOLVED: LEFT JOIN carbon table to overwrite.
+3. ~~Species loss in consolidation v1~~ → RESOLVED: Fixed in v2 by using `occurrences` table.
+4. ~~How to compute is_introduced at scale~~ → RESOLVED: BQ spatial join with TDWG+WCVP.
+5. ~~Training hardware~~ → RESOLVED: H100 on GCP (32.3M rows too large for MPS).
+
+### Still Open:
+
+6. **Production deployment**: Ship SINR v3.0 as replacement for v2.2, or run both in parallel?
+
+7. **WCVP gap mitigation**: 88% of training points classified as "introduced" due to WCVP's native-only data. Should we:
+   a. Accept this and let the model learn from it (current approach)
+   b. Expand GRIIS to multi-level invasiveness for better signal
+   c. Use DeepMind plantation probability as complementary signal
+   d. Some combination of the above
+
+8. **Statistical derivation pipeline priority**: Run new GEE-based derivations (HILDA trajectory per species, aridity tolerance, MERIT HAND riparian affinity) before or after v3.0 training?
+
+9. **Non-GBIF data attribution**: Should we investigate the 87M rows without gbifID in `occurrences` to understand their provenance? This affects data quality documentation but not training.
+
+10. **is_introduced row mismatch**: 30.3M vs 32.3M — should we investigate the 2M missing pairs or accept the COALESCE to -1 (unknown)?
+
+---
+
+## O) APPENDIX
+
+### O1. Implementation Scripts Created (March 5)
+
+| Script | Purpose | Status |
+|--------|---------|--------|
+| `orchestrator/consolidate_bq_v2.py` | Fixed unified table assembly | ✅ Ran successfully |
+| `orchestrator/compute_is_introduced_bq.py` | TDWG+WCVP spatial join | ✅ Ran successfully |
+| `orchestrator/land_state_engine.py` | Heuristic land state features | ✅ Ran successfully |
+| `orchestrator/sinr_training_data/species_mapping_v3.json` | Species→index mapping | ✅ Generated |
+
+### O2. Research Sources Consulted
+
+**Disturbance-Aware SDMs & Land State**:
+- HILDA+ v2.0 (Winkler et al., 2021): Global land use change 1960-2020
+- DeepMind Natural Forests of the World (2025): Plantation detection at 10m, 92.2% accuracy
+- JRC Tropical Moist Forest monitoring
+- AlphaEarth temporal embeddings
+
+**Native/Introduced & Invasiveness**:
+- GRIIS (Pagad et al.): Country-level invasive species register
+- WCVP v12+ (Kew Gardens): Native ranges
+- TDWG Level 3 botanical regions (369 polygons)
+
+**Carbon & Biomass**:
+- Chave et al. (2014): Standard pantropical allometric equation
+- Global Wood Density Database v2 (Fischer et al., 2026)
+- VM0047 v1.1 (May 2025)
+- ESA CCI Biomass v6.0
+
+**Foundation Models**:
+- AlphaEarth outperforms SatCLIP, Prithvi, Clay as frozen features
+- L-TAE (Garnot & Landrieu, 2020) for temporal encoding (deferred to v4)
+
+### O3. Key Datasets and Sizes
+
+| Dataset | Resolution | Coverage | Size | Status |
+|---------|-----------|----------|------|--------|
+| AlphaEarth v4 | 10m | Global, 2017-2024 | ~2TB (tiles) | Via GEE |
+| HILDA+ v2.0 | ~1km | Global, 1960-2020 | 3.5GB | ✅ Sampled |
+| Hansen GFC | 30m | Global, 2000-2023 | ~100GB | In GEE |
+| Dynamic World | 10m | Global, 2015-present | ~1TB | In GEE |
+| ESA WorldCover | 10m | Global, 2020-2021 | ~200GB | In GEE |
+| MERIT HAND | 90m | Global | ~4GB | Via GEE |
+| WorldClim BIO | 1km | Global | ~2GB | In GEE |
+| OpenLandMap Soils | 250m | Global | ~10GB | In GEE |
+
+### O4. Source File Map
+
+| File | Role | Lines |
+|------|------|-------|
+| `orchestrator/location_predictor_FIXED.py` | SINR inference engine, GEE sampling | ~800 |
+| `orchestrator/train_on_vm.py` | v3 model training script | ~500 |
+| `orchestrator/consolidate_bq_v2.py` | v2 unified table assembly | ~400 |
+| `orchestrator/compute_is_introduced_bq.py` | is_introduced BQ computation | ~250 |
+| `orchestrator/land_state_engine.py` | Heuristic land state features | ~300 |
+| `orchestrator/sinr_model/best_model.pt` | v2.2 trained model (39MB) | — |
+| `orchestrator/sinr_training_data/species_mapping_v3.json` | v3 species→index mapping | — |
+| `treekipedia/backend/routes/prediction.js` | API prediction/recommendation | ~1930 |
+| `treekipedia/backend/services/safeb-scorer.js` | SAFE-B scoring engine | ~710 |
+| `treekipedia/frontend/.../SpeciesRecommenderModal.tsx` | Recommender UI | ~600 |
+
+### O5. Document Lineage
+
+This document synthesizes three independent AI architecture reviews:
+- **Claude (original March 4, updated March 5)**: Deep implementation analysis with full codebase + BQ access
+- **Codex (SINR March 4 Codex.md)**: Three-question framework, Land State Engine concept, 5-product API contract
+- **Gemini (SINR March 4 Gemini.md)**: TB-scale vision, differentiable allometry, Spatial GNN + L-TAE
+
+---
+
+## P) MARCH 5 IMPLEMENTATION LOG
+
+### What Was Done
+
+**1. Consolidation v2 (species loss fix)**
+- **Problem**: v1 used `alphaearth_embeddings_v4` for backfill taxon_id lookup → only 24,832 species
+- **Fix**: Used `occurrences` table (96.5M rows, 60K+ species) with DISTINCT dedup
+- **Script**: `orchestrator/consolidate_bq_v2.py`
+- **Result**: 32,323,081 rows, 45,979 species (37,834 after merge)
+- **Chunked execution**: 26 chunks of 5-year ranges to avoid BQ quota issues
+
+**2. TDWG + WCVP upload to BigQuery**
+- Exported TDWG L3 polygons from local PostGIS (369 regions) → `tdwg_level3`
+- Cleaned geometries with `ST_ReducePrecision(ST_MakeValid(geometry), 0.001)` to fix duplicate vertex errors
+- Exported WCVP native ranges from local PostGIS (66,040 species) → `wcvp_native_ranges`
+
+**3. is_introduced computation**
+- **Script**: `orchestrator/compute_is_introduced_bq.py`
+- **Method**: BQ spatial join (ST_CONTAINS with TDWG polygons) + WCVP native range lookup
+- **Subspecies handling**: Falls back through -00, -01, -02, -03 suffixes
+- **Result**: 30,262,138 pairs — native: 2.3M (7.7%), introduced: 26.8M (88.4%), unknown: 1.2M (3.9%)
+
+**4. Land State Engine v1**
+- **Script**: `orchestrator/land_state_engine.py`
+- **Method**: Deterministic SQL heuristics on Hansen + HILDA + JRC + DW + Neumann + carbon + AE temporal data
+- **Fix needed during execution**: AE temporal bands (ae_2017_00..07, ae_2024_00..07) were missing from the features CTE
+- **Result**: 32,323,081 rows, 14 columns including `ae_temporal_change_l2`
+
+**5. Species mapping rebuild**
+- 45,979 raw taxon_ids → 37,834 after merge (8,240 subspecies merged)
+- Both subspecies and parent keys in `species_to_idx` → same index
+- Saved as `orchestrator/sinr_training_data/species_mapping_v3.json`
+
+### Errors Encountered and Fixed
+
+1. **TDWG polygon streaming insert — 413 Entity Too Large** → Fixed with `load_table_from_file()` and NDJSON format
+2. **TDWG duplicate vertices in BQ GEOGRAPHY** → Fixed with `ST_ReducePrecision` in PostGIS pre-export
+3. **Land State Engine ae_2024_00 missing** → Added AE temporal bands to features CTE
+4. **Consolidation v1 species loss** → Root cause identified (wrong JOIN table), fixed in v2
+
+### What Remains
+
+1. Create `sinr_v3_unified_v2_final` (join unified_v2 + is_introduced + land_state)
+2. Export to parquet with spatial block train/val split
+3. Compute normalization stats
+4. Launch H100 training on GCP
+5. Update `train_on_vm.py` for v3.0 architecture changes

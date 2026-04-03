@@ -1,0 +1,18 @@
+{
+  "timestamp": "20260211_093648",
+  "phase": "A",
+  "description": "Gap species recovered via pixel rejoin from v4 data",
+  "v4_parquet": "/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/orchestrator/bigquery_exports/alphaearth_embeddings_v4/alphaearth_embeddings_v4_COMPLETE.parquet",
+  "occ_parquet": "/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/Treekipedia_occ_YEAR_CoordinateUncertainty_EstablishmentMeans_LatLong_TaxonId_CORRECT_december_18d_2025.parquet",
+  "gap_species_total": 42285,
+  "species_recovered": 4679,
+  "rows_output": 9144,
+  "species_still_needing_gee": 37606,
+  "coord_precision_dp": 4,
+  "notes": [
+    "No GEE calls made \u2014 pure data join",
+    "Embeddings inherited from v4 pixel matches",
+    "Most recent year embedding used for multi-year pixels",
+    "Output compatible with v4 schema for clustering pipeline"
+  ]
+}

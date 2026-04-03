@@ -1,0 +1,21 @@
+{
+  "contract_name": "sinr_v51_ae_xiao_train_feature_contract",
+  "version": "v51_ae_xiao_train",
+  "mode": "online",
+  "created_at_utc": "2026-03-25T01:24:40.494030Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "num_ae_embeddings": 64,
+  "num_ae_temporal": 512,
+  "num_env_continuous": 0,
+  "env_continuous_sha256": null,
+  "env_continuous_cols": [],
+  "categorical_features": [
+    "xiao_planted_forest"
+  ],
+  "land_state_cols": [],
+  "notes": [
+    "AE plus xiao-only add-back experiment",
+    "Uses AE current-year embeddings, AE temporal embeddings, and only the xiao_planted_forest categorical input",
+    "Drops all other non-AE environmental and land-state inputs"
+  ]
+}

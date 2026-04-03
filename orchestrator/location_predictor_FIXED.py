@@ -31,6 +31,10 @@ OPENLANDMAP_SOIL = {
 XIAO_ASSET = 'projects/sat-io/open-datasets/GLOBAL-NATURAL-PLANTED-FORESTS'     # 30m, ImageCollection (1010 tiles)
 NEUMANN_ASSET = 'projects/nature-trace/assets/forest_typology/natural_forest_2020_v1_0_collection'  # 10m, ImageCollection (37166 tiles)
 JRC_FOREST_ASSET = 'JRC/GFC2020_subtypes/V1'  # 10m, single Image
+GEDI_RH98_ASSET = 'LARSE/GEDI/GRIDDEDVEG_002/V1/1KM/gediv002_rh-98-a0_vf_20190417_20230316'
+GEDI_FHD_ASSET = 'LARSE/GEDI/GRIDDEDVEG_002/V1/1KM/gediv002_fhd-pai-1m-a0_vf_20190417_20230316'
+GEDI_MIN_COUNTF = 10
+GEDI_MAX_CANOPY_M = 100
 
 # Years to try for AlphaEarth (most recent first)
 ALPHAEARTH_YEARS = [2023, 2022, 2021, 2020, 2019, 2018, 2017]
@@ -513,11 +517,22 @@ def sample_sinr_env_features(lat: float, lon: float, year: int = 2023) -> dict:
         # ── GEDI Canopy Height ───────────────────────────────────────────
         if is_arctic or lat > 51.6:
             bands.append(ee.Image.constant(0).rename('gedi_canopy_height_m').toFloat())
+            bands.append(ee.Image.constant(0).rename('gedi_canopy_countf').toFloat())
             bands.append(ee.Image.constant(0).rename('gedi_foliage_height_div').toFloat())
         else:
-            gedi_rh98 = ee.Image('LARSE/GEDI/GRIDDEDVEG_002/V1/1KM/gediv002_rh-98-a0_vf_20190417_20230316')
-            gedi_fhd = ee.Image('LARSE/GEDI/GRIDDEDVEG_002/V1/1KM/gediv002_fhd-pai-1m-a0_vf_20190417_20230316')
-            bands.append(gedi_rh98.select('p95').unmask(0).rename('gedi_canopy_height_m').toFloat())
+            gedi_rh98 = ee.Image(GEDI_RH98_ASSET)
+            gedi_fhd = ee.Image(GEDI_FHD_ASSET)
+            gedi_countf = gedi_rh98.select('countf').rename('gedi_canopy_countf').toFloat()
+            gedi_canopy = (
+                gedi_rh98.select('p95')
+                .updateMask(gedi_countf.gte(GEDI_MIN_COUNTF))
+                .updateMask(gedi_rh98.select('p95').gte(0))
+                .updateMask(gedi_rh98.select('p95').lte(GEDI_MAX_CANOPY_M))
+                .rename('gedi_canopy_height_m')
+                .toFloat()
+            )
+            bands.append(gedi_canopy)
+            bands.append(gedi_countf.unmask(0).toFloat())
             bands.append(gedi_fhd.select('shan').unmask(0).rename('gedi_foliage_height_div').toFloat())
 
         # ── MODIS GPP (year-matched) ─────────────────────────────────────
@@ -608,8 +623,8 @@ def sample_sinr_env_features(lat: float, lon: float, year: int = 2023) -> dict:
         xb1 = xiao_mosaic.select('b1')
         xb2 = xiao_mosaic.select('b2')
         xb3 = xiao_mosaic.select('b3')
-        is_planted = xb1.eq(127).And(xb2.eq(127)).And(xb3.eq(0))   # Yellow (127,127,0)
-        is_natural = xb1.eq(0).And(xb2.eq(127)).And(xb3.eq(0))     # Green (0,127,0)
+        is_planted = xb1.eq(127).And(xb2.eq(127)).And(xb3.eq(0))
+        is_natural = xb1.eq(0).And(xb2.eq(127)).And(xb3.eq(0))
         xiao_class = (is_planted.multiply(2).add(is_natural)
                       .rename('xiao_planted_forest').toFloat())
         bands.append(xiao_class)
@@ -673,8 +688,9 @@ def sample_xiao_planted_forest(lat: float, lon: float) -> dict:
         xiao_mosaic = ee.ImageCollection(XIAO_ASSET).mosaic()
         b1 = xiao_mosaic.select('b1')
         b2 = xiao_mosaic.select('b2')
-        is_planted = b1.gt(200).And(b2.lt(50))
-        is_natural = b2.gt(100).And(b1.lt(50))
+        b3 = xiao_mosaic.select('b3')
+        is_planted = b1.eq(127).And(b2.eq(127)).And(b3.eq(0))
+        is_natural = b1.eq(0).And(b2.eq(127)).And(b3.eq(0))
 
         xiao_class = is_planted.multiply(2).add(is_natural).rename('xiao_planted_forest').toInt()
 
@@ -1060,6 +1076,343 @@ def generate_realistic_embedding(lat: float, lon: float) -> dict:
         embedding[f'a{i:02d}'] = float(value)
 
     return embedding
+
+
+# ── Lightweight site context endpoint ─────────────────────────────────────────
+
+# Human-readable labels for categorical codes
+ESA_WORLDCOVER_LABELS = {
+    10: 'Tree cover', 20: 'Shrubland', 30: 'Grassland', 40: 'Cropland',
+    50: 'Built-up', 60: 'Bare / sparse vegetation', 70: 'Snow and ice',
+    80: 'Permanent water bodies', 90: 'Herbaceous wetland', 95: 'Mangroves', 100: 'Moss and lichen'
+}
+
+DYNAMIC_WORLD_LABELS = {
+    0: 'Water', 1: 'Trees', 2: 'Grass', 3: 'Flooded vegetation',
+    4: 'Crops', 5: 'Shrub & scrub', 6: 'Built area', 7: 'Bare ground',
+    8: 'Snow & ice'
+}
+
+JRC_TMF_LABELS = {
+    0: 'No data', 1: 'Undisturbed tropical moist forest', 2: 'Degraded TMF',
+    3: 'Deforested land', 4: 'Forest regrowth', 5: 'Permanent / seasonal water',
+    6: 'Other land cover'
+}
+
+XIAO_LABELS = {0: 'Non-forest', 1: 'Natural forest', 2: 'Planted forest'}
+
+JRC_FOREST_TYPE_LABELS = {
+    0: 'Non-forest', 1: 'Evergreen needleleaf', 2: 'Evergreen broadleaf',
+    3: 'Deciduous needleleaf', 4: 'Deciduous broadleaf', 5: 'Mixed forest',
+    20: 'Unknown forest'
+}
+
+IPCC_FOREST_LABELS = {
+    0: 'Non-forest', 1: 'Tropical rainforest', 2: 'Tropical moist deciduous',
+    3: 'Tropical dry', 4: 'Tropical shrubland', 5: 'Tropical mountain',
+    6: 'Subtropical humid', 7: 'Subtropical dry', 8: 'Subtropical steppe',
+    9: 'Subtropical mountain', 10: 'Temperate oceanic', 11: 'Temperate continental',
+    12: 'Temperate steppe', 13: 'Temperate mountain', 14: 'Boreal coniferous',
+    15: 'Boreal tundra woodland', 16: 'Boreal mountain'
+}
+
+SOIL_TEXTURE_LABELS = {
+    0: 'Unknown', 1: 'Clay', 2: 'Silty clay', 3: 'Sandy clay',
+    4: 'Clay loam', 5: 'Silty clay loam', 6: 'Sandy clay loam',
+    7: 'Loam', 8: 'Silt loam', 9: 'Sandy loam',
+    10: 'Silt', 11: 'Loamy sand', 12: 'Sand'
+}
+
+
+@app.route('/sample-env', methods=['POST', 'GET'])
+def sample_env_endpoint():
+    """Lightweight environmental context sampling for the Site Inspector.
+
+    Calls only sample_sinr_env_features() + sample_worldclim_bio() + sample_srtm_elevation()
+    (skips AlphaEarth embedding, homogeneity grid, CCDC, canopy variance).
+    Returns structured JSON with human-readable labels and unit conversions.
+
+    POST /sample-env
+    Body: { "lat": -14.2644, "lon": -52.7344 }
+    """
+    try:
+        if request.method == 'POST':
+            data = request.get_json() or {}
+            lat = float(data.get('lat', 0))
+            lon = float(data.get('lon', 0))
+        else:
+            lat = float(request.args.get('lat', 0))
+            lon = float(request.args.get('lon', 0))
+
+        if lat == 0 and lon == 0:
+            return jsonify({'error': 'lat and lon required'}), 400
+
+        start_time = time.time()
+        print(f"\n{'='*50}")
+        print(f"Site context sampling at ({lat:.4f}, {lon:.4f})")
+
+        # Three parallel-safe GEE calls (sequential here but fast)
+        env = sample_sinr_env_features(lat, lon)
+        worldclim = sample_worldclim_bio(lat, lon)
+        elevation = sample_srtm_elevation(lat, lon)
+        soil = sample_openlandmap_soil(lat, lon)
+
+        elapsed = time.time() - start_time
+        print(f"   Site context done in {elapsed:.1f}s")
+
+        # Build structured response with human-readable labels
+        result = {
+            'success': True,
+            'lat': lat,
+            'lon': lon,
+            'elapsed_seconds': round(elapsed, 1),
+            'sections': {}
+        }
+
+        # --- Climate & Water ---
+        climate_section = {'label': 'Climate & Water', 'fields': []}
+        if worldclim:
+            if 'bio01' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'annual_mean_temp', 'label': 'Annual Mean Temperature',
+                    'value': round(worldclim['bio01'], 1), 'unit': '\u00b0C'
+                })
+            if 'bio05' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'max_temp_warmest', 'label': 'Max Temp (Warmest Month)',
+                    'value': round(worldclim['bio05'], 1), 'unit': '\u00b0C'
+                })
+            if 'bio06' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'min_temp_coldest', 'label': 'Min Temp (Coldest Month)',
+                    'value': round(worldclim['bio06'], 1), 'unit': '\u00b0C'
+                })
+            if 'bio12' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'annual_precip', 'label': 'Annual Precipitation',
+                    'value': round(worldclim['bio12']), 'unit': 'mm/yr'
+                })
+            if 'bio13' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'precip_wettest', 'label': 'Precip. (Wettest Month)',
+                    'value': round(worldclim['bio13']), 'unit': 'mm'
+                })
+            if 'bio14' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'precip_driest', 'label': 'Precip. (Driest Month)',
+                    'value': round(worldclim['bio14']), 'unit': 'mm'
+                })
+            if 'bio15' in worldclim:
+                climate_section['fields'].append({
+                    'key': 'precip_seasonality', 'label': 'Precipitation Seasonality',
+                    'value': round(worldclim['bio15'], 1), 'unit': 'CV'
+                })
+        if env:
+            if 'tc_vpd_mean' in env:
+                climate_section['fields'].append({
+                    'key': 'vpd', 'label': 'Vapor Pressure Deficit',
+                    'value': round(env['tc_vpd_mean'], 1), 'unit': 'Pa'
+                })
+            if 'tc_aet_mean' in env:
+                climate_section['fields'].append({
+                    'key': 'aet', 'label': 'Actual Evapotranspiration',
+                    'value': round(env['tc_aet_mean'], 1), 'unit': 'mm'
+                })
+            if 'aridity_index' in env:
+                climate_section['fields'].append({
+                    'key': 'aridity_index', 'label': 'Aridity Index',
+                    'value': round(env['aridity_index'], 3), 'unit': ''
+                })
+            if 'water_occurrence' in env:
+                climate_section['fields'].append({
+                    'key': 'water_occurrence', 'label': 'Surface Water Occurrence',
+                    'value': round(env['water_occurrence'], 1), 'unit': '%'
+                })
+            if 'merit_hand_m' in env:
+                climate_section['fields'].append({
+                    'key': 'merit_hand', 'label': 'Height Above Nearest Drainage',
+                    'value': round(env['merit_hand_m'], 1), 'unit': 'm'
+                })
+        result['sections']['climate_water'] = climate_section
+
+        # --- Terrain & Soil ---
+        terrain_section = {'label': 'Terrain & Soil', 'fields': []}
+        if elevation:
+            terrain_section['fields'].append({
+                'key': 'elevation', 'label': 'Elevation',
+                'value': round(elevation.get('elevation', 0)), 'unit': 'm'
+            })
+        if env:
+            if 'slope' in env:
+                terrain_section['fields'].append({
+                    'key': 'slope', 'label': 'Slope',
+                    'value': round(env['slope'], 1), 'unit': '\u00b0'
+                })
+            if 'aspect' in env:
+                terrain_section['fields'].append({
+                    'key': 'aspect', 'label': 'Aspect',
+                    'value': round(env['aspect'], 1), 'unit': '\u00b0'
+                })
+            if 'topo_diversity' in env:
+                terrain_section['fields'].append({
+                    'key': 'topo_diversity', 'label': 'Topographic Diversity',
+                    'value': round(env['topo_diversity'], 2), 'unit': ''
+                })
+        if soil:
+            if 'soil_ph' in soil:
+                terrain_section['fields'].append({
+                    'key': 'soil_ph', 'label': 'Soil pH',
+                    'value': soil['soil_ph'], 'unit': ''
+                })
+            if 'soil_texture' in soil:
+                terrain_section['fields'].append({
+                    'key': 'soil_texture', 'label': 'Soil Texture',
+                    'value': soil['soil_texture'], 'unit': ''
+                })
+            elif env.get('soil_texture_class'):
+                terrain_section['fields'].append({
+                    'key': 'soil_texture', 'label': 'Soil Texture',
+                    'value': SOIL_TEXTURE_LABELS.get(int(env['soil_texture_class']), f"Class {int(env['soil_texture_class'])}"),
+                    'unit': ''
+                })
+            if 'soil_clay_pct' in soil:
+                terrain_section['fields'].append({
+                    'key': 'soil_clay', 'label': 'Clay Content',
+                    'value': round(soil['soil_clay_pct'], 1), 'unit': '%'
+                })
+            if 'soil_organic_carbon' in soil:
+                terrain_section['fields'].append({
+                    'key': 'soil_carbon', 'label': 'Soil Organic Carbon',
+                    'value': round(soil['soil_organic_carbon'], 1), 'unit': 'g/kg'
+                })
+        result['sections']['terrain_soil'] = terrain_section
+
+        # --- Land State & Disturbance ---
+        landstate_section = {'label': 'Land State & Disturbance', 'fields': []}
+        if env:
+            if 'esa_worldcover_2021' in env:
+                wc_code = int(env['esa_worldcover_2021'])
+                landstate_section['fields'].append({
+                    'key': 'esa_worldcover', 'label': 'Land Cover (2021)',
+                    'value': ESA_WORLDCOVER_LABELS.get(wc_code, f'Code {wc_code}'),
+                    'unit': '', 'code': wc_code
+                })
+            if 'dynamic_world' in env:
+                dw_code = int(env['dynamic_world'])
+                landstate_section['fields'].append({
+                    'key': 'dynamic_world', 'label': 'Land Use Class',
+                    'value': DYNAMIC_WORLD_LABELS.get(dw_code, f'Code {dw_code}'),
+                    'unit': '', 'code': dw_code
+                })
+            if 'xiao_planted_forest' in env:
+                xiao_code = int(env['xiao_planted_forest'])
+                landstate_section['fields'].append({
+                    'key': 'xiao_planted', 'label': 'Forest Origin',
+                    'value': XIAO_LABELS.get(xiao_code, f'Code {xiao_code}'),
+                    'unit': '', 'code': xiao_code
+                })
+            if 'neumann_natural_prob' in env:
+                landstate_section['fields'].append({
+                    'key': 'neumann_natural', 'label': 'Natural Forest Probability',
+                    'value': round(env['neumann_natural_prob'] / 255 * 100, 1) if env['neumann_natural_prob'] > 1 else round(env['neumann_natural_prob'] * 100, 1),
+                    'unit': '%'
+                })
+            if 'jrc_tmf_status' in env:
+                tmf_code = int(env['jrc_tmf_status'])
+                landstate_section['fields'].append({
+                    'key': 'jrc_tmf', 'label': 'Tropical Moist Forest Status',
+                    'value': JRC_TMF_LABELS.get(tmf_code, f'Code {tmf_code}'),
+                    'unit': '', 'code': tmf_code
+                })
+            if 'jrc_forest_type' in env:
+                jft_code = int(env['jrc_forest_type'])
+                landstate_section['fields'].append({
+                    'key': 'jrc_forest_type', 'label': 'Forest Type',
+                    'value': JRC_FOREST_TYPE_LABELS.get(jft_code, f'Code {jft_code}'),
+                    'unit': '', 'code': jft_code
+                })
+            if 'sbtn_natural_land' in env:
+                landstate_section['fields'].append({
+                    'key': 'sbtn_natural', 'label': 'Natural Land',
+                    'value': 'Yes' if env['sbtn_natural_land'] > 0 else 'No',
+                    'unit': ''
+                })
+            if 'human_modification' in env:
+                landstate_section['fields'].append({
+                    'key': 'human_modification', 'label': 'Human Modification Index',
+                    'value': round(env['human_modification'], 3), 'unit': ''
+                })
+            if 'fire_frequency_count' in env:
+                landstate_section['fields'].append({
+                    'key': 'fire_frequency', 'label': 'Fire Frequency',
+                    'value': int(env['fire_frequency_count']), 'unit': 'events'
+                })
+            if 'nighttime_lights' in env:
+                landstate_section['fields'].append({
+                    'key': 'nighttime_lights', 'label': 'Nighttime Lights',
+                    'value': round(env['nighttime_lights'], 2), 'unit': 'nW/cm\u00b2/sr'
+                })
+        result['sections']['land_state'] = landstate_section
+
+        # --- Carbon & Productivity ---
+        carbon_section = {'label': 'Carbon & Productivity', 'fields': []}
+        if env:
+            if 'gedi_canopy_height_m' in env:
+                carbon_section['fields'].append({
+                    'key': 'canopy_height', 'label': 'Canopy Height',
+                    'value': round(env['gedi_canopy_height_m'], 1), 'unit': 'm'
+                })
+            if 'gedi_foliage_height_div' in env:
+                carbon_section['fields'].append({
+                    'key': 'foliage_diversity', 'label': 'Foliage Height Diversity',
+                    'value': round(env['gedi_foliage_height_div'], 2), 'unit': ''
+                })
+            if 'biomass_agb_mgha' in env:
+                carbon_section['fields'].append({
+                    'key': 'biomass_agb', 'label': 'Aboveground Biomass',
+                    'value': round(env['biomass_agb_mgha'], 1), 'unit': 'Mg/ha'
+                })
+            if 'modis_gpp_mean' in env:
+                carbon_section['fields'].append({
+                    'key': 'gpp', 'label': 'Gross Primary Productivity',
+                    'value': round(env['modis_gpp_mean'], 1), 'unit': 'kgC/m\u00b2/yr'
+                })
+            if 'tc_solar_rad_mean' in env:
+                carbon_section['fields'].append({
+                    'key': 'solar_radiation', 'label': 'Solar Radiation',
+                    'value': round(env['tc_solar_rad_mean'], 1), 'unit': 'W/m\u00b2'
+                })
+        result['sections']['carbon_productivity'] = carbon_section
+
+        # --- Ecological Context ---
+        eco_section = {'label': 'Ecological Context', 'fields': []}
+        if env:
+            if 'eco_id' in env:
+                eco_section['fields'].append({
+                    'key': 'eco_id', 'label': 'Ecoregion ID',
+                    'value': int(env['eco_id']), 'unit': ''
+                })
+            if 'biome_num' in env:
+                eco_section['fields'].append({
+                    'key': 'biome_num', 'label': 'Biome Number',
+                    'value': int(env['biome_num']), 'unit': ''
+                })
+            if 'ipcc_forest_class' in env:
+                ipcc_code = int(env['ipcc_forest_class'])
+                eco_section['fields'].append({
+                    'key': 'ipcc_forest', 'label': 'Forest Climate Zone',
+                    'value': IPCC_FOREST_LABELS.get(ipcc_code, f'Code {ipcc_code}'),
+                    'unit': '', 'code': ipcc_code
+                })
+        result['sections']['ecological_context'] = eco_section
+
+        return jsonify(result)
+
+    except Exception as e:
+        print(f"   Site context error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e), 'success': False}), 500
 
 
 @app.route('/health', methods=['GET'])
@@ -2091,6 +2444,7 @@ def run_sinr_v3_inference(lat, lon, year, top_k=100):
             feat[k] = float(v) if v is not None else 0.0
         except Exception:
             feat[k] = 0.0
+    feat.setdefault("tc_vpd_delta", 0.0)
 
     # === Build model input tensors ===
 

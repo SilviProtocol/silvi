@@ -92,3 +92,40 @@ research_tracking.db
 
 # Dolt database files (added by bd init)
 .dolt/
+
+# Binary artifacts (not for version control)
+*.dmg
+*.pkl
+*.docx
+*.pt
+*.tgz
+.playwright-mcp/
+
+# Marketing visuals (transfer manually)
+Marketing/visuals/
+Marketing/proposals/
+
+# Model weights and checkpoints (transfer manually)
+orchestrator/sinr_model/
+orchestrator/sinr_model_emb_only/
+
+# Training data (transfer manually)
+orchestrator/sinr_training_data/
+
+# Reference datasets (large phylo trees, shapefiles)
+orchestrator/reference_datasets/
+orchestrator/tdwg_l3/
+
+# Orchestrator caches, checkpoints, and data dumps
+orchestrator/expansion_phase_c/checkpoints/
+orchestrator/expansion_phase_c/phase_c_tasks_*.json
+orchestrator/.xiao_strict_repair_cache/
+orchestrator/v43c_benchmark_cache.npz
+orchestrator/habitat_centroids_export.sql
+
+# Session dumps
+session-ses_*.md
+
+# Embedded git repos
+le-sinr/
+sat-sinr/

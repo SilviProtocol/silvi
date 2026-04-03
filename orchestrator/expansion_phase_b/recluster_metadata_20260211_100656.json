@@ -1,0 +1,312 @@
+{
+  "timestamp": "20260211_100656",
+  "phase": "B",
+  "description": "Re-clustered species with adaptive max_k based on geographic dispersion",
+  "min_dispersion_km": 2000,
+  "min_occurrences": 10,
+  "species_reclustered": 2257,
+  "old_centroids": 10679,
+  "new_centroids": 9227,
+  "species_details": [
+    {
+      "taxon_id": "AngMaMyMyRt39074-00",
+      "n_points": 175,
+      "dispersion_km": 20012.051556682272,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaLaLcXx20687-00",
+      "n_points": 1074,
+      "dispersion_km": 20002.674944593546,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44283-00",
+      "n_points": 3528,
+      "dispersion_km": 19995.03693789058,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRtCc44792-00",
+      "n_points": 292,
+      "dispersion_km": 19973.226163172425,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiCpRs50394-00",
+      "n_points": 1553,
+      "dispersion_km": 19969.921570493898,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaSaSpNd47983-00",
+      "n_points": 12858,
+      "dispersion_km": 19964.84391309976,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiCpRs50383-00",
+      "n_points": 550,
+      "dispersion_km": 19957.755927170445,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10889-00",
+      "n_points": 411,
+      "dispersion_km": 19957.39912251327,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngNAPaRcCx49962-00",
+      "n_points": 793,
+      "dispersion_km": 19955.959461656494,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx10309-00",
+      "n_points": 235,
+      "dispersion_km": 19955.17961654017,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiPnCx50672-00",
+      "n_points": 310,
+      "dispersion_km": 19953.391236540043,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaMyMlSt35932-00",
+      "n_points": 186,
+      "dispersion_km": 19950.699249259054,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaAsStRc01687-00",
+      "n_points": 19,
+      "dispersion_km": 19947.724014536303,
+      "new_max_k": 6
+    },
+    {
+      "taxon_id": "AngMaApRlCx00296-00",
+      "n_points": 234,
+      "dispersion_km": 19940.972064237427,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiPnCx50811-00",
+      "n_points": 4022,
+      "dispersion_km": 19937.63629762142,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiTxCx50907-00",
+      "n_points": 14349,
+      "dispersion_km": 19937.201679931797,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44626-00",
+      "n_points": 4655,
+      "dispersion_km": 19934.097763673362,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09411-00",
+      "n_points": 79,
+      "dispersion_km": 19930.357999843145,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09179-00",
+      "n_points": 2357,
+      "dispersion_km": 19928.92563894142,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoMrCx43083-00",
+      "n_points": 3230,
+      "dispersion_km": 19926.619174695763,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngNAPaRcCx50257-00",
+      "n_points": 33,
+      "dispersion_km": 19925.8967273617,
+      "new_max_k": 11
+    },
+    {
+      "taxon_id": "AngNAPaRcCx50137-00",
+      "n_points": 2590,
+      "dispersion_km": 19925.29690453412,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaSoSlNc49296-00",
+      "n_points": 169,
+      "dispersion_km": 19924.670568395322,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaMaPhRb30426-00",
+      "n_points": 4122,
+      "dispersion_km": 19923.392997016515,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44456-00",
+      "n_points": 16544,
+      "dispersion_km": 19923.13141990582,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaLaLcXx20689-00",
+      "n_points": 830,
+      "dispersion_km": 19922.124505343985,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRhMn44052-00",
+      "n_points": 3918,
+      "dispersion_km": 19910.679535481315,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaPrPrTc42373-00",
+      "n_points": 83,
+      "dispersion_km": 19910.20429126452,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaLaBgNn20181-00",
+      "n_points": 153,
+      "dispersion_km": 19909.30932993913,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaAqQfLc01135-00",
+      "n_points": 8685,
+      "dispersion_km": 19908.175710241467,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaCsRn14133-00",
+      "n_points": 87,
+      "dispersion_km": 19907.648534878248,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaBtLc13990-00",
+      "n_points": 415,
+      "dispersion_km": 19891.303394204093,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44385-00",
+      "n_points": 3756,
+      "dispersion_km": 19884.7895799819,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaDiVbRn04394-00",
+      "n_points": 6139,
+      "dispersion_km": 19883.396088533453,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44400-06",
+      "n_points": 13,
+      "dispersion_km": 19881.576315788232,
+      "new_max_k": 4
+    },
+    {
+      "taxon_id": "AngMaLaLcXx20795-06",
+      "n_points": 52,
+      "dispersion_km": 19879.52952357115,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFgCx14759-00",
+      "n_points": 3837,
+      "dispersion_km": 19878.516462261818,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09325-00",
+      "n_points": 3467,
+      "dispersion_km": 19877.805931578674,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiPnCx50804-00",
+      "n_points": 2250,
+      "dispersion_km": 19873.201922397806,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaRoRsCx44402-00",
+      "n_points": 458,
+      "dispersion_km": 19872.06455033517,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaCaCcTc03090-00",
+      "n_points": 12,
+      "dispersion_km": 19868.90513474599,
+      "new_max_k": 4
+    },
+    {
+      "taxon_id": "AngMaFaFbCx12742-00",
+      "n_points": 254,
+      "dispersion_km": 19863.03638353488,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaPrPlTa42216-00",
+      "n_points": 87,
+      "dispersion_km": 19859.092083703723,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaSoSlNc49376-00",
+      "n_points": 924,
+      "dispersion_km": 19858.52407883823,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaLaScRp21468-00",
+      "n_points": 270,
+      "dispersion_km": 19857.00584215234,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaMaSlCc32673-00",
+      "n_points": 636,
+      "dispersion_km": 19854.266506151474,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaGeRbCx17326-00",
+      "n_points": 534,
+      "dispersion_km": 19849.80285939057,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "GymPiPiCpRs50464-00",
+      "n_points": 12597,
+      "dispersion_km": 19840.19302536554,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09707-00",
+      "n_points": 65,
+      "dispersion_km": 19837.56786801852,
+      "new_max_k": 15
+    },
+    {
+      "taxon_id": "AngMaFaFbCx09304-00",
+      "n_points": 839,
+      "dispersion_km": 19836.04951552702,
+      "new_max_k": 15
+    }
+  ]
+}

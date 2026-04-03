@@ -1,0 +1,19 @@
+{
+  "contract_name": "sinr_v50_ae_only_train_feature_contract",
+  "version": "v50_ae_only_train",
+  "mode": "online",
+  "created_at_utc": "2026-03-23T14:51:47.236672Z",
+  "source_table": "treekipedia-479918.species_data.sinr_v47_merged_strict_core_train_v2",
+  "num_ae_embeddings": 64,
+  "num_ae_temporal": 512,
+  "num_env_continuous": 0,
+  "env_continuous_sha256": null,
+  "env_continuous_cols": [],
+  "categorical_features": [],
+  "land_state_cols": [],
+  "notes": [
+    "AE-only experiment contract",
+    "Uses only emb_00..emb_63 and AE temporal embeddings",
+    "Drops all non-AE environmental, categorical, and land-state inputs"
+  ]
+}

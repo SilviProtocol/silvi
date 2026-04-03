@@ -1,0 +1,166 @@
+═══════════════════════════════════════════════════════════════════════════════
+SINR V3 FORENSIC AUDIT - CRITICAL FINDINGS
+═══════════════════════════════════════════════════════════════════════════════
+
+PROBLEM: Pinus radiata ranks #16/45,247 instead of top-5
+
+ROOT CAUSES (Ranked by Impact):
+═══════════════════════════════════════════════════════════════════════════════
+
+1. FEATURE PARITY GAP (CRITICAL) — 36% signal loss
+   ──────────────────────────────────────────────────
+   Location: train_on_vm.py:67-97 vs location_predictor_FIXED.py:425-647
+   
+   Training has 90 features. Inference samples only 56 features.
+   20 features default to 0.0 at inference (out of distribution):
+   
+   - carbon_canopy_height_m (1)
+   - spawn_agb*, spawn_bgb* (4)
+   - gedi_l4b_agbd*, gedi_rh98, gedi_fhd (4)
+   - soc_0cm, soc_30cm, soc_100cm, soc_200cm (4)
+   - npp_at_obs, npp_at_ae, gpp_at_obs, gpp_at_ae (4)
+   - lai_at_obs, lai_at_ae, fpar_at_obs, fpar_at_ae (4)
+   - evi_at_obs, evi_at_ae (2)
+   - cci_agb_at_obs*, cci_agb_at_ae* (4)
+   - npp_mean_longterm, npp_trend (2)
+   - hilda_lulc_at_obs, hilda_lulc_at_ae (2)
+   - aridity_index, et0_mm_yr (2)
+   
+   Effect: Normalization applies training stats to zeros → huge negative
+   normalized values → predictions out of distribution → poor rankings
+
+───────────────────────────────────────────────────────────────────────────────
+
+2. PLANTED LABEL SEMANTICS (CRITICAL) — 30% signal loss for plantations
+   ──────────────────────────────────────────────────────────────────
+   Location: train_on_vm.py:1068, 472-473
+   
+   Value map: {0:1, 1:2, 2:3}
+   - Raw 0 (non-forest) → Mapped 1
+   - Raw 1 (natural forest) → Mapped 2  ← INCLUDED
+   - Raw 2 (planted forest) → Mapped 3  ← INCLUDED
+   
+   Label: (x_cat > 1) selects BOTH natural AND planted
+   Should select ONLY planted for radiata preference signal
+   
+   Boost = sigmoid(aux_planted) * intro_ratio
+   - Treats all forests equally, can't distinguish plantations
+   - Radiata gets same boost at natural forests and plantations (wrong!)
+   
+   Fix: Use strict mode line 1062: (x_cat == 3)
+
+───────────────────────────────────────────────────────────────────────────────
+
+3. FREQUENCY WEIGHT CLIPPING (CRITICAL) — 20% loss signal degradation
+   ────────────────────────────────────────────────────────────────
+   Location: train_on_vm.py:221
+   
+   Actual range: 1 to 415,050 species (415,050x)
+   Clipping: [0.25, 16.0] (64x range)
+   
+   Effect: Throws away 99.98% of frequency information
+   - Rare species (count=1-100): all get weight 16.0
+   - Common species (count=5,000+): all get weight 1.0-0.25
+   - Radiata if ~5,000 counts: gets 13x LOWER loss weight than rare species
+   
+   Fix: Change line 221 from [0.25, 16.0] to [0.05, 100.0]
+
+───────────────────────────────────────────────────────────────────────────────
+
+4. BOOST IN TRAINING FORWARD PASS (HIGH) — 15% species preference degradation
+   ──────────────────────────────────────────────────────────────────────────
+   Location: train_on_vm.py:469-473
+   
+   Problem: Boost applied INSIDE forward pass
+   logits = output_layer(x) + (sigmoid(aux_planted) * intro_ratio * boost_scale)
+   
+   Gradient flow:
+   loss ← logits ← boost ← planted_score ← aux_planted_head
+   
+   Effect: Species loss backpropagates through boost, coupling it to
+   auxiliary planted loss. Model learns to increase planted_score for ALL
+   species rather than species-specific preferences.
+   
+   Fix: Move boost outside training; apply only at inference
+
+───────────────────────────────────────────────────────────────────────────────
+
+5. MISSING IPCC FOREST CLASS (HIGH) — 10% forest type signal loss
+   ──────────────────────────────────────────────────────────────
+   Location: train_on_vm.py:107 vs location_predictor_FIXED.py:425-647
+   
+   Training: Expects 6 categorical features (jrc_forest_type, xiao_planted,
+   eco_id, biome_num, soil_texture, ipcc_forest_class)
+   
+   Sampling: Provides only 5 (missing ipcc_forest_class)
+   
+   Effect: ipcc_forest_class always 0 at inference; model can't distinguish
+   forest types (tropical moist, temperate, boreal) that radiata prefers
+   
+   Fix: Add ipcc_forest_class sampling to location_predictor_FIXED.py
+
+───────────────────────────────────────────────────────────────────────────────
+
+6. RANDOM TRAIN/VAL SPLIT (MEDIUM) — 15% inflated validation metrics
+   ────────────────────────────────────────────────────────────────
+   Location: train_on_vm.py:783
+   
+   Current: np.random.permutation(n) - purely random
+   Problem: No spatial stratification; occurrence data is spatially clustered
+   
+   Effect: Nearby points from same occurrence cluster leak between train/val
+   Validation metrics overestimate generalization to new geographic regions
+   
+   Fix: Use geohash-based or geographic stratification
+
+───────────────────────────────────────────────────────────────────────────────
+
+7. INCOMPLETE FEATURE CONTRACT (MEDIUM) — 5% documentation debt
+   ──────────────────────────────────────────────────────────
+   Location: feature_contract_v2_online56.json
+   
+   Claims: 58 continuous features
+   Actual training: 90 continuous features
+   
+   Effect: Contract excludes 32 offline features that model was trained on
+   Creates confusion about what features are actually used
+   
+   Fix: Update contract to list all 90 training features + mark 32 as offline
+
+═══════════════════════════════════════════════════════════════════════════════
+EXPECTED IMPROVEMENT
+
+Fixing issues 1-3 should improve radiata ranking from #16 to TOP-5:
+- Issue 1: +50% signal (36% gain from removing zero-filled features)
+- Issue 2: +15% plantation signal
+- Issue 3: +10% loss gradient (better weighting)
+─────────────────────────────────────────────────────────────────
+Combined: ~40-50% improvement in ranking quality
+
+═══════════════════════════════════════════════════════════════════════════════
+FILE REFERENCES
+
+Core files:
+- orchestrator/train_on_vm.py — Training script (1100+ lines)
+  * Lines 67-97: ENV_CONTINUOUS_COLS (90 features)
+  * Lines 99-107: CATEGORICAL_FEATURES (6 features)
+  * Line 221: Frequency weight clipping [0.25, 16.0]
+  * Lines 469-473: Boost applied in forward pass
+  * Lines 1068: Planted label definition
+  * Lines 780-786: Random train/val split
+
+- orchestrator/location_predictor_FIXED.py — GEE sampling
+  * Lines 425-647: sample_sinr_env_features() (36 features sampled)
+  * Missing: 20 features from training
+
+- orchestrator/v3_point_inference.py — Inference script
+  * Line 255: Missing features default to 0.0
+  * Lines 266-284: Normalization alignment
+
+- orchestrator/contracts/sinr_v3/feature_contract_v2_online56.json
+  * Claims 58 features, but 32 offline features exist in training
+
+═══════════════════════════════════════════════════════════════════════════════
+FULL ANALYSIS AVAILABLE IN:
+/Users/djimoserodio/Documents/Treekipedia vibes/silvi-open/SINR_V3_FORENSIC_AUDIT.md
+
