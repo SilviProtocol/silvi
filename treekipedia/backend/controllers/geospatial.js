@@ -1458,37 +1458,19 @@ async function getLeafScore(req, res) {
       });
     }
 
-    // Credit gating: polygon requests use area-based cost, others flat 10 credits
-    let creditCost = 10;
-    let metadata = { request_type: geometry ? 'polygon' : (lat && lng) ? 'point' : 'ecoregion' };
-
+    const leafContext = { request_type: geometry ? 'polygon' : (lat && lng) ? 'point' : 'ecoregion' };
     if (geometry) {
       const areaResult = await pool.query(
         'SELECT ST_Area(ST_GeomFromGeoJSON($1)::geography) / 10000 AS hectares',
         [JSON.stringify(geometry)]
       );
       const hectares = parseFloat(areaResult.rows[0].hectares);
-      creditCost = creditService.calculateSiteAnalysisCost(hectares);
-      metadata.area_hectares = Math.round(hectares * 100) / 100;
+      leafContext.hectares = hectares;
+      leafContext.area_hectares = Math.round(hectares * 100) / 100;
     }
 
-    const deduction = await creditService.deductCredits(
-      req.user.id,
-      creditCost,
-      'leaf_score',
-      null,
-      metadata,
-      `leaf_score_${req.user.id}_${Date.now()}`
-    );
-
-    if (!deduction.success) {
-      return res.status(402).json({
-        error: 'Insufficient credits',
-        required: deduction.required,
-        balance: deduction.balance,
-        cost_credits: creditCost
-      });
-    }
+    const charge = await creditService.chargeForProduct(req.user.id, 'leaf_score', leafContext);
+    if (!charge.ok) return res.status(charge.status).json(charge.body);
 
     let ecoregions = [];
 

@@ -717,24 +717,10 @@ module.exports = (pool) => {
         return res.status(404).json({ success: false, error: 'Species not found' });
       }
 
-      // Deduct 25 credits for species research
-      const deduction = await creditService.deductCredits(
-        req.user.id,
-        25,
-        'species_research',
-        taxon_id,
-        { taxon_id },
-        `species_research_${req.user.id}_${taxon_id}_${Date.now()}`
+      const charge = await creditService.chargeForProduct(
+        req.user.id, 'species_research', { taxon_id }, taxon_id
       );
-
-      if (!deduction.success) {
-        return res.status(402).json({
-          error: 'Insufficient credits',
-          required: deduction.required,
-          balance: deduction.balance,
-          cost_credits: 25
-        });
-      }
+      if (!charge.ok) return res.status(charge.status).json(charge.body);
 
       console.log(`POST /species/${taxon_id}/research - Starting AI research (insights flow)`);
 

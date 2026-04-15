@@ -280,24 +280,10 @@ module.exports = (pool) => {
         }
       }
 
-      // Deduct 200 credits for guide synthesis
-      const deduction = await creditService.deductCredits(
-        req.user.id,
-        200,
-        'guide',
-        eco_id,
-        { eco_id },
-        `guide_${req.user.id}_${eco_id}_${Date.now()}`
+      const charge = await creditService.chargeForProduct(
+        req.user.id, 'guide_synthesis', { eco_id }, eco_id
       );
-
-      if (!deduction.success) {
-        return res.status(402).json({
-          error: 'Insufficient credits',
-          required: deduction.required,
-          balance: deduction.balance,
-          cost_credits: 200
-        });
-      }
+      if (!charge.ok) return res.status(charge.status).json(charge.body);
 
       const ecoregion = ecoResult.rows[0];
 

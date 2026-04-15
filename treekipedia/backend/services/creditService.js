@@ -1,13 +1,18 @@
 /**
  * Credit Service
  * Core credit system logic: balance checks, deductions, grants, cost calculations
+ *
+ * Pricing and free/paid toggles live in `backend/config/pricing.js`.
+ * Controllers should use `chargeForProduct` rather than calling `deductCredits` directly.
  */
+
+const { SIGNUP_BONUS, PRODUCTS, calculateSiteAnalysisCost } = require('../config/pricing');
 
 module.exports = (pool) => {
 
   /**
-   * Get user's credit balance and lifetime stats
-   * Auto-grants signup bonus if user has no balance row
+   * Get user's credit balance and lifetime stats.
+   * Auto-grants signup bonus if user has no balance row.
    */
   async function getBalance(userId) {
     const { rows } = await pool.query(
@@ -16,46 +21,47 @@ module.exports = (pool) => {
     );
 
     if (rows.length === 0) {
-      // New user — grant signup bonus
       await grantSignupBonus(userId);
-      // Re-query actual balance (handles concurrent requests / deduplicated bonus)
       const { rows: updated } = await pool.query(
         'SELECT balance, lifetime_purchased, lifetime_spent FROM credit_balances WHERE user_id = $1',
         [userId]
       );
-      return updated[0] || { balance: 50, lifetime_purchased: 50, lifetime_spent: 0 };
+      return updated[0] || { balance: SIGNUP_BONUS, lifetime_purchased: SIGNUP_BONUS, lifetime_spent: 0 };
     }
 
     return rows[0];
   }
 
   /**
-   * Deduct credits atomically with balance check
-   * Uses SELECT FOR UPDATE to prevent race conditions
+   * Deduct credits atomically with balance check.
+   * Uses SELECT FOR UPDATE to prevent race conditions.
+   * Auto-grants signup bonus if the user has no balance row yet.
    */
   async function deductCredits(userId, amount, type, referenceId, metadata = {}, idempotencyKey = null) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
 
-      // Ensure balance row exists (auto-grant signup bonus if needed)
-      const { rows } = await client.query(
+      let { rows } = await client.query(
         'SELECT balance FROM credit_balances WHERE user_id = $1 FOR UPDATE',
         [userId]
       );
 
-      let balance;
       if (rows.length === 0) {
-        // Grant signup bonus within this transaction
+        // New user — grant signup bonus inside this transaction, then re-read with lock.
         await client.query(
           `INSERT INTO credit_transactions (user_id, amount, type, reference_id, description, balance_after, metadata, idempotency_key)
-           VALUES ($1, 50, 'signup_bonus', NULL, 'Welcome bonus: 50 free credits', 50, '{}', $2)`,
-          [userId, `signup_bonus_${userId}`]
+           VALUES ($1, $2, 'signup_bonus', NULL, $3, $2, '{}', $4)
+           ON CONFLICT (idempotency_key) DO NOTHING`,
+          [userId, SIGNUP_BONUS, `Welcome bonus: ${SIGNUP_BONUS} free credits`, `signup_bonus_${userId}`]
         );
-        balance = 50;
-      } else {
-        balance = rows[0].balance;
+        ({ rows } = await client.query(
+          'SELECT balance FROM credit_balances WHERE user_id = $1 FOR UPDATE',
+          [userId]
+        ));
       }
+
+      const balance = rows[0].balance;
 
       if (balance < amount) {
         await client.query('ROLLBACK');
@@ -92,14 +98,13 @@ module.exports = (pool) => {
   }
 
   /**
-   * Grant credits to a user (purchases, bonuses, refunds, admin grants)
+   * Grant credits to a user (purchases, bonuses, refunds, admin grants).
    */
   async function grantCredits(userId, amount, type, referenceId, description, idempotencyKey = null) {
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
 
-      // Get current balance (or 0 if new user)
       const { rows } = await client.query(
         'SELECT balance FROM credit_balances WHERE user_id = $1 FOR UPDATE',
         [userId]
@@ -117,7 +122,6 @@ module.exports = (pool) => {
       return { success: true, balance_after: balanceAfter };
     } catch (e) {
       await client.query('ROLLBACK');
-      // Idempotency key conflict — already granted
       if (e.code === '23505' && idempotencyKey) {
         return { success: true, deduplicated: true };
       }
@@ -128,35 +132,56 @@ module.exports = (pool) => {
   }
 
   /**
-   * Grant 50 credit signup bonus (idempotent)
+   * Grant signup bonus (idempotent via key `signup_bonus_${userId}`).
    */
   async function grantSignupBonus(userId) {
     return grantCredits(
-      userId, 50, 'signup_bonus', null,
-      'Welcome bonus: 50 free credits',
+      userId,
+      SIGNUP_BONUS,
+      'signup_bonus',
+      null,
+      `Welcome bonus: ${SIGNUP_BONUS} free credits`,
       `signup_bonus_${userId}`
     );
   }
 
   /**
-   * Calculate site analysis cost based on area in hectares
-   * Tiered pricing:
-   *   1-10 ha:        10 credits (minimum)
-   *   11-100 ha:      10 + (ha - 10) × 0.5
-   *   101-1,000 ha:   55 + (ha - 100) × 0.2
-   *   1,001-10,000:   235 + (ha - 1000) × 0.05
-   *   10,001+ ha:     685 + (ha - 10000) × 0.02
+   * Charge a user for a named product per `config/pricing.js`.
+   * Returns { ok: true, ... } on success or free, or { ok: false, status, body } on failure
+   * (response body is shaped for the controller to return directly).
    */
-  function calculateSiteAnalysisCost(hectares) {
-    if (hectares <= 10) return 10;
-    if (hectares <= 100) return Math.ceil(10 + (hectares - 10) * 0.5);
-    if (hectares <= 1000) return Math.ceil(55 + (hectares - 100) * 0.2);
-    if (hectares <= 10000) return Math.ceil(235 + (hectares - 1000) * 0.05);
-    return Math.ceil(685 + (hectares - 10000) * 0.02);
+  async function chargeForProduct(userId, productKey, context = {}, referenceId = null) {
+    const product = PRODUCTS[productKey];
+    if (!product) throw new Error(`Unknown product: ${productKey}`);
+
+    if (!product.enabled) return { ok: true, free: true, cost: 0 };
+
+    const cost = typeof product.cost === 'function' ? product.cost(context) : product.cost;
+    if (!cost || cost <= 0) return { ok: true, free: true, cost: 0 };
+
+    const refSegment = referenceId !== null && referenceId !== undefined ? `_${referenceId}` : '';
+    const idempotencyKey = `${productKey}_${userId}${refSegment}_${Date.now()}`;
+
+    const deduction = await deductCredits(userId, cost, productKey, referenceId, context, idempotencyKey);
+
+    if (!deduction.success) {
+      return {
+        ok: false,
+        status: 402,
+        body: {
+          error: 'Insufficient credits',
+          required: deduction.required,
+          balance: deduction.balance,
+          cost_credits: cost,
+        },
+      };
+    }
+
+    return { ok: true, cost, balance_after: deduction.balance_after, transaction_id: deduction.transaction_id };
   }
 
   /**
-   * Get paginated transaction history for a user
+   * Get paginated transaction history for a user.
    */
   async function getTransactionHistory(userId, limit = 50, offset = 0) {
     const { rows } = await pool.query(
@@ -186,7 +211,8 @@ module.exports = (pool) => {
     deductCredits,
     grantCredits,
     grantSignupBonus,
+    chargeForProduct,
     calculateSiteAnalysisCost,
-    getTransactionHistory
+    getTransactionHistory,
   };
 };

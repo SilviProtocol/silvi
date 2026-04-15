@@ -775,20 +775,10 @@ router.post('/from-embedding', async (req, res) => {
  */
 router.post('/polygon', authenticateUser, async (req, res) => {
     try {
-        // Credit deduction: 25 credits for polygon prediction
-        const PREDICTION_COST = 25;
-        const idempotencyKey = `polygon_prediction_${req.user.id}_${Date.now()}`;
-        const deduction = await creditService.deductCredits(
-            req.user.id, PREDICTION_COST, 'polygon_prediction',
-            null, { geometry_type: 'polygon' }, idempotencyKey
+        const charge = await creditService.chargeForProduct(
+            req.user.id, 'polygon_prediction', { geometry_type: 'polygon' }
         );
-        if (!deduction.success) {
-            return res.status(402).json({
-                error: 'Insufficient credits',
-                required: PREDICTION_COST,
-                balance: deduction.balance
-            });
-        }
+        if (!charge.ok) return res.status(charge.status).json(charge.body);
 
         const {
             geometry,
