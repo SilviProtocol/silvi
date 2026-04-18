@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Menu, X, User, LogOut, ChevronDown } from "lucide-react"
+import { Menu, X, User, LogOut, ChevronDown, UserCircle, Coins } from "lucide-react"
 import { CreditBalance } from "./CreditBalance"
 import { cn } from "@/lib/utils"
 
@@ -122,6 +122,23 @@ export function Navbar() {
                         <p className="text-xs text-white/50 truncate">{userEmail}</p>
                       )}
                     </div>
+                    <Link
+                      href="/profile"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      <UserCircle className="h-4 w-4" />
+                      <span>Profile</span>
+                    </Link>
+                    <Link
+                      href="/credits"
+                      onClick={() => setUserMenuOpen(false)}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                    >
+                      <Coins className="h-4 w-4" />
+                      <span>Credits</span>
+                    </Link>
+                    <div className="my-1 border-t border-white/10" />
                     <button
                       onClick={() => {
                         setUserMenuOpen(false)
@@ -185,16 +202,34 @@ export function Navbar() {
 
           <div className="pt-4 border-t border-white/20 space-y-3">
             {isAuthenticated ? (
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false)
-                  signOut({ callbackUrl: "/" })
-                }}
-                className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
-              >
-                <LogOut className="h-5 w-5" />
-                <span>Sign out ({userEmail || "User"})</span>
-              </button>
+              <>
+                <Link
+                  href="/profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full flex items-center space-x-2 py-3 px-4 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <UserCircle className="h-5 w-5" />
+                  <span>Profile</span>
+                </Link>
+                <Link
+                  href="/credits"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full flex items-center space-x-2 py-3 px-4 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <Coins className="h-5 w-5" />
+                  <span>Credits</span>
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    signOut({ callbackUrl: "/" })
+                  }}
+                  className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-lg text-white/70 hover:text-white hover:bg-white/10"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Sign out ({userEmail || "User"})</span>
+                </button>
+              </>
             ) : (
               <Link
                 href="/login"
