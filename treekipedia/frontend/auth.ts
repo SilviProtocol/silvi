@@ -3,6 +3,38 @@ import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
 
 const DJANGO_API_URL = process.env.NEXT_PUBLIC_DJANGO_API_URL || "https://api.silvi.earth/"
+const TREEKIPEDIA_API_URL = process.env.NEXT_PUBLIC_API_URL || "https://treekipedia-api.silvi.earth"
+
+// Sync the authenticated user with Treekipedia's treekipedia_users table.
+// Runs once per login (from signIn callback). Backend upserts the row and
+// grants the signup bonus on first call. Errors are logged but never block login.
+const syncTreekipediaProfile = async (user: any, profile: any) => {
+  const access = user?.access
+  if (!access) return
+
+  const body = {
+    email: profile?.email || user?.email || null,
+    display_name: profile?.name || user?.name || null,
+    avatar_url: profile?.picture || user?.image || null,
+  }
+
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 3000)
+
+  try {
+    await fetch(`${TREEKIPEDIA_API_URL}/api/user/profile`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${access}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(body),
+      signal: controller.signal,
+    })
+  } finally {
+    clearTimeout(timeout)
+  }
+}
 
 const refreshAccessToken = async (refreshToken: string) => {
   try {
@@ -83,12 +115,20 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const data = await response.json()
           ;(user as any).access = data.access
           ;(user as any).refresh = data.refresh
-          return true
         } catch (error) {
           console.error('Google sign in error:', error)
           return false
         }
       }
+
+      // Sync with Treekipedia backend (runs for both OTP and Google).
+      // Never blocks login — errors logged, 3s timeout.
+      try {
+        await syncTreekipediaProfile(user, profile)
+      } catch (err) {
+        console.error('Treekipedia profile sync failed:', err)
+      }
+
       return true
     },
     async jwt({ token, user, account, trigger }: any) {

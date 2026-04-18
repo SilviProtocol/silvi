@@ -9,33 +9,29 @@
 const { SIGNUP_BONUS, PRODUCTS, calculateSiteAnalysisCost } = require('../config/pricing');
 
 module.exports = (pool) => {
+  // Lazy-required to avoid any startup-order concerns; safe because userService
+  // doesn't require creditService back (no circular dependency).
+  const userService = require('./userService')(pool);
 
   /**
    * Get user's credit balance and lifetime stats.
-   * Auto-grants signup bonus if user has no balance row.
+   * Returns zeros if user has no balance row yet — does NOT auto-register.
+   * Registration happens at POST /api/user/profile or via the safety net in deductCredits.
    */
   async function getBalance(userId) {
     const { rows } = await pool.query(
       'SELECT balance, lifetime_purchased, lifetime_spent FROM credit_balances WHERE user_id = $1',
       [userId]
     );
-
-    if (rows.length === 0) {
-      await grantSignupBonus(userId);
-      const { rows: updated } = await pool.query(
-        'SELECT balance, lifetime_purchased, lifetime_spent FROM credit_balances WHERE user_id = $1',
-        [userId]
-      );
-      return updated[0] || { balance: SIGNUP_BONUS, lifetime_purchased: SIGNUP_BONUS, lifetime_spent: 0 };
-    }
-
-    return rows[0];
+    return rows[0] || { balance: 0, lifetime_purchased: 0, lifetime_spent: 0 };
   }
 
   /**
    * Deduct credits atomically with balance check.
    * Uses SELECT FOR UPDATE to prevent race conditions.
-   * Auto-grants signup bonus if the user has no balance row yet.
+   * Safety net: if the user has no balance row, assume they bypassed POST /profile
+   * and call userService.ensureUser within this transaction to create the row
+   * and grant the signup bonus atomically.
    */
   async function deductCredits(userId, amount, type, referenceId, metadata = {}, idempotencyKey = null) {
     const client = await pool.connect();
@@ -48,13 +44,10 @@ module.exports = (pool) => {
       );
 
       if (rows.length === 0) {
-        // New user — grant signup bonus inside this transaction, then re-read with lock.
-        await client.query(
-          `INSERT INTO credit_transactions (user_id, amount, type, reference_id, description, balance_after, metadata, idempotency_key)
-           VALUES ($1, $2, 'signup_bonus', NULL, $3, $2, '{}', $4)
-           ON CONFLICT (idempotency_key) DO NOTHING`,
-          [userId, SIGNUP_BONUS, `Welcome bonus: ${SIGNUP_BONUS} free credits`, `signup_bonus_${userId}`]
-        );
+        // Safety net — user hit a gated endpoint without registering via POST /profile.
+        // ensureUser upserts the treekipedia_users row and grants the signup bonus
+        // in this transaction; then re-SELECT the balance.
+        await userService.ensureUser(userId, {}, client);
         ({ rows } = await client.query(
           'SELECT balance FROM credit_balances WHERE user_id = $1 FOR UPDATE',
           [userId]

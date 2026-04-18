@@ -170,6 +170,9 @@ app.use('/api/guides', guidesRoutes);
 const creditsRoutes = require('./routes/credits')(pool);
 app.use('/api/credits', creditsRoutes);
 
+const userRoutes = require('./routes/user')(pool);
+app.use('/api/user', userRoutes);
+
 const paymentsRoutes = require('./routes/payments')(pool);
 app.use('/api/payments', paymentsRoutes);
 
