@@ -272,6 +272,70 @@ Paginated bulk download of all species with pre-aggregated common names. Designe
 
 ---
 
+## User Endpoints
+
+JWT-authenticated endpoints for the `treekipedia_users` table (Silvi user identity anchor). Distinct from the wallet-based Treederboard endpoints below.
+
+### Get Current User Profile
+
+Returns the authenticated user's Treekipedia profile and credit balance.
+
+**Endpoint:** `GET /api/user/profile`
+
+**Authentication:** Required (Bearer JWT from Silvi Django)
+
+**Response:**
+```json
+{
+  "success": true,
+  "profile": {
+    "id": 1,
+    "silvi_user_id": 817,
+    "email": "user@example.com",
+    "display_name": "User Name",
+    "avatar_url": "https://...",
+    "preferences": {},
+    "created_at": "2026-04-18T09:36:16.301Z",
+    "last_seen_at": "2026-04-18T09:36:16.301Z"
+  },
+  "credits": {
+    "balance": 100,
+    "lifetime_purchased": 100,
+    "lifetime_spent": 0
+  }
+}
+```
+
+**Notes:**
+- `profile` is `null` if user has never called `POST /api/user/profile`
+- `credits` returns zeros if no balance row exists (does not auto-register)
+
+---
+
+### Upsert Current User Profile
+
+Upserts the authenticated user's `treekipedia_users` row. Called once per login from the frontend after successful NextAuth sign-in. Grants the 100-credit signup bonus atomically on first call (identified by deterministic `signup_bonus_${user_id}` idempotency key).
+
+**Endpoint:** `POST /api/user/profile`
+
+**Authentication:** Required (Bearer JWT from Silvi Django)
+
+**Request Body (all optional):**
+```json
+{
+  "email": "user@example.com",
+  "display_name": "User Name",
+  "avatar_url": "https://...",
+  "preferences": {}
+}
+```
+
+**Response:** Same shape as GET, plus `is_new: boolean` indicating whether this call INSERTed a new row.
+
+**Idempotency:** Safe to call repeatedly. Existing fields are preserved via `COALESCE` (only fills NULL values; doesn't overwrite). Signup bonus granted only on first INSERT.
+
+---
+
 ## Treederboard Endpoints
 
 ### Get Leaderboard

@@ -6,6 +6,52 @@ Complete history of features, fixes, and improvements. For current status see AC
 
 ---
 
+## 2026-04-18 - Profile Page UI
+
+**`/profile` page** — consumes `treekipedia_users` data from Phase 3.
+
+**Planning Doc**: [docs/completed/treekipedia-users.md](docs/completed/treekipedia-users.md)
+
+- `frontend/app/profile/page.tsx` — identity card (Google avatar or initial, display name, email, join date), credit summary with "Manage credits →" link, sign out. Display name inline-editable (hover pencil / Enter to save / Esc to cancel).
+- `frontend/lib/user.ts` — `UserProfile` type + `getUserProfile` / `updateUserProfile` via `fetchJsonWithAuth`
+- `frontend/hooks/useProfile.ts` — session-aware fetch + `update()` helper
+- `frontend/components/navbar.tsx` — Profile + Credits links added to user-menu dropdown and mobile menu
+- `/profile` already in `middleware.ts` protectedPrefixes → redirects unauth to `/login`
+
+---
+
+## 2026-04-18 - Users & Auth Phase 3 (Treekipedia User Tracking)
+
+**`treekipedia_users` anchor table** — one explicit entry point (`POST /api/user/profile`) called from NextAuth `signIn` callback at login. No per-request middleware. Safety-net `ensureUser` in `creditService.deductCredits` covers clients bypassing the frontend POST.
+
+**Planning Doc**: [docs/completed/treekipedia-users.md](docs/completed/treekipedia-users.md)
+
+- `database/13_treekipedia_users.sql` — `treekipedia_users` (silvi_user_id UNIQUE, email, display_name, avatar_url, preferences JSONB, created_at, last_seen_at). Applied on prod.
+- `backend/services/userService.js` — `ensureUser(userId, opts, client?)` upserts row + grants signup bonus atomically on INSERT via deterministic idempotency key `signup_bonus_${userId}`. Optional `client` lets it participate in caller's transaction. Also: `getProfile`, `updateProfile`.
+- `backend/controllers/user.js` + `backend/routes/user.js` — GET/POST `/api/user/profile`. POST returns `{profile, credits, is_new}`.
+- `backend/services/creditService.js` — stripped lazy bonus from `getBalance` (returns zeros if no row); `deductCredits` safety-net delegates to `userService.ensureUser` when balance row missing.
+- `frontend/auth.ts` — `syncTreekipediaProfile()` fired from `signIn` callback (both OTP + Google paths), 3s AbortController timeout, fire-and-forget error logging, never blocks login.
+
+**Bug fix: DJANGO_SECRET_KEY truncation** — `/root/silvi-open/treekipedia/.env` had the key unquoted. Django's default SECRET_KEY format contains `#` which Node dotenv treats as inline comment marker → key silently truncated from 50 → 41 chars → JWT signature verification failed on every authed endpoint since 2026-02-27. Fixed by wrapping value in double quotes.
+
+**Verification** — fresh Google login created `treekipedia_users` row (id=1, silvi_user_id=817, Google email + display name + avatar captured), `credit_balances` row (balance=100), and `credit_transactions` signup_bonus row.
+
+---
+
+## 2026-04-18 - Google SSO Live + Vercel GitHub Autodeploy
+
+**Google SSO** — Auth Phase 4 complete. Sign-in via Google working end-to-end on https://treekipedia.silvi.earth/login.
+
+- New Treekipedia-specific OAuth 2.0 client in GCP (separate from Silvi client for independent revocation + audit)
+- Vercel env vars: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (Production + Preview)
+- `frontend/app/login/page.tsx` — restored Google button with inline Google "G" SVG + OR divider
+- Django `/auth/google_login/` endpoint confirmed accepting `{id_token, email, given_name, family_name}` → returns JWTs
+- CORS/CSRF/ALLOWED_HOSTS for `treekipedia.silvi.earth` already configured on Django side (verified by working OTP + Google flows)
+
+**Vercel GitHub Autodeploy** — wired Treekipedia Vercel project to `SilviProtocol/silvi` repo (Root Directory: `treekipedia/frontend`, Production Branch: `master`). Push to `master` → auto prod deploy. PRs → preview deploys. Replaces manual `npx vercel --prod` via VPS SSH (still works as fallback).
+
+---
+
 ## 2026-03-04 - Free/Paid Split: Site Analysis Free, LEAF Paid, Wallet Removed
 
 **Product split refinement** — site analysis occurrence data now free (was credit-gated), LEAF scoring now paid (was public), wallet connect UI removed.

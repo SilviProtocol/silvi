@@ -1,7 +1,9 @@
 # ACTIVE - Treekipedia System Status
 
-**Last Updated**: March 4, 2026
+**Last Updated**: April 18, 2026
 **System Health**: Operational
+
+**Recent**: Email OTP + Google SSO live, `treekipedia_users` anchor table live, `/profile` page shipped, DJANGO_SECRET_KEY truncation bug fixed (was silently breaking all authed endpoints since 2026-02-27). See CHANGELOG.md for details.
 
 ---
 
